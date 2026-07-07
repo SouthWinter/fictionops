@@ -3298,19 +3298,21 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertFalse(mismatch_data["ready"])
             self.assertIn("github_run_id_mismatch", {issue["code"] for issue in mismatch_data["issues"]})
 
-    def test_dogfood_cycle_audit_reports_template_as_incomplete(self) -> None:
+    def test_dogfood_cycle_audit_reports_active_cycle_as_deferred(self) -> None:
         report = build_dogfood_cycle_audit(ROOT)
         self.assertEqual(report.status, "incomplete")
         self.assertFalse(report.ready)
-        self.assertIn("Cycle ID", report.missing_required_fields)
-        self.assertIn("Reviewer", report.missing_required_fields)
-        self.assertGreater(report.blocking_issue_count, 0)
+        self.assertEqual(report.missing_required_fields, [])
+        self.assertEqual(report.decision, "deferred")
+        self.assertIn("decision_deferred", {issue.code for issue in report.issues})
+        self.assertIn("final_status_not_ready", {issue.code for issue in report.issues})
 
         result = self.run_cli("audit-dogfood-cycle", str(ROOT), "--format", "json")
         data = json.loads(result.stdout)
         self.assertEqual(data["status"], "incomplete")
         self.assertEqual(data["ready"], False)
-        self.assertIn("missing_required_evidence", {issue["code"] for issue in data["issues"]})
+        self.assertEqual(data["missing_required_fields"], [])
+        self.assertIn("decision_deferred", {issue["code"] for issue in data["issues"]})
 
     def test_dogfood_cycle_audit_accepts_filled_sustained_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
