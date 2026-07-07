@@ -38,9 +38,9 @@ fictionops audit-release-evidence . --file docs/release-trial-evidence.md --form
 - `status=accepted`
 - `ready=true`
 - `blocking_issue_count=0`
-- GitHub Actions run：`https://github.com/SouthWinter/fictionops/actions/runs/28837872185`
+- GitHub Actions run：`https://github.com/SouthWinter/fictionops/actions/runs/28849146871`
 - TestPyPI project：`https://test.pypi.org/project/fictionops/`
-- TestPyPI version：`https://test.pypi.org/project/fictionops/0.1.0/`
+- TestPyPI version：`https://test.pypi.org/project/fictionops/0.1.1/`
 - clean venv install smoke：已通过
 
 解释：这一条已经不是 1.0 的阻塞项。后续不要再把“触发发布演练”作为当前下一步。

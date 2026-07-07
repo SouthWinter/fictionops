@@ -19,7 +19,7 @@
 | Agent workflow 保持暂存和可审计 | `agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`examples/agent_controller_loop.py`、`docs/agent-connector-contract.md` 和 controller 测试。 | 本地较强 | 真实模型/controller 接入可继续作为外部实验，但必须保留暂存输出和复核门禁。 |
 | 混乱旧项目迁移有持续真实项目证据 | `docs/dogfood-legacy-adopt.zh-CN.md` 已记录 0.2 收口，`docs/dogfood-cycle-evidence.md` 和 `audit-dogfood-cycle` 定义持续周期证据门禁。 | 部分证明 | 1.0 仍需要一份填实并通过 `audit-dogfood-cycle` 的收口后维护周期记录。 |
 | 恢复路径保持更新 | `docs/recovery.md`、`docs/recovery.zh-CN.md`、已知限制文档、兼容性策略、发布证据测试。 | 本地较强 | 任何会创建、修复、再生成或使持久状态失效的命令变化，都必须同步恢复文档。 |
-| 本地 checkout 之外存在包发布证据 | 本地 wheel/sdist 构建、CI/publish workflow、已 accepted 的 `docs/release-trial-evidence.md`、GitHub Actions run `28837872185`、TestPyPI `fictionops==0.1.0`、干净 venv 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 外部证据已完成 | 后续 release trial 继续记录真实 run URL、包 hash、安装烟测、reviewer 和 decision。 |
+| 本地 checkout 之外存在包发布证据 | 本地 wheel/sdist 构建、CI/publish workflow、已 accepted 的 `docs/release-trial-evidence.md`、GitHub Actions run `28849146871`、TestPyPI `fictionops==0.1.1`、干净 venv 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 外部证据已完成 | 后续 release trial 继续记录真实 run URL、包 hash、安装烟测、reviewer 和 decision。 |
 | 行为经过时间稳定 | 里程碑账本、兼容性策略、release notes、回归测试、`docs/stability-window-evidence.md`、`audit-stability-window` 和 `audit-stable-core`。 | 目前无法证明 | 需要 accepted 稳定窗口记录，证明经过真实使用时间且没有未记录的破坏性变化。 |
 
 ## 当前本地结论

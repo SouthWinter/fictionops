@@ -11,7 +11,7 @@ The current execution status is recorded in `docs/stable-core-remaining-executio
 | Item | Status | Notes |
 | --- | --- | --- |
 | Local governance files, tests, CLI, docs, workflows | Complete | `local-foundation` is complete; continue local hardening only when a real regression is found. |
-| Release-trial evidence | Complete | Accepted external evidence is recorded in `docs/release-trial-evidence.md`; GitHub Actions run `28837872185`; TestPyPI `fictionops==0.1.0`; `audit-release-evidence` returns `ready=true`. |
+| Release-trial evidence | Complete | Accepted external evidence is recorded in `docs/release-trial-evidence.md`; GitHub Actions run `28849146871`; TestPyPI `fictionops==0.1.1`; `audit-release-evidence` returns `ready=true`. |
 | Sustained dogfood cycle | Missing | Needs at least 7 calendar days of real post-0.2 project maintenance records. |
 | Stability window | Missing | Needs compatibility evidence after release and dogfood records exist. |
 | Milestone ledger closure | Missing | Can only happen after `audit-stable-core` returns `ready=true`. |
@@ -37,9 +37,9 @@ Status: **complete**.
 
 Accepted evidence:
 
-- GitHub Actions run: `https://github.com/SouthWinter/fictionops/actions/runs/28837872185`
+- GitHub Actions run: `https://github.com/SouthWinter/fictionops/actions/runs/28849146871`
 - TestPyPI project: `https://test.pypi.org/project/fictionops/`
-- TestPyPI version: `https://test.pypi.org/project/fictionops/0.1.0/`
+- TestPyPI version: `https://test.pypi.org/project/fictionops/0.1.1/`
 - Evidence file: `docs/release-trial-evidence.md`
 - Decision: `accepted`
 
@@ -152,7 +152,7 @@ Final done means:
 | Item | Primary Actor | Local Acceptance Command | Evidence File | Can Codex Do It Alone? |
 | --- | --- | --- | --- | --- |
 | Local foundation maintenance | Codex | `python -m unittest discover -s fictionops/tests -v` | Tests, workflows, docs | Yes, but only for real regressions. |
-| Release-trial evidence | Maintainer + Codex assist | `audit-release-evidence` | `docs/release-trial-evidence.md` | Complete for the current 0.1.0 trial. Future trials still need external run evidence. |
+| Release-trial evidence | Maintainer + Codex assist | `audit-release-evidence` | `docs/release-trial-evidence.md` | Complete for the current 0.1.1 trial. Future trials still need external run evidence. |
 | Sustained dogfood cycle | Maintainer + Codex assist | `audit-dogfood-cycle` | `docs/dogfood-cycle-evidence.md` | Not fully. It needs a real project and elapsed time. |
 | Stability window | Maintainer + Codex audit | `audit-stability-window` | `docs/stability-window-evidence.md` | Not fully. It needs real elapsed time. |
 | 1.0 ledger closure | Codex + maintainer review | `audit-stable-core` | stable-core, milestone, roadmap, release notes | Yes after evidence exists. |

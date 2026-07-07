@@ -86,7 +86,7 @@
 python -m venv .venv-release-trial
 . .venv-release-trial/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --index-url https://test.pypi.org/simple/ --no-deps fictionops==0.1.0
+python -m pip install --index-url https://test.pypi.org/simple/ --no-deps fictionops==0.1.1
 fictionops --version
 python -m fictionops --version
 smoke_dir="$(mktemp -d)"

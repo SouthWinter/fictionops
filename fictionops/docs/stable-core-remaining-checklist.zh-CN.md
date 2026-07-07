@@ -11,7 +11,7 @@
 | 项目 | 状态 | 说明 |
 | --- | --- | --- |
 | 本地治理文件、测试、CLI、文档、workflow | 已完成 | `local-foundation` 已 complete；后续只在发现真实回归时继续加固。 |
-| 发布演练证据 | 已完成 | accepted 外部证据已记录在 `docs/release-trial-evidence.md`；GitHub Actions run `28837872185`；TestPyPI `fictionops==0.1.0`；`audit-release-evidence` 返回 `ready=true`。 |
+| 发布演练证据 | 已完成 | accepted 外部证据已记录在 `docs/release-trial-evidence.md`；GitHub Actions run `28849146871`；TestPyPI `fictionops==0.1.1`；`audit-release-evidence` 返回 `ready=true`。 |
 | 持续 dogfood 周期 | 未完成 | 需要至少 7 个自然日的真实 0.2 后项目维护记录。 |
 | 稳定窗口 | 未完成 | 需要 release 与 dogfood 证据之后的兼容性窗口记录。 |
 | 里程碑账本关闭 | 未完成 | 只能在 `audit-stable-core` 返回 `ready=true` 后更新为完成。 |
@@ -37,9 +37,9 @@
 
 已验收证据：
 
-- GitHub Actions run：`https://github.com/SouthWinter/fictionops/actions/runs/28837872185`
+- GitHub Actions run：`https://github.com/SouthWinter/fictionops/actions/runs/28849146871`
 - TestPyPI project：`https://test.pypi.org/project/fictionops/`
-- TestPyPI version：`https://test.pypi.org/project/fictionops/0.1.0/`
+- TestPyPI version：`https://test.pypi.org/project/fictionops/0.1.1/`
 - 证据文件：`docs/release-trial-evidence.md`
 - 决策：`accepted`
 
@@ -152,7 +152,7 @@ fictionops audit-stable-core . --format json
 | 事项 | 主要执行者 | 本地验收命令 | 证据文件 | Codex 能否独自完成 |
 | --- | --- | --- | --- | --- |
 | 本地基础维护 | Codex | `python -m unittest discover -s fictionops/tests -v` | 测试、workflow、文档 | 可以，但只需修真实回归。 |
-| 发布演练证据 | 维护者 + Codex 辅助 | `audit-release-evidence` | `docs/release-trial-evidence.md` | 当前 0.1.0 trial 已完成；未来 trial 仍需要外部 run 证据。 |
+| 发布演练证据 | 维护者 + Codex 辅助 | `audit-release-evidence` | `docs/release-trial-evidence.md` | 当前 0.1.1 trial 已完成；未来 trial 仍需要外部 run 证据。 |
 | 持续 dogfood 周期 | 维护者 + Codex 辅助 | `audit-dogfood-cycle` | `docs/dogfood-cycle-evidence.md` | 不能完全独自完成。需要真实项目和经过时间。 |
 | 稳定窗口 | 维护者 + Codex 审计 | `audit-stability-window` | `docs/stability-window-evidence.md` | 不能完全独自完成。需要真实经过时间。 |
 | 1.0 账本关闭 | Codex + 维护者复核 | `audit-stable-core` | stable-core、milestone、roadmap、release notes | 证据齐全后可以协助完成。 |

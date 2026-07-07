@@ -1,5 +1,7 @@
 # FictionOps 0.1.1 Release Candidate Plan
 
+Status: TestPyPI run completed and accepted on 2026-07-07. GitHub Actions run `28849146871` published `fictionops==0.1.1` to TestPyPI, clean install smoke passed, and the accepted evidence record is now in `docs/release-trial-evidence.md`.
+
 This plan exists because the accepted TestPyPI evidence for `0.1.0` was produced before later packaging and onboarding changes landed on `main`.
 
 The `0.1.0` evidence is still useful historical proof that the publish workflow, Trusted Publishing, TestPyPI install, and smoke tests worked. It should not be treated as exact artifact evidence for the current repository head.
@@ -126,4 +128,3 @@ Release notes should say:
 - `0.1.0` proved the MVP and TestPyPI pipeline.
 - `0.1.1` is the first recommended public package candidate after GitHub onboarding, provider docs, citation metadata, and README improvements.
 - The project is still pre-alpha.
-
