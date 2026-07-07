@@ -46,24 +46,32 @@ Copy this section for each sustained cycle.
 - Follow-up:
 ```
 
-## Current Placeholder
+## Active Cycle
 
-- Cycle ID:
-- Project / sandbox:
-- Start date:
-- End date:
-- Version / commit range:
-- Scope:
-- Commands exercised:
-- Initial adopt-review status:
-- Final adopt-review status:
-- import_queue_files:
-- blocking_issue_count:
-- Waiver count:
-- Compatibility notes:
-- Recovery notes:
+- Cycle ID: dogfood-2026-07-private-maintenance
+- Project / sandbox: private migrated long-form fiction sandbox; local path and story content redacted from the public repository
+- Start date: 2026-07-07
+- End date: 2026-07-14
+- Version / commit range: 3e0703f..cycle-close
+- Scope: sustained post-migration maintenance pass covering project health, context packaging, review gates, and agent-harness evidence after the 0.2 migration closure
+- Commands exercised: adopt-review, doctor, context-pack, report, audit-info, audit-characters, revision-plan, eval-agent
+- Initial adopt-review status: baseline_pending_on_private_sandbox
+- Final adopt-review status: deferred_until_cycle_close
+- import_queue_files: 0
+- blocking_issue_count: 0
+- Waiver count: 0
+- Compatibility notes: Active cycle opened on 2026-07-07. No compatibility claim is made until the minimum seven-calendar-day window has elapsed and the private sandbox is rechecked at close.
+- Recovery notes: Recovery behavior to verify during the cycle: no source overwrite during diagnostics, staged agent output remains quarantined, and generated reports refuse unsafe overwrite without `--force`.
 - Decision: deferred
-- Reviewer:
+- Reviewer: maintainer pending final review
+
+### Summary
+
+- What stayed stable: To be recorded after the cycle closes.
+- What changed: `eval-agent` was added before the cycle opened; watch whether it affects existing agent workflow contracts.
+- Regression tests added: `test_eval_agent_generates_reproducible_agent_harness_report` plus CLI, package, and CI smoke coverage for `eval-agent`.
+- Docs updated: Agent evaluation protocol, CLI guides, command contracts, testing guide, README, and promotion kit mention `eval-agent`.
+- Follow-up: Rerun `audit-dogfood-cycle` on or after 2026-07-14, then update final status, decision, reviewer, and any compatibility/recovery notes from the real maintenance window.
 
 ## Acceptance Decision
 
