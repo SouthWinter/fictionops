@@ -64,6 +64,8 @@ fictionops/
     agent-connector-contract.zh-CN.md
     agent-workflow.md
     agent-workflow.zh-CN.md
+    agent-evaluation.md
+    agent-evaluation.zh-CN.md
     migration.md
     testing.md
     release.md
@@ -122,6 +124,8 @@ fictionops/
 - [Model providers, Chinese reference](docs/model-providers.zh-CN.md)
 - [Agent workflow positioning](docs/agent-workflow.md)
 - [Agent workflow positioning, Chinese reference](docs/agent-workflow.zh-CN.md)
+- [Agent evaluation protocol](docs/agent-evaluation.md)
+- [Agent evaluation protocol, Chinese reference](docs/agent-evaluation.zh-CN.md)
 - [Migration guide](docs/migration.md)
 - [Promotion kit](docs/promotion-kit.md)
 - [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)

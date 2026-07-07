@@ -56,4 +56,4 @@ Before connecting either one, run `fictionops audit-agent-workflow <project> --l
 
 If you let a model edit canon or manuscript directly without staging and gates, do not call that FictionOps-compatible automation. It may still be useful experimentation, but it is outside the core safety model.
 
-For setup commands and runner/controller patterns, see [Agent integration guide](agent-integration.md).
+For setup commands and runner/controller patterns, see [Agent integration guide](agent-integration.md). For research-style baselines, tasks, and metrics, see [Agent evaluation protocol](agent-evaluation.md).
