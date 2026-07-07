@@ -2,112 +2,107 @@
 
 执行日期：2026-07-07
 
-当前结论：本地基础已完成，1.0 仍不能关闭。剩余三项都需要真实外部证据或真实经过时间，当前会话无法诚实完成。
+当前结论：本地基础已经完成，release trial 已经有 accepted 外部证据；1.0 仍不能关闭，因为持续 dogfood 周期和稳定窗口都需要真实经过时间，不能由一次本地运行补齐。
 
-## 已执行检查
-
-### 聚合审计
+## 联合审计
 
 命令：
 
 ```bash
-fictionops audit-stable-core fictionops --format json
+fictionops audit-stable-core . --format json
 ```
 
-结果：
+当前结果：
 
 - `status=not_ready`
 - `ready=false`
 - `local_foundation_ready=true`
-- `release_evidence_ready=false`
+- `release_evidence_ready=true`
 - `dogfood_cycle_ready=false`
 - `stability_window_ready=false`
-- `blocking_issue_count=13`
-- 剩余 action items：`release-trial-evidence`、`sustained-dogfood-cycle`、`stability-window`
+- `blocking_issue_count=12`
+- 剩余 action items：`sustained-dogfood-cycle`、`stability-window`
 
-### 发布演练证据审计
+解释：本地基础和发布演练证据已经通过；真正阻塞 1.0 的是 0.2 收口之后的持续维护周期，以及该周期之后的稳定窗口。
+
+## 发布演练证据审计
 
 命令：
 
 ```bash
-cd fictionops
 fictionops audit-release-evidence . --file docs/release-trial-evidence.md --format json
 ```
 
-结果：
+当前结果：
 
-- `status=incomplete`
-- `ready=false`
-- `blocking_issue_count=18`
-- 主要缺口：真实 GitHub Actions run URL、run ID、wheel/sdist hash、安装烟测结果、TestPyPI 使用或跳过说明、Reviewer、最终 accepted/deferred/failed 决策。
+- `status=accepted`
+- `ready=true`
+- `blocking_issue_count=0`
+- GitHub Actions run：`https://github.com/SouthWinter/fictionops/actions/runs/28837872185`
+- TestPyPI project：`https://test.pypi.org/project/fictionops/`
+- TestPyPI version：`https://test.pypi.org/project/fictionops/0.1.0/`
+- clean venv install smoke：已通过
 
-### 持续 dogfood 周期审计
+解释：这一条已经不是 1.0 的阻塞项。后续不要再把“触发发布演练”作为当前下一步。
+
+## 持续 dogfood 周期审计
 
 命令：
 
 ```bash
-cd fictionops
 fictionops audit-dogfood-cycle . --file docs/dogfood-cycle-evidence.md --format json
 ```
 
-结果：
+当前结果：
 
 - `status=incomplete`
 - `ready=false`
 - `decision=deferred`
 - `blocking_issue_count=16`
-- 主要缺口：至少 7 个自然日的真实维护周期、至少 3 个可识别 FictionOps 命令、前后 adopt-review 状态、`import_queue_files=0`、`blocking_issue_count=0`、Reviewer。
 
-### 稳定窗口审计
+当前不能关闭的原因：
+
+- `docs/dogfood-cycle-evidence.md` 仍是待填证据，不是 accepted 记录。
+- 1.0 需要的是 0.2 迁移收口之后的持续维护周期，不是 0.2 迁移收口本身。
+- 0.2 收口记录日期为 2026-07-06；当前日期为 2026-07-07，尚不可能覆盖至少 7 个自然日的后续维护周期。
+- 记录中提到的 0.2 closure sandbox 当前不在本机路径 `C:\Users\z\Documents\story\legacy_fictionops_02_closure_sandbox`。
+
+下一步：选择真实迁移项目或等价维护沙箱，记录至少 7 个自然日的维护过程，覆盖至少 3 个可识别 FictionOps 命令，并在周期结束后填写 `docs/dogfood-cycle-evidence.md`。
+
+## 稳定窗口审计
 
 命令：
 
 ```bash
-cd fictionops
 fictionops audit-stability-window . --file docs/stability-window-evidence.md --format json
 ```
 
-结果：
+当前结果：
 
 - `status=incomplete`
 - `ready=false`
 - `decision=deferred`
 - `blocking_issue_count=11`
-- 主要缺口：至少 7 个自然日稳定窗口、release evidence reference、dogfood cycle reference、兼容性说明、破坏性变化说明、恢复说明、Reviewer。
 
-## 当前无法自动完成的原因
+当前不能关闭的原因：
 
-- 当前工作目录的 `.git` 不是有效 git 仓库，`git remote -v` 返回 `fatal: not a git repository`。
-- 当前环境没有 `gh` 命令，无法从本地触发或读取 GitHub Actions。
-- `release-trial-evidence.md` 需要真实 GitHub Actions/TestPyPI/artifact 证据，不能由本地构建输出替代。
-- `dogfood-cycle-evidence.md` 需要至少 7 个自然日的真实项目维护周期，不能用一次本地 smoke 替代。
-- `stability-window-evidence.md` 必须发生在 release + dogfood 证据通过之后，也需要至少 7 个自然日。
+- `docs/stability-window-evidence.md` 仍是待填证据，不是 accepted 记录。
+- 稳定窗口必须发生在 release trial 与 sustained dogfood 都 accepted 之后。
+- sustained dogfood 还未 accepted，因此稳定窗口尚不能开始验收。
+- 稳定窗口自身也需要至少 7 个自然日，不能用一次本地 smoke 代替。
+
+下一步：等 dogfood 周期 accepted 后，开启稳定窗口，跟踪命令名、必填参数、核心 JSON key、默认不覆盖行为、包内容、发布流程、Agent 暂存边界和恢复路径。
 
 ## 不能做的事
 
 为了避免 1.0 被弱证据误关，当前不能：
 
-- 把本地 wheel/sdist 构建结果填成外部 release trial；
-- 把 workflow 生成草稿当成 accepted 证据；
-- 把少于 7 个自然日的本地测试当成 dogfood 或 stability；
-- 在没有 Reviewer 的情况下把证据文件标成 accepted；
-- 让 `stable-core-audit` 或 `milestone-status` 声称 1.0 complete。
+- 回填或倒填 7 天周期；
+- 把 0.2 迁移收口当成 0.2 后持续 dogfood；
+- 把本地 smoke 当成 dogfood 或 stability；
+- 在证据仍是模板时标记 `accepted`；
+- 让 `stable-core-audit`、`milestone-status` 或 `roadmap` 声称 1.0 complete。
 
-## 真正下一步
+## 下一步
 
-下一步只有一个主动作：恢复或连接真实 GitHub 仓库，然后触发外部 release trial。
-
-最低操作顺序：
-
-1. 确认 FictionOps 源码有可用 GitHub remote。
-2. 在 GitHub 上手动触发 `.github/workflows/fictionops-publish.yml`。
-3. 下载 `fictionops-release-trial-evidence-<version>` artifact。
-4. 填写 `docs/release-trial-evidence.md`。
-5. 运行：
-
-```bash
-cd fictionops
-fictionops audit-release-evidence . --file docs/release-trial-evidence.md --format json
-```
-
-只有这一步返回 `ready=true` 后，才进入持续 dogfood 周期；只有 dogfood 通过后，才进入稳定窗口。
+下一步不是继续加本地命令，而是启动或继续真实的 post-0.2 dogfood 周期。等它覆盖至少 7 个自然日并通过 `audit-dogfood-cycle` 后，再进入稳定窗口；稳定窗口也 accepted 后，才关闭 1.0 账本。
