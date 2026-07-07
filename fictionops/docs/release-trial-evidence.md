@@ -130,3 +130,56 @@ Use one of these decisions. The compact decision set is `accepted/deferred/faile
 - `accepted`: the workflow ran externally, artifacts were produced, install smoke passed, and release notes link the run.
 - `deferred`: the repository is ready, but GitHub Actions, TestPyPI, or release timing prevents completion.
 - `failed`: external evidence exists and shows a real problem that needs a fix, test, and rerun.
+
+## Accepted Evidence Record
+
+- Date: 2026-07-07T02:48:27Z
+- Version: 0.1.0
+- Commit / ref / tag: fcb97170bb263bc4e4f0992f0bcdb795f1152bf0 / main
+- Decision: accepted
+- Reviewer: SouthWinter
+
+### GitHub Actions
+
+- Workflow name: FictionOps Publish
+- Workflow file: .github/workflows/fictionops-publish.yml
+- GitHub Actions run URL: https://github.com/SouthWinter/fictionops/actions/runs/28837872185
+- GitHub Actions run ID: 28837872185
+- Runner OS / Python matrix: ubuntu-latest / Python 3.12
+- Build job status: passed
+- Test job status: passed
+- Publish job status: passed to TestPyPI
+- Distribution artifact name: fictionops-dist-0.1.0
+- Artifact download URL: https://github.com/SouthWinter/fictionops/actions/runs/28837872185
+- Artifact retention note: GitHub Actions artifacts retained until 2026-10-05
+
+### Distribution Artifacts
+
+- Wheel filename: fictionops-0.1.0-py3-none-any.whl
+- Wheel SHA256: b4481ce53387f75cd5cfe0cbdb36041befbc1a57cc03a8f26acf6a5af3d05ab3
+- sdist filename: fictionops-0.1.0.tar.gz
+- sdist SHA256: 54165d8caa570e3267e30b534fdf90073d5bd5a47774a6481adbd919d9feb6b2
+- Built-wheel smoke result: passed in GitHub Actions build job
+- sdist content check result: passed in GitHub Actions build job
+
+### TestPyPI
+
+- TestPyPI used: yes
+- TestPyPI project URL: https://test.pypi.org/project/fictionops/
+- TestPyPI version URL: https://test.pypi.org/project/fictionops/0.1.0/
+- TestPyPI skip reason: not skipped
+- TestPyPI skip accepted by: not applicable
+- Trusted Publishing environment: testpypi
+- Publish result: passed
+- Clean venv install command: python -m pip install --index-url https://test.pypi.org/simple/ --no-deps fictionops==0.1.0
+- `fictionops --version` result: fictionops 0.1.0
+- `python -m fictionops --version` result: fictionops 0.1.0
+- `fictionops init` smoke result: passed
+- `fictionops doctor` smoke result: passed
+- Rollback / cleanup note: no rollback needed; TestPyPI trial package remains available for verification
+
+### Notes
+
+- Known issue: none for release trial
+- Follow-up: continue sustained dogfood-cycle and stability-window evidence before 1.0 closure
+- Waiver, if any: none
