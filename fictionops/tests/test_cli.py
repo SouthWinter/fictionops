@@ -5417,7 +5417,7 @@ class FictionOpsCliTests(unittest.TestCase):
             [
                 sys.executable,
                 str(ROOT / "examples" / "agent_controller_loop.py"),
-                str(ROOT.relative_to(ROOT.parent)),
+                str(ROOT),
                 "--max-steps",
                 "2",
                 "--format",
