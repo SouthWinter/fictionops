@@ -178,6 +178,7 @@ jobs:
               "docs/agent-workflow.zh-CN.md",
               "docs/agent-evaluation.md",
               "docs/agent-evaluation.zh-CN.md",
+              "docs/agent-evaluation-demo-report.md",
               "docs/tutorial-demo.md",
               "docs/migration.md",
               "docs/end-to-end-migration-publish.md",

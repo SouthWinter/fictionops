@@ -81,6 +81,7 @@ The same runner can be used with Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Douba
 - [CLI guide](fictionops/docs/cli.md)
 - [Agent integration guide](fictionops/docs/agent-integration.md)
 - [Agent evaluation protocol](fictionops/docs/agent-evaluation.md)
+- [Agent evaluation demo report](fictionops/docs/agent-evaluation-demo-report.md)
 - [Model providers](fictionops/docs/model-providers.md)
 - [Demo tutorial](fictionops/docs/tutorial-demo.md)
 - [Migration guide](fictionops/docs/migration.md)
@@ -115,7 +116,7 @@ See the full [roadmap](fictionops/docs/roadmap.md) and [milestone status](fictio
 
 ## Research Framing
 
-FictionOps can also be treated as a local-first evaluation harness for long-horizon writing agents: persistent workspace state, scoped context construction, staged model outputs, human review gates, continuity audits, and controller-loop traces. See the [agent evaluation protocol](fictionops/docs/agent-evaluation.md) for baseline conditions, benchmark tasks, and metrics.
+FictionOps can also be treated as a local-first evaluation harness for long-horizon writing agents: persistent workspace state, scoped context construction, staged model outputs, human review gates, continuity audits, and controller-loop traces. See the [agent evaluation protocol](fictionops/docs/agent-evaluation.md) for baseline conditions, benchmark tasks, and metrics, and the [demo report](fictionops/docs/agent-evaluation-demo-report.md) for a first reproducible evidence record.
 
 ## Contributing
 

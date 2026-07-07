@@ -66,6 +66,7 @@ fictionops/
     agent-workflow.zh-CN.md
     agent-evaluation.md
     agent-evaluation.zh-CN.md
+    agent-evaluation-demo-report.md
     migration.md
     testing.md
     release.md
@@ -126,6 +127,7 @@ fictionops/
 - [Agent workflow positioning, Chinese reference](docs/agent-workflow.zh-CN.md)
 - [Agent evaluation protocol](docs/agent-evaluation.md)
 - [Agent evaluation protocol, Chinese reference](docs/agent-evaluation.zh-CN.md)
+- [Agent evaluation demo report](docs/agent-evaluation-demo-report.md)
 - [Migration guide](docs/migration.md)
 - [Promotion kit](docs/promotion-kit.md)
 - [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)
