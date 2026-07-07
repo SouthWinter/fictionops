@@ -128,6 +128,8 @@ fictionops/
 - [Agent evaluation protocol](docs/agent-evaluation.md)
 - [Agent evaluation protocol, Chinese reference](docs/agent-evaluation.zh-CN.md)
 - [Agent evaluation demo report](docs/agent-evaluation-demo-report.md)
+- [Interview brief for agent research discussions](docs/interview-brief.md)
+- [Interview brief, Chinese reference](docs/interview-brief.zh-CN.md)
 - [Migration guide](docs/migration.md)
 - [Promotion kit](docs/promotion-kit.md)
 - [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)

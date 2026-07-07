@@ -19,6 +19,8 @@
 - 自主写作 agent；
 - 替你写完整本书的 AI。
 
+面试或研究实习交流时，可以先看 [面试备忘](interview-brief.zh-CN.md)。需要展示真实项目证据链时，看 [Dogfood 案例研究](dogfood-case-study.zh-CN.md)。
+
 ## 发布前检查
 
 大范围宣传前确认：

@@ -163,17 +163,18 @@ fictionops/
 12. 读 [后续完成路线](docs/roadmap.zh-CN.md)，理解 0.2、0.3、0.5 和 1.0 分别需要什么证据。
 13. 读 [真实长篇 adopt 迁移报告](docs/dogfood-legacy-adopt.zh-CN.md)，看 `adopt` 在百万字级旧项目上的分层结果和暴露的问题。
 14. 读 [Dogfood 案例研究](docs/dogfood-case-study.zh-CN.md)，看一个私有百万字级项目如何经过结构修复、读者体验修订和发布链路烟测。
-15. 读 [0.1.0 发布说明](docs/release-notes-0.1.0.zh-CN.md)，了解发布边界和已知限制。
-16. 读 [兼容性策略](docs/compatibility.zh-CN.md)，理解哪些 CLI 和 JSON 行为可以被脚本或 controller 依赖。
-17. 读 [已知限制](docs/known-limits.zh-CN.md)，理解哪些事情 FictionOps 当前不保证。
-18. 读 [PyPI 发布说明](docs/pypi-release.zh-CN.md)，了解 trusted publishing、凭据隔离和回滚记录。
-19. 读 [发布演练证据模板](docs/release-trial-evidence.zh-CN.md)，了解如何记录 GitHub Actions run、artifact、TestPyPI URL、安装烟测和最终结论；publish workflow 也会生成独立的 release trial evidence draft artifact，避免证据草稿混入 wheel/sdist 发布包。
-20. 读 [持续 dogfood 周期证据模板](docs/dogfood-cycle-evidence.zh-CN.md)，了解 1.0 前如何记录收口后的真实项目维护周期。
-21. 读 [稳定窗口证据模板](docs/stability-window-evidence.zh-CN.md)，了解 1.0 前如何记录兼容性窗口。
-22. 读 [1.0 剩余执行清单](docs/stable-core-remaining-checklist.zh-CN.md)，明确哪些工作已经只是维护，哪些必须等真实外部发布、dogfood 和稳定窗口证据。
-23. 然后复制 `templates/` 里的模板，建立自己的长篇项目，或读 [长篇大纲迁移案例](examples/long_novel_outline_migration_case_zh.md)，看一部复杂长篇如何从混乱材料变成可维护结构。
+15. 读 [面试备忘](docs/interview-brief.zh-CN.md)，看如何把项目讲成 agent research / workflow harness，而不是“AI 写小说”。
+16. 读 [0.1.0 发布说明](docs/release-notes-0.1.0.zh-CN.md)，了解发布边界和已知限制。
+17. 读 [兼容性策略](docs/compatibility.zh-CN.md)，理解哪些 CLI 和 JSON 行为可以被脚本或 controller 依赖。
+18. 读 [已知限制](docs/known-limits.zh-CN.md)，理解哪些事情 FictionOps 当前不保证。
+19. 读 [PyPI 发布说明](docs/pypi-release.zh-CN.md)，了解 trusted publishing、凭据隔离和回滚记录。
+20. 读 [发布演练证据模板](docs/release-trial-evidence.zh-CN.md)，了解如何记录 GitHub Actions run、artifact、TestPyPI URL、安装烟测和最终结论；publish workflow 也会生成独立的 release trial evidence draft artifact，避免证据草稿混入 wheel/sdist 发布包。
+21. 读 [持续 dogfood 周期证据模板](docs/dogfood-cycle-evidence.zh-CN.md)，了解 1.0 前如何记录收口后的真实项目维护周期。
+22. 读 [稳定窗口证据模板](docs/stability-window-evidence.zh-CN.md)，了解 1.0 前如何记录兼容性窗口。
+23. 读 [1.0 剩余执行清单](docs/stable-core-remaining-checklist.zh-CN.md)，明确哪些工作已经只是维护，哪些必须等真实外部发布、dogfood 和稳定窗口证据。
+24. 然后复制 `templates/` 里的模板，建立自己的长篇项目，或读 [长篇大纲迁移案例](examples/long_novel_outline_migration_case_zh.md)，看一部复杂长篇如何从混乱材料变成可维护结构。
 
-英文外部接手入口包括 [CLI guide](docs/cli.md)、[CLI contracts](docs/cli-contracts.md)、[Agent protocol](docs/agent-protocol.md)、[Agent connector contract](docs/agent-connector-contract.md)、[Agent integration guide](docs/agent-integration.md)、[Migration guide](docs/migration.md)、[Dogfood case study](docs/dogfood-case-study.md)、[Testing guide](docs/testing.md)、[Release guide](docs/release.md)、[Compatibility policy](docs/compatibility.md)、[Known limits](docs/known-limits.md)、[Milestone status](docs/milestone-status.md)、[Stable core remaining checklist](docs/stable-core-remaining-checklist.md)、[Stable core audit](docs/stable-core-audit.md)、[Demo tutorial](docs/tutorial-demo.md)、[Legacy migration example](examples/legacy_novel_source/README.md) 和 [Contributing](CONTRIBUTING.md)。
+英文外部接手入口包括 [CLI guide](docs/cli.md)、[CLI contracts](docs/cli-contracts.md)、[Agent protocol](docs/agent-protocol.md)、[Agent connector contract](docs/agent-connector-contract.md)、[Agent integration guide](docs/agent-integration.md)、[Migration guide](docs/migration.md)、[Dogfood case study](docs/dogfood-case-study.md)、[Interview brief](docs/interview-brief.md)、[Testing guide](docs/testing.md)、[Release guide](docs/release.md)、[Compatibility policy](docs/compatibility.md)、[Known limits](docs/known-limits.md)、[Milestone status](docs/milestone-status.md)、[Stable core remaining checklist](docs/stable-core-remaining-checklist.md)、[Stable core audit](docs/stable-core-audit.md)、[Demo tutorial](docs/tutorial-demo.md)、[Legacy migration example](examples/legacy_novel_source/README.md) 和 [Contributing](CONTRIBUTING.md)。
 
 参与开发前请读 [贡献指南](CONTRIBUTING.zh-CN.md) 或 [Contributing](CONTRIBUTING.md)，版本变化记录在 [CHANGELOG](CHANGELOG.md)，项目使用 [MIT License](LICENSE)。
 

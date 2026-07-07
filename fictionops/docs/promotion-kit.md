@@ -19,6 +19,8 @@ Avoid these descriptions:
 - "autonomous writing agent";
 - "AI that writes your book for you".
 
+For interviews or research discussions, use the shorter [Interview brief](interview-brief.md). For a redacted real-project evidence narrative, use the [Dogfood case study](dogfood-case-study.md).
+
 ## Readiness Checklist
 
 Before wide promotion:
