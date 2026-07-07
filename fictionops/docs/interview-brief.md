@@ -38,6 +38,8 @@ Public evidence:
 - [Dogfood case study](dogfood-case-study.md)
 - [Sustained dogfood cycle evidence](dogfood-cycle-evidence.md)
 - [Agent evaluation protocol](agent-evaluation.md)
+- [Research positioning](research-positioning.md)
+- [Evaluation plan](evaluation-plan.md)
 - [Agent workflow positioning](agent-workflow.md)
 
 ## Architecture Talking Points

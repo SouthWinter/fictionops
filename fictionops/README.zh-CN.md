@@ -1199,4 +1199,6 @@ FictionOps 的存在，是为了帮一部长篇记住自己，而不是逼它变
 - [可运行 demo 项目](examples/demo_novel/README.md)：一个微型 FictionOps 项目，可跑书纲同步、场景计划、写前 brief、上下文包和 doctor 报告。
 - [最小示例教程](docs/tutorial-demo.zh-CN.md)：按步骤演示如何运行 `examples/demo_novel/`。
 - [两分钟 Demo 台本](docs/two-minute-demo.zh-CN.md)：用于短录屏、现场演示或面试讲解。
+- [研究定位](docs/research-positioning.zh-CN.md)：说明 FictionOps 作为 long-horizon agent workflow harness 的研究贡献和边界。
+- [评估计划](docs/evaluation-plan.zh-CN.md)：把 agent 评估协议转成可执行实验路线、指标和证据标准。
 - [长篇大纲迁移案例（中文）](examples/long_novel_outline_migration_case_zh.md)：展示一部多卷长篇如何从混乱大纲、修订意见和设定碎片，迁移为可维护的 FictionOps 结构。
