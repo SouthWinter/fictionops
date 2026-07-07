@@ -15,12 +15,12 @@
 | 命令名和核心 JSON key 稳定 | `docs/cli-contracts.md`、`docs/compatibility.md`、CLI help 覆盖、JSON 解析测试、controller 指南。 | 本地较强 | 需要一段兼容性窗口，证明行为变化没有静默破坏契约。 |
 | 兼容性策略持续维护 | `docs/compatibility.md`、`docs/compatibility.zh-CN.md`、`CHANGELOG.md`、release notes、发布治理测试。 | 本地较强 | 后续行为变化仍必须同步更新这些记录。 |
 | 危险覆盖被稳定拒绝 | 回归测试覆盖 CLI 输出、暂存 agent 输出、包产物、项目脚手架等 no-overwrite 行为。 | 本地较强 | 新增写命令时继续补 no-overwrite 测试。 |
-| 发布门禁能发现缺失或过期产物 | `release-gate`、`audit-publish`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`，以及缺失、过期、损坏产物测试。 | 本地较强 | 包发布信心仍需要外部 release trial 证据。 |
-| Agent workflow 保持暂存和可审计 | `agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`examples/agent_controller_loop.py`、`docs/agent-connector-contract.md` 和 controller 测试。 | 本地较强 | 真实模型/controller 接入可以继续作为外部实验，但必须保留暂存输出和复核门禁。 |
-| 混乱旧项目迁移有持续真实项目证据 | `docs/dogfood-legacy-adopt.zh-CN.md` 已记录 0.2 收口，`docs/dogfood-cycle-evidence.zh-CN.md` 和 `audit-dogfood-cycle` 定义持续周期证据门禁。 | 部分证明 | 1.0 仍需要一份填实并通过 `audit-dogfood-cycle` 的收口后维护周期记录。 |
+| 发布门禁能发现缺失或过期产物 | `release-gate`、`audit-publish`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`，以及缺失、过期、损坏产物测试。 | 本地较强 | 每次发布尝试前继续使用这些门禁。 |
+| Agent workflow 保持暂存和可审计 | `agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`examples/agent_controller_loop.py`、`docs/agent-connector-contract.md` 和 controller 测试。 | 本地较强 | 真实模型/controller 接入可继续作为外部实验，但必须保留暂存输出和复核门禁。 |
+| 混乱旧项目迁移有持续真实项目证据 | `docs/dogfood-legacy-adopt.zh-CN.md` 已记录 0.2 收口，`docs/dogfood-cycle-evidence.md` 和 `audit-dogfood-cycle` 定义持续周期证据门禁。 | 部分证明 | 1.0 仍需要一份填实并通过 `audit-dogfood-cycle` 的收口后维护周期记录。 |
 | 恢复路径保持更新 | `docs/recovery.md`、`docs/recovery.zh-CN.md`、已知限制文档、兼容性策略、发布证据测试。 | 本地较强 | 任何会创建、修复、再生成或使持久状态失效的命令变化，都必须同步恢复文档。 |
-| 本地 checkout 之外存在包发布证据 | 本地 wheel/sdist 构建、built-wheel 干净 venv 烟测、CI/publish workflow、`docs/release-trial-evidence.md`、workflow 自动生成的证据草稿，以及用于检查填实外部记录的 `audit-release-evidence`。 | 外部未完成 | 需要真实 GitHub Actions run URL、如使用则 TestPyPI 记录、从外部 artifact 安装烟测，以及写入 release notes 的记录。 |
-| 行为经过时间稳定 | 里程碑账本、兼容性策略、release notes、回归测试、`docs/stability-window-evidence.zh-CN.md`、`audit-stability-window` 和 `audit-stable-core`。 | 目前无法证明 | 需要 accepted 稳定窗口记录，证明经过真实使用时间且没有未记录的破坏性变化。 |
+| 本地 checkout 之外存在包发布证据 | 本地 wheel/sdist 构建、CI/publish workflow、已 accepted 的 `docs/release-trial-evidence.md`、GitHub Actions run `28837872185`、TestPyPI `fictionops==0.1.0`、干净 venv 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 外部证据已完成 | 后续 release trial 继续记录真实 run URL、包 hash、安装烟测、reviewer 和 decision。 |
+| 行为经过时间稳定 | 里程碑账本、兼容性策略、release notes、回归测试、`docs/stability-window-evidence.md`、`audit-stability-window` 和 `audit-stable-core`。 | 目前无法证明 | 需要 accepted 稳定窗口记录，证明经过真实使用时间且没有未记录的破坏性变化。 |
 
 ## 当前本地结论
 
@@ -29,20 +29,18 @@
 - 0.1.0 pre-alpha MVP 本地完成。
 - 0.2 迁移 dogfood 本地完成。
 - 0.3 no-model controller 编排本地完成。
+- 0.4 发布演练已完成，并有 accepted 外部证据。
 - 0.5 文档接手本地完成。
-- 0.4 发布演练仓库侧已准备，但等待外部证据。
 - 1.0 稳定核心未完成。
 
 ## 1.0 阻塞项
 
 以下全部成立前，不要标记 1.0 完成：
 
-1. `docs/release-trial-evidence.md` 已填入真实 GitHub Actions 和包安装证据。
-2. 本地 checkout 之外存在包发布证据。
-3. 0.2 迁移收口之后，至少记录一轮持续真实项目 dogfood，并通过 `audit-dogfood-cycle`。
-4. 兼容性敏感行为在该周期内保持稳定，或每个破坏性变化都有明确迁移路径，并记录在 `docs/stability-window-evidence.zh-CN.md`，且通过 `audit-stability-window`。
-5. 对所有会创建、修复、再生成、发布或使持久项目状态失效的命令，恢复文档仍保持同步。
-6. `fictionops audit-stable-core .` 返回 `ready=true`。
+1. 0.2 迁移收口之后，至少记录一轮持续真实项目 dogfood，并通过 `audit-dogfood-cycle`。
+2. 兼容性敏感行为在该周期内保持稳定，或每个破坏性变化都有明确迁移路径，并记录在 `docs/stability-window-evidence.md`，且通过 `audit-stability-window`。
+3. 对所有会创建、修复、再生成、发布或使持久项目状态失效的命令，恢复文档仍保持同步。
+4. `fictionops audit-stable-core .` 返回 `ready=true`。
 
 ## 行动项契约
 
