@@ -67,11 +67,11 @@ Copy this section for each sustained cycle.
 
 ### Summary
 
-- What stayed stable: To be recorded after the cycle closes.
+- What stayed stable: 2026-07-07 checkpoint passed the staging boundary and migration-readiness checks: `adopt-review` returned `ready=true` with `blocking_issue_count=0`, and `eval-agent` returned `pass` with the controller stopping at the human-review boundary.
 - What changed: `eval-agent` was added before the cycle opened; watch whether it affects existing agent workflow contracts.
 - Regression tests added: `test_eval_agent_generates_reproducible_agent_harness_report` plus CLI, package, and CI smoke coverage for `eval-agent`.
 - Docs updated: Agent evaluation protocol, CLI guides, command contracts, testing guide, README, and promotion kit mention `eval-agent`.
-- Follow-up: Rerun `audit-dogfood-cycle` on or after 2026-07-14, then update final status, decision, reviewer, and any compatibility/recovery notes from the real maintenance window.
+- Follow-up: Day-one private-sandbox checkpoint files were written under `07_audits/dogfood_cycle/2026-07-07/` in the local migrated novel sandbox. Rerun the same command family on or after 2026-07-14, then update final status, decision, reviewer, and any compatibility/recovery notes from the real maintenance window.
 
 ## Acceptance Decision
 
