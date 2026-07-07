@@ -123,6 +123,8 @@ fictionops/
 - [Agent workflow positioning](docs/agent-workflow.md)
 - [Agent workflow positioning, Chinese reference](docs/agent-workflow.zh-CN.md)
 - [Migration guide](docs/migration.md)
+- [Promotion kit](docs/promotion-kit.md)
+- [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)
 - [Demo tutorial](docs/tutorial-demo.md)
 - [Testing guide](docs/testing.md)
 - [Release guide](docs/release.md)
