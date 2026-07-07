@@ -1041,6 +1041,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "CONTRIBUTING.zh-CN.md",
             "docs/getting-started.md",
             "docs/getting-started.zh-CN.md",
+            "docs/assets/quickstart-terminal.svg",
             "docs/cli.md",
             "docs/cli-contracts.md",
             "docs/agent-protocol.md",

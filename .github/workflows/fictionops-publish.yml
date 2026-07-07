@@ -164,6 +164,7 @@ jobs:
               "src/fictionops/templates/project.yml",
               "docs/getting-started.md",
               "docs/getting-started.zh-CN.md",
+              "docs/assets/quickstart-terminal.svg",
               "docs/cli.md",
               "docs/cli-contracts.md",
               "docs/agent-protocol.md",

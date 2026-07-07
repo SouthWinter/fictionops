@@ -20,6 +20,8 @@ Use it when you need to:
 
 ## 30 Second Quick Start
 
+![FictionOps quickstart terminal preview](fictionops/docs/assets/quickstart-terminal.svg)
+
 Install from the GitHub source checkout today:
 
 ```bash
