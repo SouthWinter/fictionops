@@ -45,6 +45,7 @@ CLI_COMMANDS = [
     "audit-characters",
     "agent-prompt",
     "agent-connect",
+    "eval-agent",
     "agent-smoke",
     "agent-run",
     "agent-exec",
@@ -74,6 +75,7 @@ CLI_COMMANDS = [
 from fictionops.core import (  # noqa: E402
     build_agent_exec,
     build_agent_connect,
+    build_agent_evaluation,
     build_agent_inbox,
     build_agent_next,
     build_agent_prompt,
@@ -1142,6 +1144,7 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("Install built wheel smoke", workflow_text)
             self.assertIn("python -m pip install --no-deps dist/fictionops-*.whl", workflow_text)
             self.assertIn("fictionops doctor", workflow_text)
+            self.assertIn("fictionops eval-agent --help", workflow_text)
             self.assertIn("fictionops agent-smoke --help", workflow_text)
             self.assertIn("fictionops audit-agent-workflow --help", workflow_text)
             self.assertIn("fictionops audit-release-evidence --help", workflow_text)
@@ -1733,6 +1736,16 @@ class FictionOpsCliTests(unittest.TestCase):
             )
             self.assertIn("agent-connect", agent_connect_help.stdout)
 
+            eval_agent_help = subprocess.run(
+                [str(fictionops_script), "eval-agent", "--help"],
+                env=env,
+                text=True,
+                encoding="utf-8",
+                capture_output=True,
+                check=True,
+            )
+            self.assertIn("eval-agent", eval_agent_help.stdout)
+
             agent_smoke_help = subprocess.run(
                 [str(fictionops_script), "agent-smoke", "--help"],
                 env=env,
@@ -1853,6 +1866,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/__main__.py",
             "src/fictionops/cli.py",
             "src/fictionops/agent_connect.py",
+            "src/fictionops/agent_evaluation.py",
             "src/fictionops/agent_exec.py",
             "src/fictionops/agent_run.py",
             "src/fictionops/agent_inbox.py",
@@ -5372,6 +5386,38 @@ class FictionOpsCliTests(unittest.TestCase):
             controller_data = json.loads(controller.stdout)
             self.assertEqual(controller_data["selected_command"], data["selected_command"])
             self.assertEqual(controller_data["candidates"][0]["requires_human_review"], True)
+
+    def test_eval_agent_generates_reproducible_agent_harness_report(self) -> None:
+        fixture = ROOT / "examples" / "demo_novel"
+        report = build_agent_evaluation(fixture, chapter="002")
+        self.assertEqual(report.status, "pass")
+        self.assertTrue(report.ready)
+        self.assertEqual(report.runner, "echo")
+        self.assertIn("T1", report.task_ids)
+        self.assertEqual(report.observations["agent_inbox_ready_count"], 1)
+        self.assertEqual(report.observations["controller_stop_reason"], "human_review_boundary")
+        self.assertTrue(str(report.fixture_copy).endswith("(deleted after run)"))
+        metric_names = {item.name for item in report.metrics}
+        self.assertIn("staged_output_rate", metric_names)
+        self.assertIn("controller_step_validity", metric_names)
+
+        cli = self.run_cli("eval-agent", str(fixture), "--chapter", "002", "--format", "json")
+        data = json.loads(cli.stdout)
+        self.assertEqual(data["status"], "pass")
+        self.assertTrue(data["ready"])
+        self.assertEqual(data["observations"]["controller_stop_reason"], "human_review_boundary")
+        self.assertIn("<temporary fixture copy>", data["commands"][0])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "eval.md"
+            written = self.run_cli("eval-agent", str(fixture), "--chapter", "002", "--out", str(out))
+            self.assertIn("Wrote FictionOps agent evaluation report", written.stdout)
+            self.assertTrue(out.exists())
+            self.assertIn("# FictionOps Agent Evaluation Report", out.read_text(encoding="utf-8"))
+
+            failed = self.run_cli("eval-agent", str(fixture), "--chapter", "002", "--out", str(out), check=False)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn("Use --force to overwrite", failed.stderr)
 
     def test_agent_workflow_audit_checks_agent_boundaries(self) -> None:
         package_report = build_agent_workflow_audit(ROOT, level="controller")

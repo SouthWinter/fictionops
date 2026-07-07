@@ -23,6 +23,14 @@ This report does **not** claim literary quality improvement or model superiority
 
 The fixture was copied to a temporary directory first, so the tracked demo project was not modified.
 
+Newer checkouts can generate the same narrow harness smoke shape with:
+
+```bash
+fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out fictionops/docs/agent-evaluation-smoke.md
+```
+
+The explicit commands below are retained to show the underlying chain.
+
 ```bash
 REPO=/path/to/fictionops-release-checkout
 python "$REPO/fictionops/src/fictionops/cli.py" plan-chapter . --chapter 002 --force

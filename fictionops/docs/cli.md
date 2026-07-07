@@ -99,6 +99,7 @@ fictionops model-config my-novel --provider local --planning-model planner --dra
 fictionops context-pack my-novel --task draft --book book_01 --chapter 001
 fictionops agent-prompt my-novel --role draft-writer --book book_01 --chapter 001
 fictionops agent-connect my-novel --name local-runner --mode runner
+fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out agent-evaluation-smoke.md
 fictionops agent-smoke my-novel --connector local-runner
 fictionops agent-run my-novel --role draft-writer --book book_01 --chapter 001 --out-dir 00_management/agent_runs/ch_001
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python fictionops/examples/agent_runner_echo.py
@@ -108,7 +109,7 @@ fictionops agent-next my-novel --book book_01 --chapter 001 --format json
 fictionops audit-agent-workflow my-novel --level runner --connector local-runner
 ```
 
-FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, and preflight audits before agent integration. It does not store API keys, call models on its own, or apply model output to the manuscript automatically. The OpenAI command above is an external runner dry run; real model calls still go through `agent-exec` and produce staged output. See [agent-protocol.md](agent-protocol.md) and [agent-integration.md](agent-integration.md).
+FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, reproducible harness smoke reports, and preflight audits before agent integration. It does not store API keys, call models on its own, or apply model output to the manuscript automatically. `eval-agent` runs on a temporary fixture copy and uses an internal no-network runner; real model calls still go through `agent-exec` and produce staged output. See [agent-protocol.md](agent-protocol.md), [agent-integration.md](agent-integration.md), and [agent-evaluation.md](agent-evaluation.md).
 
 ### Book And Release Gates
 

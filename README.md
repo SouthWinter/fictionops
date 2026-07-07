@@ -103,7 +103,7 @@ fictionops/
 
 ## Roadmap
 
-The current package is a 0.1.1 pre-alpha onboarding and packaging candidate with 50 CLI commands and 128 regression tests. Near-term work focuses on:
+The current package is a 0.1.1 pre-alpha onboarding and packaging candidate with 51 CLI commands and 129 regression tests. Near-term work focuses on:
 
 - formal PyPI release;
 - clearer demo media and short tutorials;
@@ -116,7 +116,7 @@ See the full [roadmap](fictionops/docs/roadmap.md) and [milestone status](fictio
 
 ## Research Framing
 
-FictionOps can also be treated as a local-first evaluation harness for long-horizon writing agents: persistent workspace state, scoped context construction, staged model outputs, human review gates, continuity audits, and controller-loop traces. See the [agent evaluation protocol](fictionops/docs/agent-evaluation.md) for baseline conditions, benchmark tasks, and metrics, and the [demo report](fictionops/docs/agent-evaluation-demo-report.md) for a first reproducible evidence record.
+FictionOps can also be treated as a local-first evaluation harness for long-horizon writing agents: persistent workspace state, scoped context construction, staged model outputs, human review gates, continuity audits, and controller-loop traces. `fictionops eval-agent` can generate a no-network smoke report for that harness on a temporary fixture copy. See the [agent evaluation protocol](fictionops/docs/agent-evaluation.md) for baseline conditions, benchmark tasks, and metrics, and the [demo report](fictionops/docs/agent-evaluation-demo-report.md) for a first reproducible evidence record.
 
 ## Contributing
 

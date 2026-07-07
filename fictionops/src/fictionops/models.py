@@ -1522,6 +1522,33 @@ class AgentNextReport:
 
 
 @dataclass
+class AgentEvaluationMetric:
+    name: str
+    value: str
+    evidence: str
+
+
+@dataclass
+class AgentEvaluationReport:
+    target: str
+    fixture_source: str
+    fixture_copy: str
+    book: str
+    chapter: str
+    runner: str
+    status: str
+    ready: bool
+    task_ids: list[str]
+    commands: list[str]
+    metrics: list[AgentEvaluationMetric]
+    observations: dict[str, object]
+    output_file: str | None
+    dry_run: bool
+    written: bool
+    next_actions: list[str]
+
+
+@dataclass
 class AgentWorkflowIssue:
     severity: str
     code: str

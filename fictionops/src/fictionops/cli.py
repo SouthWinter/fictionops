@@ -1071,6 +1071,53 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Default: markdown.",
     )
 
+    eval_agent_parser = subparsers.add_parser(
+        "eval-agent",
+        help="Run a reproducible no-network agent workflow evaluation on a temporary project copy.",
+    )
+    eval_agent_parser.add_argument(
+        "path",
+        nargs="?",
+        default=".",
+        help="Target FictionOps project fixture to evaluate. Default: current directory.",
+    )
+    eval_agent_parser.add_argument(
+        "--book",
+        default="book_01",
+        help="Book id or directory under 06_drafts. Default: book_01.",
+    )
+    eval_agent_parser.add_argument(
+        "--chapter",
+        default="002",
+        help="Chapter number to evaluate. Default: 002.",
+    )
+    eval_agent_parser.add_argument(
+        "--runner",
+        choices=["echo", "openai-chat-dry-run"],
+        default="echo",
+        help="No-network runner mode to use. Default: echo.",
+    )
+    eval_agent_parser.add_argument(
+        "--out",
+        help="Write the Markdown or JSON evaluation report to this path. Defaults to stdout.",
+    )
+    eval_agent_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --out if it already exists.",
+    )
+    eval_agent_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Plan the evaluation without executing the internal runner or writing --out.",
+    )
+    eval_agent_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format. Default: markdown.",
+    )
+
     agent_smoke_parser = subparsers.add_parser(
         "agent-smoke",
         help="Run a no-network connector smoke test through agent-run, agent-exec, and agent-inbox.",
@@ -2984,6 +3031,32 @@ def handle_agent_connect(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_eval_agent(args: argparse.Namespace) -> int:
+    target = Path(args.path)
+    try:
+        report = build_agent_evaluation(
+            target,
+            book=args.book,
+            chapter=args.chapter,
+            runner=args.runner,
+            out=args.out,
+            output_format=args.format,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+    except FileExistsError as exc:
+        print(f"fictionops: eval-agent failed: {exc}. Use --force to overwrite.", file=sys.stderr)
+        return 1
+    except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
+        print(f"fictionops: eval-agent failed: {exc}", file=sys.stderr)
+        return 1
+
+    if report.written and args.format != "json":
+        print(f"Wrote FictionOps agent evaluation report to: {report.output_file}")
+    print(render_agent_evaluation(report, args.format))
+    return 0
+
+
 def handle_agent_smoke(args: argparse.Namespace) -> int:
     target = Path(args.path)
     try:
@@ -3628,6 +3701,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_agent_prompt(args)
     if args.command == "agent-connect":
         return handle_agent_connect(args)
+    if args.command == "eval-agent":
+        return handle_eval_agent(args)
     if args.command == "agent-smoke":
         return handle_agent_smoke(args)
     if args.command == "agent-run":

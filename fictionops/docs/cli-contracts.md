@@ -19,7 +19,7 @@ All FictionOps commands follow these rules:
 
 ## Command Groups
 
-The current CLI exposes 50 MVP commands:
+The current CLI exposes 51 MVP commands:
 
 | Group | Commands | Contract Summary |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ The current CLI exposes 50 MVP commands:
 | Chapter planning | `plan-chapter`, `scene-plan`, `draft-brief` | Turn book-outline material into chapter engines, scene plans, and task briefs without writing prose. |
 | Draft closure | `post-draft`, `review-gate`, `book-gate`, `retrospective` | Check whether draft, chapter, and book memory are ready for the next step. |
 | Audits | `audit-plan`, `stats`, `scan-words`, `check-tables`, `audit-wave`, `audit-style`, `audit-continuity`, `audit-echoes`, `audit-info`, `audit-characters` | Report structure, prose-pattern, continuity, information, echo, and character-memory issues. |
-| Agent workflow | `model-config`, `context-pack`, `agent-prompt`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, `workflow-plan`, `revision-plan` | Scope context, create connector handshakes, run no-network connector smoke tests, package tasks, run external runners, inspect staged outputs, audit agent-integration readiness, and select safe next steps. |
+| Agent workflow | `model-config`, `context-pack`, `agent-prompt`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, `workflow-plan`, `revision-plan` | Scope context, create connector handshakes, run no-network harness evaluations and connector smoke tests, package tasks, run external runners, inspect staged outputs, audit agent-integration readiness, and select safe next steps. |
 | Publishing | `export-clean`, `audit-publish`, `publish-copy`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, `release-gate` | Generate and audit clean manuscript, metadata, manifest, EPUB, and final release readiness. |
 | Package release governance | `audit-release-evidence`, `audit-dogfood-cycle`, `audit-stability-window`, `audit-stable-core` | Audit FictionOps package release-trial, sustained dogfood-cycle, stability-window, and aggregate stable-core evidence so empty templates, too-short evidence windows, or unfinished drafts cannot close release or 1.0 milestones; stable-core JSON also exposes structured `action_items` for the remaining evidence lanes. |
 | Reporting | `doctor`, `report` | Aggregate project health into human-readable or machine-readable reports. |
@@ -43,6 +43,7 @@ The current CLI exposes 50 MVP commands:
 | `plan-chapter` | Yes | It fills a chapter engine from an outline while preserving existing fields unless forced. |
 | `scene-plan`, `draft-brief`, `workflow-plan`, `revision-plan`, `publish-copy` | No | They write only when `--out` is passed. |
 | `agent-connect` | Yes | It writes a connector handshake kit with a manifest, environment example, smoke commands, and adapter stub. It does not call a model or store credentials. |
+| `eval-agent` | Optional | It copies a project fixture to a temporary directory, runs a no-network evaluation chain, and writes a report only when `--out` is passed. It does not modify the source fixture or call a provider. |
 | `agent-smoke` | Yes | It writes a smoke task bundle, runs the connector adapter through `agent-exec`, and leaves staged output for `agent-inbox`; it does not apply output to manuscript or canon. |
 | `agent-run` | Optional | It can write a task bundle to `--out-dir`, but it does not call a model. |
 | `agent-exec` | Yes | It runs an external command for an existing task bundle and saves stdout as staged output. It does not apply that output. |
@@ -57,6 +58,7 @@ FictionOps treats agent output as staged evidence, not as authority.
 - `context-pack` scopes the files that an agent may read.
 - `agent-prompt` defines role, task, limits, and output contract.
 - `agent-connect` writes a connector manifest, environment example, smoke commands, and adapter stub for long-lived external integrations.
+- `eval-agent` runs a reproducible T1-T5 harness smoke on a temporary copy and reports whether staged output, inbox review, and controller stop behavior remain intact.
 - `agent-smoke` proves the connector staging boundary by chaining `audit-agent-workflow`, `agent-run`, `agent-exec`, and `agent-inbox` with the no-network adapter.
 - `agent-smoke --force` may overwrite only the current smoke run's own bundle/output; unrelated staged agent outputs still stop the smoke chain.
 - `agent-run` packages the prompt, request metadata, context pack, and optional draft brief.

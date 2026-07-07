@@ -81,6 +81,7 @@ jobs:
               "fictionops/adopt.py",
               "fictionops/adopt_plan.py",
               "fictionops/adopt_review.py",
+              "fictionops/agent_evaluation.py",
               "fictionops/agent_exec.py",
               "fictionops/agent_connect.py",
               "fictionops/agent_inbox.py",
@@ -114,6 +115,7 @@ jobs:
           fictionops --version
           python -m fictionops --version
           fictionops agent-connect --help >/tmp/fictionops-agent-connect-help.txt
+          fictionops eval-agent --help >/tmp/fictionops-eval-agent-help.txt
           fictionops agent-smoke --help >/tmp/fictionops-agent-smoke-help.txt
           fictionops agent-next --help >/tmp/fictionops-agent-next-help.txt
           fictionops audit-agent-workflow --help >/tmp/fictionops-audit-agent-workflow-help.txt
@@ -148,6 +150,7 @@ jobs:
               "src/fictionops/__main__.py",
               "src/fictionops/cli.py",
               "src/fictionops/agent_connect.py",
+              "src/fictionops/agent_evaluation.py",
               "src/fictionops/agent_exec.py",
               "src/fictionops/agent_run.py",
               "src/fictionops/agent_inbox.py",

@@ -1074,6 +1074,24 @@ fictionops agent-prompt my-novel --role publisher --out 00_management/publisher_
 
 `agent-prompt` 不调用模型，只生成可交给模型或人类协作者使用的提示词。启用 `--include-context` 时，它会把 `context-pack` 的结果附在提示词后面；若同时启用 `--include-context-content`，可用 `--max-chars-per-file` 和 `--max-total-chars` 控制上下文体量。
 
+## 15.4.1 `fictionops eval-agent`
+
+在临时 fixture 副本上跑一条无网络 Agent harness 评估链。它验证任务包、暂存输出、收件箱复核边界和 controller 下一步停止行为，不调用真实模型供应商，也不修改源项目。
+
+```bash
+fictionops eval-agent examples/demo_novel --chapter 002 --out docs/agent-evaluation-smoke.md
+```
+
+常用写法：
+
+```bash
+fictionops eval-agent examples/demo_novel --chapter 002 --format json
+fictionops eval-agent examples/demo_novel --chapter 002 --runner openai-chat-dry-run --out docs/agent-evaluation-smoke.md --force
+fictionops eval-agent examples/demo_novel --chapter 002 --dry-run
+```
+
+报告会列出 T1-T5 任务链、实际运行的 FictionOps 命令、暂存输出指标、`doctor` 状态、`agent-next` 是否停在人类复核边界，以及下一步建议。它衡量的是 workflow harness 是否可审计、可复核、可恢复，不判断小说文本质量。
+
 ## 15.5 `fictionops agent-run`
 
 准备一个可交给人或外部模型 runner 的 Agent 任务包。

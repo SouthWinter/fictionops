@@ -80,6 +80,14 @@ Do not use these metrics as a proxy for artistic quality. They measure workflow 
 From a source checkout:
 
 ```bash
+fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out fictionops/docs/agent-evaluation-smoke.md
+```
+
+`eval-agent` copies the fixture to a temporary directory, runs the T1-T5 no-network harness chain, and reports staged-output, inbox, doctor, and controller-stop observations without modifying the source fixture.
+
+To inspect the individual steps manually:
+
+```bash
 cd fictionops/examples/demo_novel
 fictionops plan-chapter . --chapter 002 --force
 fictionops scene-plan . --chapter 002

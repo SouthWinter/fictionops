@@ -182,7 +182,7 @@ fictionops/
 
 ### CLI 快速开始
 
-当前 CLI 实现了五十个最小 MVP 命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`audit-agent-workflow`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
+当前 CLI 实现了五十一个最小 MVP 命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`eval-agent`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`audit-agent-workflow`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
 
 在仓库根目录运行：
 
@@ -211,6 +211,7 @@ python fictionops/src/fictionops/cli.py audit-info my-novel
 python fictionops/src/fictionops/cli.py audit-characters my-novel
 python fictionops/src/fictionops/cli.py agent-prompt my-novel --role draft-writer --chapter 001
 python fictionops/src/fictionops/cli.py agent-connect my-novel --name local-runner --mode runner
+python fictionops/src/fictionops/cli.py eval-agent examples/demo_novel --chapter 002 --out docs/agent-evaluation-smoke.md
 python fictionops/src/fictionops/cli.py agent-smoke my-novel --connector local-runner
 python fictionops/src/fictionops/cli.py agent-run my-novel --role draft-writer --chapter 001 --out-dir 00_management/agent_runs/ch_001
 python fictionops/src/fictionops/cli.py agent-exec my-novel/00_management/agent_runs/ch_001 --runner python run_model.py
@@ -272,6 +273,7 @@ fictionops audit-info my-novel
 fictionops audit-characters my-novel
 fictionops agent-prompt my-novel --role draft-writer --chapter 001
 fictionops agent-connect my-novel --name local-runner --mode runner
+fictionops eval-agent examples/demo_novel --chapter 002 --out docs/agent-evaluation-smoke.md
 fictionops agent-smoke my-novel --connector local-runner
 fictionops agent-run my-novel --role draft-writer --chapter 001 --out-dir 00_management/agent_runs/ch_001
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python run_model.py
@@ -354,6 +356,7 @@ fictionops agent-prompt my-novel --role draft-writer --chapter 001
 fictionops agent-prompt my-novel --role info-boundary-auditor --task review --chapter 002 --include-context --include-context-content --max-total-chars 24000
 fictionops agent-prompt my-novel --role publisher --out 00_management/publisher_prompt.md
 fictionops agent-connect my-novel --name local-runner --mode runner
+fictionops eval-agent examples/demo_novel --chapter 002 --out docs/agent-evaluation-smoke.md
 fictionops agent-smoke my-novel --connector local-runner
 fictionops agent-run my-novel --role draft-writer --chapter 001 --out-dir 00_management/agent_runs/ch_001
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python run_model.py

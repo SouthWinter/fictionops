@@ -40,6 +40,7 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "audit-characters",
     "agent-prompt",
     "agent-connect",
+    "eval-agent",
     "agent-smoke",
     "agent-run",
     "agent-exec",

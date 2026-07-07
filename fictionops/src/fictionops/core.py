@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .agent_exec import *
 from .agent_connect import *
+from .agent_evaluation import *
 from .agent_inbox import *
 from .agent_next import *
 from .agent_prompt import *

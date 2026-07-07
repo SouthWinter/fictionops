@@ -42,6 +42,7 @@
 | `audit-characters` | 人物弧线审计 | 否 | 是 | 不适用 |
 | `agent-prompt` | Agent 角色提示词 | 可选 | 是 | 否 |
 | `agent-connect` | Agent 接入套件 | 是 | 是 | 否 |
+| `eval-agent` | Agent harness 评估 | 可选 | 是 | 否 |
 | `agent-smoke` | Agent 接入烟测 | 是 | 是 | 是 |
 | `agent-run` | Agent 任务包 | 可选 | 是 | 否 |
 | `agent-exec` | Agent 外部执行桥 | 否 | 是 | 是 |
@@ -620,6 +621,35 @@
 - 目标路径不存在或不是目录。
 - `--name` 规范化后为空。
 - 输出文件已存在且未传 `--force`。
+
+### `fictionops eval-agent`
+
+**用途**：在临时项目副本上跑一条无网络 Agent workflow 评估链，验证任务包、暂存输出、收件箱复核边界和 controller 下一步选择是否闭合。
+
+**输入**
+
+- `path`：目标 FictionOps 项目 fixture，默认当前目录。命令会复制到临时目录，不修改源 fixture。
+- `--book`：书 id，默认 `book_01`。
+- `--chapter`：章节号，默认 `002`。
+- `--runner echo|openai-chat-dry-run`：内置无网络 runner，默认 `echo`。
+- `--out`：写出 Markdown 或 JSON 评估报告；未传时只输出到 stdout。
+- `--force`：允许覆盖已有 `--out`。
+- `--dry-run`：只规划评估，不执行内置 runner，不写 `--out`。
+- `--format markdown|json`：输出格式，默认 `markdown`。
+
+**输出**
+
+- 复制 fixture 到临时目录，运行 `agent-run`、`agent-exec`、`agent-inbox`、`doctor` 和 `agent-next`。
+- 报告包含 `status`、`ready`、任务 ID、命令轨迹、指标、观察项和下一步建议。
+- 当前内置指标包括 `staged_output_rate`、`direct_write_violations`、`review_boundary_recall`、`doctor_blocking_delta`、`task_trace_completeness`、`recovery_cost` 和 `controller_step_validity`。
+- 命令不调用真实模型供应商，不保存密钥，不修改源 fixture，不应用暂存输出到正文或正史。
+
+**失败条件**
+
+- `path` 不存在或不是目录。
+- `--runner` 不是支持的无网络 runner。
+- `--out` 已存在且未传 `--force`。
+- 底层任务包、执行桥、收件箱或下一步选择遇到文件系统异常。
 
 ### `fictionops agent-smoke`
 
@@ -1241,7 +1271,7 @@ Failure:
 
 ## 7. 帮助文案契约
 
-- 根命令 `fictionops --help` 必须列出全部 50 个 MVP 命令。
+- 根命令 `fictionops --help` 必须列出全部 51 个 MVP 命令。
 - 每个子命令必须支持 `fictionops <command> --help`。
 - 帮助文案应说明默认值、是否写文件、是否覆盖、路径如何解析。
 

@@ -38,7 +38,7 @@ fictionops/tests/test_cli.py
 | --- | --- |
 | `init` | 创建标准目录和文件；默认不覆盖；`force=True` 覆盖 |
 | CLI 入口 | `--version`、`init` 子进程调用 |
-| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 50 个命令 |
+| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 51 个命令 |
 | `adopt` | 只读扫描既有写作目录；分层映射旧文件；输出迁移阶段和建议目标路径；JSON/Markdown 输出；写报告默认不覆盖；忽略工具目录 |
 | `new-book` | 创建书纲、书稿目录和书级复盘；书号标准化；默认不覆盖 |
 | `new-chapter` | 创建正文、章节发动机和逐章复盘；章节号标准化；默认不覆盖 |
@@ -61,6 +61,7 @@ fictionops/tests/test_cli.py
 | `audit-characters` | 人物索引、人物弧线、智慧模式和口吻资料覆盖；JSON 输出 |
 | `agent-prompt` | 生成角色提示词；可附带受预算限制的 context-pack；JSON 输出；写出 Markdown 且默认不覆盖 |
 | `agent-connect` | 生成外部 Agent 接入套件；写出 manifest、环境变量样例、烟测命令和 adapter stub；不调用模型、不保存密钥 |
+| `eval-agent` | 在临时 fixture 副本上跑无网络 Agent harness 评估；验证暂存输出、收件箱复核边界和 controller 停止行为 |
 | `agent-smoke` | 串联 workflow audit、agent-run、agent-exec 和 agent-inbox；用 no-network adapter 证明接入边界；不应用暂存输出 |
 | `agent-run` | 准备 prepare-only Agent 任务包；写出 request/prompt/context/brief；JSON 输出；默认不覆盖；不调用模型 |
 | `agent-exec` | 执行外部 runner；把 stdout 写成暂存输出；写出执行回执；JSON 输出；默认不覆盖；不自动应用 |

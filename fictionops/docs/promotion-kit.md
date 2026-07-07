@@ -82,7 +82,7 @@ Highlights:
 - staged AI/API runner integration without direct manuscript or canon writes;
 - OpenAI-compatible Chat Completions runner example for providers such as DeepSeek, Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Doubao/Ark, SiliconFlow, OpenAI-compatible local servers, and OpenAI Chat Completions;
 - clean Markdown, metadata, manifest, and EPUB export;
-- 128 regression tests and GitHub Actions CI.
+- 129 regression tests and GitHub Actions CI.
 
 Install from GitHub for now:
 
@@ -116,7 +116,7 @@ It is not an automatic novel generator. The goal is to help a writer keep a larg
 
 One thing I wanted to avoid is giving a model direct write access to manuscript/canon. FictionOps prepares scoped task bundles and stores runner output as staged text, then `agent-inbox` and review gates keep human review in the loop.
 
-It currently includes 50 CLI commands, a demo project, migration helpers for old writing folders, OpenAI-compatible runner examples, EPUB export, and 128 regression tests.
+It currently includes 51 CLI commands, a demo project, migration helpers for old writing folders, OpenAI-compatible runner examples, EPUB export, and 129 regression tests.
 
 I would especially appreciate feedback on the CLI shape, README, and whether the "staged AI runner" boundary is clear.
 ```
