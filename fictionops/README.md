@@ -159,6 +159,8 @@ fictionops/
 - [Stable core audit](docs/stable-core-audit.md)
 - [Stable core audit, Chinese reference](docs/stable-core-audit.zh-CN.md)
 - [End-to-end migration and publishing case](docs/end-to-end-migration-publish.md)
+- [Dogfood case study: maintaining a million-character novel](docs/dogfood-case-study.md)
+- [Dogfood case study, Chinese reference](docs/dogfood-case-study.zh-CN.md)
 - [Real-project adopt dogfood report](docs/dogfood-legacy-adopt.zh-CN.md)
 - [Sustained dogfood cycle evidence](docs/dogfood-cycle-evidence.md)
 - [Sustained dogfood cycle evidence, Chinese reference](docs/dogfood-cycle-evidence.zh-CN.md)
