@@ -2911,19 +2911,54 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertNotEqual(failed.returncode, 0)
             self.assertIn("Use --force to overwrite", failed.stderr)
 
-    def test_release_evidence_audit_reports_template_as_incomplete(self) -> None:
+    def test_release_evidence_audit_reports_default_record_as_accepted(self) -> None:
         report = build_release_evidence_audit(ROOT)
-        self.assertEqual(report.status, "incomplete")
-        self.assertFalse(report.ready)
-        self.assertIn("GitHub Actions run URL", report.missing_required_fields)
-        self.assertIn("Reviewer", report.missing_required_fields)
-        self.assertGreater(report.blocking_issue_count, 0)
+        self.assertEqual(report.status, "accepted")
+        self.assertTrue(report.ready)
+        self.assertEqual(report.missing_required_fields, [])
+        self.assertEqual(report.blocking_issue_count, 0)
 
         result = self.run_cli("audit-release-evidence", str(ROOT), "--format", "json")
         data = json.loads(result.stdout)
-        self.assertEqual(data["status"], "incomplete")
-        self.assertEqual(data["ready"], False)
-        self.assertIn("missing_required_evidence", {issue["code"] for issue in data["issues"]})
+        self.assertEqual(data["status"], "accepted")
+        self.assertEqual(data["ready"], True)
+        self.assertEqual(data["blocking_issue_count"], 0)
+
+    def test_release_evidence_audit_reports_template_as_incomplete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            evidence = target / "release-trial-evidence-template.md"
+            evidence.write_text(
+                "\n".join(
+                    [
+                        "# Release Trial Evidence",
+                        "",
+                        "- Date:",
+                        "- Version:",
+                        "- Commit / ref / tag:",
+                        "- Decision: accepted / deferred / failed",
+                        "- Reviewer:",
+                        "- GitHub Actions run URL:",
+                        "- GitHub Actions run ID:",
+                        "- Wheel filename:",
+                        "- Wheel SHA256:",
+                        "- sdist filename:",
+                        "- sdist SHA256:",
+                        "- Built-wheel smoke result:",
+                        "- TestPyPI used: yes / no",
+                        "- fictionops --version result:",
+                        "- python -m fictionops --version result:",
+                        "- fictionops init smoke result:",
+                        "- fictionops doctor smoke result:",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            result = self.run_cli("audit-release-evidence", str(target), "--file", str(evidence), "--format", "json")
+            data = json.loads(result.stdout)
+            self.assertEqual(data["status"], "incomplete")
+            self.assertEqual(data["ready"], False)
+            self.assertIn("missing_required_evidence", {issue["code"] for issue in data["issues"]})
 
     def test_release_evidence_audit_accepts_filled_external_record(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -3804,12 +3839,12 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertFalse(report.ready)
         self.assertTrue(report.local_foundation_ready)
         codes = {item.code for item in report.issues}
-        self.assertIn("release_evidence_not_ready", codes)
+        self.assertNotIn("release_evidence_not_ready", codes)
         self.assertIn("dogfood_cycle_not_ready", codes)
         self.assertIn("stability_window_not_accepted", codes)
         actions = {item.item_id: item for item in report.action_items}
         self.assertEqual(actions["local-foundation"].status, "complete")
-        self.assertEqual(actions["release-trial-evidence"].status, "external_required")
+        self.assertEqual(actions["release-trial-evidence"].status, "complete")
         self.assertEqual(actions["sustained-dogfood-cycle"].status, "external_required")
         self.assertEqual(actions["stability-window"].status, "external_required")
         self.assertIn("audit-release-evidence", actions["release-trial-evidence"].audit_command)
@@ -3818,6 +3853,7 @@ class FictionOpsCliTests(unittest.TestCase):
         data = json.loads(result.stdout)
         self.assertEqual(data["status"], "not_ready")
         self.assertEqual(data["ready"], False)
+        self.assertEqual(data["evidence"]["release_evidence_status"], "accepted")
         self.assertIn("release_evidence_status", data["evidence"])
         self.assertIn("action_items", data)
         self.assertIn("release-trial-evidence", {item["item_id"] for item in data["action_items"]})
@@ -5178,16 +5214,17 @@ class FictionOpsCliTests(unittest.TestCase):
         package_report = build_agent_next(ROOT)
         self.assertEqual(package_report.status, "needs_human_review")
         self.assertEqual(package_report.candidates[0].stage, "stable-core")
-        self.assertIn("audit-release-evidence", package_report.selected_command)
+        self.assertIn("audit-dogfood-cycle", package_report.selected_command)
         self.assertIn(str(ROOT), package_report.selected_command)
-        self.assertNotIn("audit-release-evidence . --file", package_report.selected_command)
+        self.assertNotIn("audit-dogfood-cycle . --file", package_report.selected_command)
         self.assertEqual(package_report.evidence["fictionops_package"], True)
-        self.assertIn("release-trial-evidence", package_report.evidence["stable_core_action_items"])
+        self.assertNotIn("release-trial-evidence", package_report.evidence["stable_core_action_items"])
+        self.assertIn("sustained-dogfood-cycle", package_report.evidence["stable_core_action_items"])
         package_cli = self.run_cli("agent-next", str(ROOT.relative_to(ROOT.parent)), "--format", "json")
         package_cli_data = json.loads(package_cli.stdout)
         self.assertEqual(package_cli_data["candidates"][0]["stage"], "stable-core")
         self.assertIn(str(ROOT), package_cli_data["selected_command"])
-        self.assertNotIn("audit-release-evidence fictionops --file", package_cli_data["selected_command"])
+        self.assertNotIn("audit-dogfood-cycle fictionops --file", package_cli_data["selected_command"])
 
         with tempfile.TemporaryDirectory() as tmp:
             legacy = Path(tmp) / "legacy"

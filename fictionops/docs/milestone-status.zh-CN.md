@@ -5,6 +5,7 @@
 状态含义：
 
 - **本地已完成**：仓库证据已经能证明，不依赖外部服务状态。
+- **已由外部证据完成**：仓库证据加真实外部 run 或服务记录已经能证明。
 - **部分证明**：已有关键证据，但仍缺至少一个验收项。
 - **等待外部证据**：仓库内准备已经存在，但完成依赖 GitHub Actions、TestPyPI、PyPI 或真实项目状态。
 - **未完成**：实现或证据仍然明显不足。
@@ -13,12 +14,12 @@
 
 | 里程碑 | 状态 | 当前证据 | 剩余证据 |
 | --- | --- | --- | --- |
-| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、126 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
+| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、127 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
 | 0.2.0 Migration Dogfood | 本地已完成 | 真实项目 dogfood 记录、`adopt --copy-to`、`adopt-review`、`adopt-plan`、`import-plan`、迁移豁免、导入队列清理路径、分组修复文件，以及 0.2 收口复跑中的 `ready: true`、`import_queue_files: 0`、`blocking_issue_count: 0`、无 blocking repair groups。 | 后续正史归一属于常规项目维护，不再是迁移里程碑阻塞。 |
 | 0.3.0 Agent Controller | 本地已完成 | `examples/agent_controller_loop.py`、`agent-next`、`agent-exec`、`agent-inbox`、`docs/agent-connector-contract.zh-CN.md`、JSONL controller log，以及覆盖安全执行、复核边界、占位命令、迁移状态、重复建议和发布阶段命令的测试。 | 真实模型/controller 接入是可选项；只要保留暂存输出和门禁，就可以作为外部实验继续推进。 |
-| 0.4.0 Release Trial | 部分证明 / 等待外部证据 | 本地 wheel/sdist 构建、built-wheel 干净 venv 烟测、CI 和 publish workflow 分发包内容检查、上传或发布前 built-wheel smoke、Trusted Publishing workflow、`docs/release-trial-evidence.zh-CN.md` 外部证据模板、workflow 自动生成的 release trial evidence draft artifact，以及用于检查填实记录的 `audit-release-evidence`。 | 填好的真实 GitHub Actions 运行记录；如果选择发布，还需要 TestPyPI 记录；release notes 需要写入外部 run id 或 URL。 |
+| 0.4.0 Release Trial | 已由外部证据完成 | GitHub Actions publish run `28837872185`、TestPyPI 包 `fictionops==0.1.0`、`docs/release-trial-evidence.md`、分发包哈希、干净环境 TestPyPI 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 发布演练里程碑无剩余项。 |
 | 0.5.0 Documentation Parity Pass | 本地已完成 | 英文 CLI、契约、迁移、Agent 协议、Agent workflow、Agent 接入、测试、发布、兼容性、已知限制、贡献、demo、legacy migration example，以及 `docs/end-to-end-migration-publish.md`。 | 每一条中文设计笔记的完整翻译仍然明确不纳入这个里程碑。 |
-| 1.0.0 Stable Core | 未完成 | `docs/stable-core-audit.zh-CN.md`、兼容性策略、已知限制、恢复手册、命令契约、大范围测试、拒绝危险覆盖、暂存式 Agent workflow、发布门禁、真实项目 dogfood 证据、`docs/dogfood-cycle-evidence.zh-CN.md`、`docs/stability-window-evidence.zh-CN.md`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。 | 包发布、填实的持续真实项目 dogfood、已接受的稳定窗口证据、核心契约经过时间稳定，以及恢复路径随行为变化持续更新的证据。 |
+| 1.0.0 Stable Core | 未完成 | `docs/stable-core-audit.zh-CN.md`、兼容性策略、已知限制、恢复手册、命令契约、大范围测试、拒绝危险覆盖、暂存式 Agent workflow、发布门禁、已接受的 TestPyPI 发布演练证据、真实项目 dogfood 证据、`docs/dogfood-cycle-evidence.zh-CN.md`、`docs/stability-window-evidence.zh-CN.md`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。 | 填实的持续真实项目 dogfood、已接受的稳定窗口证据、核心契约经过时间稳定，以及恢复路径随行为变化持续更新的证据。 |
 
 ## 0.2 迁移 Dogfood 细节
 
@@ -56,11 +57,12 @@
 - CI 和 publish workflow 在上传或发布前执行 built-wheel smoke；
 - Trusted Publishing 路径；
 - publish workflow 会生成单独的 `fictionops-release-trial-evidence-<version>` artifact，记录 run URL、artifact 名称、wheel hash 和 sdist hash，并与 `fictionops-dist-<version>` 分开，避免证据草稿混入 PyPI/TestPyPI 发布目录。
+- workflow-generated release trial evidence draft artifact 是发布审计轨迹的一部分；
 - `audit-release-evidence` 会检查外部证据是否仍是空模板、未复核草稿、无效 run URL、无效 hash、缺安装烟测字段或非 `accepted` 结论。
 
 `docs/release-trial-evidence.zh-CN.md` 现在提供固定记录位置，用于填写 GitHub Actions run URL、artifact 名称与 hash、可选 TestPyPI URL、安装烟测、回滚说明和 `accepted/deferred/failed` 结论。
 
-剩余的是填好的外部证据本身。真实 GitHub Actions run 和可选 TestPyPI 记录不能由本地测试、空模板或尚未复核填写的自动草稿代替，所以这个里程碑在外部记录存在并写入 release notes 前仍是部分证明。
+外部发布演练证据现在已经存在：GitHub Actions run `28837872185` 完成分发包构建，通过 trusted publishing 发布 `fictionops==0.1.0` 到 TestPyPI，`docs/release-trial-evidence.md` 中的 accepted 记录也写入了 artifact hash 和干净安装烟测结果。未来发布演练仍不能用本地测试、空模板或未复核的自动草稿替代真实外部记录。
 
 剩余 1.0 工作的执行清单见 `docs/stable-core-remaining-checklist.zh-CN.md`。它列出具体证据线、验收命令、停止条件，以及哪些事项需要维护者或外部服务状态，不能靠继续本地实现来替代。
 

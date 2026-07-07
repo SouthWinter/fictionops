@@ -5,6 +5,7 @@ This ledger records what the current repository proves against the roadmap. It i
 Status meanings:
 
 - **Complete locally:** repository evidence proves the milestone without external service state.
+- **Complete with external evidence:** repository evidence plus a recorded external run or service record proves the milestone.
 - **Partially proven:** important evidence exists, but at least one required acceptance item is still missing.
 - **Externally blocked:** repository-side work exists, but completion depends on GitHub Actions, TestPyPI, PyPI, or real-project state that cannot be faked in the repository.
 - **Not complete:** implementation or proof is still materially incomplete.
@@ -13,12 +14,12 @@ Status meanings:
 
 | Milestone | Status | Current Evidence | Remaining Evidence |
 | --- | --- | --- | --- |
-| 0.1.0 Pre-Alpha MVP | Complete locally | `docs/completion-audit-0.1.0.zh-CN.md`, `docs/release-notes-0.1.0.zh-CN.md`, 126 tests, wheel/sdist builds, source and built-wheel install smoke tests. | External release record if publishing is chosen. |
+| 0.1.0 Pre-Alpha MVP | Complete locally | `docs/completion-audit-0.1.0.zh-CN.md`, `docs/release-notes-0.1.0.zh-CN.md`, 127 tests, wheel/sdist builds, source and built-wheel install smoke tests. | External release record if publishing is chosen. |
 | 0.2.0 Migration Dogfood | Complete locally | Real-project dogfood log, `adopt --copy-to`, `adopt-review`, `adopt-plan`, `import-plan`, migration waivers, import queue clearing path, grouped repair files, and 0.2 closure rerun with `ready: true`, `import_queue_files: 0`, `blocking_issue_count: 0`, and no blocking repair groups. | Further canon normalization remains normal project work, not a migration milestone blocker. |
 | 0.3.0 Agent Controller | Complete locally | `examples/agent_controller_loop.py`, `agent-next`, `agent-exec`, `agent-inbox`, `docs/agent-connector-contract.md`, JSONL controller logs, tests for safe execution, review boundaries, placeholders, migration states, repeated suggestions, and publish-stage command handling. | Real model/controller integration is optional and remains outside core unless it preserves staged outputs and gates. |
-| 0.4.0 Release Trial | Partially proven / externally blocked | Local wheel/sdist builds, built-wheel clean venv smoke test, CI and publish workflows with distribution content checks, built-wheel smoke before artifact upload or publishing, trusted publishing workflow, `docs/release-trial-evidence.md`, a workflow-generated release trial evidence draft artifact, and `audit-release-evidence` for checking filled records. | Filled external evidence with actual GitHub Actions run record; TestPyPI publish record if publishing is chosen; release notes updated with external run IDs or URLs. |
+| 0.4.0 Release Trial | Complete with external evidence | GitHub Actions publish run `28837872185`, TestPyPI package `fictionops==0.1.0`, `docs/release-trial-evidence.md`, distribution artifact hashes, clean TestPyPI install smoke, and `audit-release-evidence` returning `ready=true`. | None for the release-trial milestone. |
 | 0.5.0 Documentation Parity Pass | Complete locally | English docs for CLI, contracts, migration, agent protocol, agent workflow, agent integration, testing, release, compatibility, known limits, contribution, demo, legacy migration example, and `docs/end-to-end-migration-publish.md`. | Full translation of every Chinese design note remains intentionally out of scope for this milestone. |
-| 1.0.0 Stable Core | Not complete | `docs/stable-core-audit.md`, compatibility policy, known-limits docs, recovery playbook, command contracts, broad test suite, no-overwrite behavior, staged agent workflow, release gates, real-project dogfood evidence, `docs/dogfood-cycle-evidence.md`, `docs/stability-window-evidence.md`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`. | Package release, filled sustained real-project dogfood cycle, accepted stability-window evidence, stable core contracts over time, and proof that recovery paths remain current as behavior changes. |
+| 1.0.0 Stable Core | Not complete | `docs/stable-core-audit.md`, compatibility policy, known-limits docs, recovery playbook, command contracts, broad test suite, no-overwrite behavior, staged agent workflow, release gates, accepted TestPyPI release-trial evidence, real-project dogfood evidence, `docs/dogfood-cycle-evidence.md`, `docs/stability-window-evidence.md`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`. | Filled sustained real-project dogfood cycle, accepted stability-window evidence, stable core contracts over time, and proof that recovery paths remain current as behavior changes. |
 
 ## 0.2 Migration Dogfood Detail
 
@@ -59,7 +60,7 @@ The repository now has strong pre-release evidence:
 - `audit-release-evidence`, which rejects empty templates, unfinished generated drafts, invalid run URLs, invalid hashes, missing install smoke fields, and non-accepted decisions;
 - `docs/release-trial-evidence.md`, which defines where to record the GitHub Actions run URL, artifact names and hashes, optional TestPyPI URLs, install smoke output, rollback notes, and final `accepted/deferred/failed` decision.
 
-The remaining item is the filled external evidence itself. A GitHub Actions run and optional TestPyPI record cannot be replaced by local tests, an empty template, or a generated draft that has not been reviewed and completed, so this milestone remains partially proven until those records exist and are linked from release notes.
+The external release-trial evidence now exists: GitHub Actions run `28837872185` built the distributions, published `fictionops==0.1.0` to TestPyPI through trusted publishing, and the accepted record in `docs/release-trial-evidence.md` includes artifact hashes plus clean install smoke results. The workflow-generated release trial evidence draft artifact remains part of the audit trail, but local tests, an empty template, or a generated draft still cannot replace a reviewed external record for future release trials.
 
 ## 0.5 Documentation Parity Detail
 
@@ -77,7 +78,7 @@ The Chinese methodology remains deeper and more literary. That is acceptable for
 
 ## 1.0 Stable Core Detail
 
-The repository has several local stability ingredients: command contracts, compatibility policy, known-limits documentation, a recovery playbook, no-overwrite tests, staged agent boundaries, release gates, package smoke tests, `audit-dogfood-cycle`, `audit-stability-window`, `docs/stability-window-evidence.md`, `audit-stable-core`, and the requirement-by-requirement matrix in `docs/stable-core-audit.md`. It still does **not** prove 1.0 readiness because stable-core status needs external package release evidence, a filled sustained real-project dogfood cycle, and accepted time-tested compatibility behavior.
+The repository has several local stability ingredients: command contracts, compatibility policy, known-limits documentation, a recovery playbook, no-overwrite tests, staged agent boundaries, release gates, package smoke tests, accepted release-trial evidence, `audit-dogfood-cycle`, `audit-stability-window`, `docs/stability-window-evidence.md`, `audit-stable-core`, and the requirement-by-requirement matrix in `docs/stable-core-audit.md`. It still does **not** prove 1.0 readiness because stable-core status needs a filled sustained real-project dogfood cycle and accepted time-tested compatibility behavior.
 
 Use `docs/stable-core-remaining-checklist.md` as the execution checklist for the remaining 1.0 work. It names the exact evidence lanes, acceptance commands, stop conditions, and which parts require a maintainer or external service state rather than more local implementation.
 

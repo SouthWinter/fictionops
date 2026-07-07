@@ -125,7 +125,7 @@ fictionops/
 
 ## CLI Quick Start
 
-The current CLI includes forty-eight MVP commands:
+The current CLI includes fifty MVP commands:
 
 `adopt`, `adopt-review`, `adopt-plan`, `import-plan`, `init`, `new-book`, `new-chapter`, `plan-chapter`, `scene-plan`, `draft-brief`, `post-draft`, `review-gate`, `book-gate`, `audit-plan`, `retrospective`, `stats`, `scan-words`, `check-tables`, `audit-wave`, `audit-style`, `audit-continuity`, `audit-echoes`, `audit-info`, `audit-characters`, `agent-prompt`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, `model-config`, `context-pack`, `workflow-plan`, `revision-plan`, `doctor`, `report`, `export-clean`, `audit-publish`, `publish-copy`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, `release-gate`, `audit-release-evidence`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`.
 
@@ -186,7 +186,7 @@ python -m pip wheel ./fictionops -w fictionops/dist --no-deps --no-build-isolati
 python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'); pathlib.Path('dist').mkdir(exist_ok=True); print(b.build_sdist('dist'))"
 ```
 
-The test suite currently covers 50 CLI commands and 126 regression tests, including source and built-wheel installation smoke tests, wheel and source-distribution content checks, template sync checks, release governance checks, release evidence auditing, sustained dogfood-cycle auditing, stability-window auditing, stable-core auditing, English documentation coverage, runnable demo and migration examples, the real-project `adopt` dogfood entry point, `adopt --copy-to`, copy-path collision disambiguation, `adopt-review`, migration waivers, `adopt-plan`, `import-plan`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, the no-model controller loop example, and the OpenAI Responses runner dry-run path. `audit-stable-core --format json` also emits structured `action_items` so a maintainer or controller can see the remaining evidence files, audit commands, and acceptance criteria without treating the plan as proof.
+The test suite currently covers 50 CLI commands and 127 regression tests, including source and built-wheel installation smoke tests, wheel and source-distribution content checks, template sync checks, release governance checks, release evidence auditing, sustained dogfood-cycle auditing, stability-window auditing, stable-core auditing, English documentation coverage, runnable demo and migration examples, the real-project `adopt` dogfood entry point, `adopt --copy-to`, copy-path collision disambiguation, `adopt-review`, migration waivers, `adopt-plan`, `import-plan`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, the no-model controller loop example, and the OpenAI Responses runner dry-run path. `audit-stable-core --format json` also emits structured `action_items` so a maintainer or controller can see the remaining evidence files, audit commands, and acceptance criteria without treating the plan as proof.
 
 ## Positioning
 

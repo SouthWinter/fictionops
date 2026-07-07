@@ -47,7 +47,7 @@ python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'
 
 验证摘要：
 
-- 完整测试：`126 tests OK`。
+- 完整测试：`127 tests OK`。
 - wheel 构建成功：`fictionops/dist/fictionops-0.1.0-py3-none-any.whl`。
 - sdist 构建成功：`fictionops/dist/fictionops-0.1.0.tar.gz`。
 - wheel 内容检查通过：包含模板、入口元数据、迁移模块和 Agent 模块。
