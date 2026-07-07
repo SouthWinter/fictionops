@@ -23,7 +23,7 @@ FictionOps 0.1.0 是一个中文优先、文件系统优先的长篇小说工作
 - 章节规划与写前准备：`plan-chapter`、`scene-plan`、`draft-brief`。
 - 写后与审稿门禁：`post-draft`、`review-gate`、`book-gate`、`release-gate`。
 - 静态审计：`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`。
-- Agent 协作辅助：`agent-prompt`、`agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`，并提供不调用模型的 connector smoke、`examples/agent_runner_echo.py` 外部 runner 示例、OpenAI Responses API 外部 runner dry-run 示例、`examples/agent_controller_next.py` 单步 controller 示例、`examples/agent_controller_loop.py` 多步 controller 示例，`docs/agent-connector-contract.md` / `docs/agent-connector-contract.zh-CN.md` 接入契约，以及 `docs/agent-integration.md` / `docs/agent-integration.zh-CN.md` 接入指南。
+- Agent 协作辅助：`agent-prompt`、`agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`，并提供不调用模型的 connector smoke、`examples/agent_runner_echo.py` 外部 runner 示例、OpenAI-compatible Chat Completions 外部 runner dry-run 示例、OpenAI Responses API 外部 runner dry-run 示例、`examples/agent_controller_next.py` 单步 controller 示例、`examples/agent_controller_loop.py` 多步 controller 示例，`docs/agent-connector-contract.md` / `docs/agent-connector-contract.zh-CN.md` 接入契约，以及 `docs/agent-integration.md` / `docs/agent-integration.zh-CN.md` 接入指南。
 - 健康报告：`doctor`、`report`，包含 Agent 输出收件箱、模型配置、发布包等摘要。
 - 发布管线：`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`。
 - 包发布证据审计：`audit-release-evidence`，用于检查 0.4 发布演练记录是否仍是空模板、未复核草稿、无效 URL/hash、缺安装烟测或非 `accepted` 结论。
@@ -47,7 +47,7 @@ python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'
 
 验证摘要：
 
-- 完整测试：`127 tests OK`。
+- 完整测试：`128 tests OK`。
 - wheel 构建成功：`fictionops/dist/fictionops-0.1.0-py3-none-any.whl`。
 - sdist 构建成功：`fictionops/dist/fictionops-0.1.0.tar.gz`。
 - wheel 内容检查通过：包含模板、入口元数据、迁移模块和 Agent 模块。

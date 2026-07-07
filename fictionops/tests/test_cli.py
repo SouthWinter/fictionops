@@ -1039,6 +1039,8 @@ class FictionOpsCliTests(unittest.TestCase):
             "CHANGELOG.md",
             "CONTRIBUTING.md",
             "CONTRIBUTING.zh-CN.md",
+            "docs/getting-started.md",
+            "docs/getting-started.zh-CN.md",
             "docs/cli.md",
             "docs/cli-contracts.md",
             "docs/agent-protocol.md",
@@ -1046,6 +1048,8 @@ class FictionOpsCliTests(unittest.TestCase):
             "docs/agent-connector-contract.zh-CN.md",
             "docs/agent-integration.md",
             "docs/agent-integration.zh-CN.md",
+            "docs/model-providers.md",
+            "docs/model-providers.zh-CN.md",
             "docs/agent-workflow.md",
             "docs/agent-workflow.zh-CN.md",
             "docs/tutorial-demo.md",
@@ -1164,6 +1168,8 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("CHANGELOG.md", text)
             self.assertIn("CONTRIBUTING.md", text)
             self.assertIn("CONTRIBUTING.zh-CN.md", text)
+            self.assertIn("getting-started", text)
+            self.assertIn("model-providers", text)
             self.assertIn("docs/migration.md", text)
             self.assertIn("end-to-end-migration-publish", text)
             self.assertIn("agent-connector-contract", text)
@@ -1199,6 +1205,8 @@ class FictionOpsCliTests(unittest.TestCase):
         chinese_agent_connector = (ROOT / "docs" / "agent-connector-contract.zh-CN.md").read_text(encoding="utf-8")
         english_agent_integration = (ROOT / "docs" / "agent-integration.md").read_text(encoding="utf-8")
         chinese_agent_integration = (ROOT / "docs" / "agent-integration.zh-CN.md").read_text(encoding="utf-8")
+        english_model_providers = (ROOT / "docs" / "model-providers.md").read_text(encoding="utf-8")
+        chinese_model_providers = (ROOT / "docs" / "model-providers.zh-CN.md").read_text(encoding="utf-8")
         english_agent_workflow = (ROOT / "docs" / "agent-workflow.md").read_text(encoding="utf-8")
         english_tutorial = (ROOT / "docs" / "tutorial-demo.md").read_text(encoding="utf-8")
         english_migration = (ROOT / "docs" / "migration.md").read_text(encoding="utf-8")
@@ -1240,19 +1248,26 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertIn("agent_controller_loop.py", english_agent)
         self.assertIn("agent_runner_echo.py", english_agent)
         self.assertIn("agent_runner_openai_responses.py", english_agent)
+        self.assertIn("agent_runner_openai_chat.py", english_agent)
         self.assertIn("Agent integration guide", english_agent)
         self.assertIn("Agent connector contract", english_agent)
         self.assertIn("Runner Contract", english_agent_connector)
         self.assertIn("Controller Contract", english_agent_connector)
         self.assertIn("Minimal Smoke Test", english_agent_connector)
         self.assertIn("agent-inbox", english_agent_connector)
+        self.assertIn("agent_runner_openai_chat.py", english_agent_connector)
         self.assertIn("Agent 接入契约", chinese_agent_connector)
         self.assertIn("Runner 契约", chinese_agent_connector)
         self.assertIn("Integration Levels", english_agent_integration)
         self.assertIn("External Runner", english_agent_integration)
         self.assertIn("Controller Loop", english_agent_integration)
+        self.assertIn("OpenAI-Compatible Chat Runner", english_agent_integration)
         self.assertIn("staged output", english_agent_integration)
         self.assertIn("audit-agent-workflow", english_agent_integration)
+        self.assertIn("DeepSeek", english_model_providers)
+        self.assertIn("Chat Completions", english_model_providers)
+        self.assertIn("DeepSeek", chinese_model_providers)
+        self.assertIn("通义千问", chinese_model_providers)
         self.assertIn("接入层级", chinese_agent_integration)
         self.assertIn("FictionOps agentic workflow", english_agent_workflow)
         self.assertIn("audit-agent-workflow", english_agent_workflow)
@@ -1833,6 +1848,8 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/templates/project.yml",
             "src/fictionops/templates/chapter_engine.zh-CN.md",
             "templates/project.yml",
+            "docs/getting-started.md",
+            "docs/getting-started.zh-CN.md",
             "docs/cli.md",
             "docs/cli-contracts.md",
             "docs/agent-protocol.md",
@@ -1840,6 +1857,8 @@ class FictionOpsCliTests(unittest.TestCase):
             "docs/agent-connector-contract.zh-CN.md",
             "docs/agent-integration.md",
             "docs/agent-integration.zh-CN.md",
+            "docs/model-providers.md",
+            "docs/model-providers.zh-CN.md",
             "docs/agent-workflow.md",
             "docs/agent-workflow.zh-CN.md",
             "docs/tutorial-demo.md",
@@ -1858,6 +1877,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "docs/release-checklist.zh-CN.md",
             "docs/pypi-release.zh-CN.md",
             "examples/agent_runner_echo.py",
+            "examples/agent_runner_openai_chat.py",
             "examples/agent_runner_openai_responses.py",
             "examples/agent_controller_next.py",
             "examples/agent_controller_loop.py",
@@ -5146,6 +5166,50 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("# OpenAI Responses Runner Dry Run", output)
             self.assertIn("- Role: `draft-writer`", output)
             self.assertIn("- Model: `fictionops-test-model`", output)
+            self.assertIn("No network request was made", output)
+
+            ready = build_agent_inbox(target)
+            self.assertEqual(ready.status, "ready_for_review")
+
+    def test_openai_compatible_chat_runner_dry_run_is_usable(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            build_agent_run(
+                target,
+                role="draft-writer",
+                chapter="001",
+                out_dir="00_management/agent_runs/chat_ch_001",
+                include_context_content=False,
+            )
+            run_dir = target / "00_management" / "agent_runs" / "chat_ch_001"
+            runner = ROOT / "examples" / "agent_runner_openai_chat.py"
+
+            cli = self.run_cli(
+                "agent-exec",
+                str(run_dir),
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+                "--dry-run",
+                "--model",
+                "deepseek-test-model",
+                "--api-key-env",
+                "DEEPSEEK_API_KEY",
+                "--base-url",
+                "https://api.deepseek.com",
+            )
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["written"], True)
+            self.assertEqual(data["returncode"], 0)
+
+            output = (run_dir / "output.md").read_text(encoding="utf-8")
+            self.assertIn("# OpenAI-Compatible Chat Runner Dry Run", output)
+            self.assertIn("- Role: `draft-writer`", output)
+            self.assertIn("- Model: `deepseek-test-model`", output)
+            self.assertIn("- Endpoint: `https://api.deepseek.com/chat/completions`", output)
+            self.assertIn("- API key env: `DEEPSEEK_API_KEY`", output)
             self.assertIn("No network request was made", output)
 
             ready = build_agent_inbox(target)

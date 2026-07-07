@@ -26,6 +26,8 @@ fictionops/
     report.py
     templates/
   docs/
+    getting-started.md
+    getting-started.zh-CN.md
     cli.md
     cli.zh-CN.md
     cli-contracts.md
@@ -48,6 +50,8 @@ fictionops/
     cli-contracts.zh-CN.md
     agent-integration.md
     agent-integration.zh-CN.md
+    model-providers.md
+    model-providers.zh-CN.md
     completion-audit-0.1.0.zh-CN.md
     roadmap.md
     roadmap.zh-CN.md
@@ -65,6 +69,7 @@ fictionops/
     agent_controller_next.py
     agent_controller_loop.py
     agent_runner_echo.py
+    agent_runner_openai_chat.py
     agent_runner_openai_responses.py
     demo_novel/
     legacy_novel_source/
@@ -75,6 +80,8 @@ fictionops/
 ## Documentation
 
 - [CLI guide](docs/cli.md)
+- [Getting started](docs/getting-started.md)
+- [Getting started, Chinese reference](docs/getting-started.zh-CN.md)
 - [CLI usage, Chinese reference](docs/cli.zh-CN.md)
 - [CLI contracts](docs/cli-contracts.md)
 - [CLI contracts, Chinese reference](docs/cli-contracts.zh-CN.md)
@@ -84,6 +91,8 @@ fictionops/
 - [Agent connector contract, Chinese reference](docs/agent-connector-contract.zh-CN.md)
 - [Agent integration guide](docs/agent-integration.md)
 - [Agent integration guide, Chinese reference](docs/agent-integration.zh-CN.md)
+- [Model providers](docs/model-providers.md)
+- [Model providers, Chinese reference](docs/model-providers.zh-CN.md)
 - [Agent workflow positioning](docs/agent-workflow.md)
 - [Agent workflow positioning, Chinese reference](docs/agent-workflow.zh-CN.md)
 - [Migration guide](docs/migration.md)
@@ -152,6 +161,8 @@ python fictionops/src/fictionops/cli.py audit-stability-window . --file docs/sta
 python fictionops/src/fictionops/cli.py audit-stable-core .
 ```
 
+For a shorter onboarding path, start with [Getting started](docs/getting-started.md). For OpenAI-compatible providers such as DeepSeek, Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, local model servers, and OpenAI Chat Completions, see [Model providers](docs/model-providers.md).
+
 Installed usage:
 
 ```bash
@@ -186,7 +197,7 @@ python -m pip wheel ./fictionops -w fictionops/dist --no-deps --no-build-isolati
 python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'); pathlib.Path('dist').mkdir(exist_ok=True); print(b.build_sdist('dist'))"
 ```
 
-The test suite currently covers 50 CLI commands and 127 regression tests, including source and built-wheel installation smoke tests, wheel and source-distribution content checks, template sync checks, release governance checks, release evidence auditing, sustained dogfood-cycle auditing, stability-window auditing, stable-core auditing, English documentation coverage, runnable demo and migration examples, the real-project `adopt` dogfood entry point, `adopt --copy-to`, copy-path collision disambiguation, `adopt-review`, migration waivers, `adopt-plan`, `import-plan`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, the no-model controller loop example, and the OpenAI Responses runner dry-run path. `audit-stable-core --format json` also emits structured `action_items` so a maintainer or controller can see the remaining evidence files, audit commands, and acceptance criteria without treating the plan as proof.
+The test suite currently covers 50 CLI commands and 128 regression tests, including source and built-wheel installation smoke tests, wheel and source-distribution content checks, template sync checks, release governance checks, release evidence auditing, sustained dogfood-cycle auditing, stability-window auditing, stable-core auditing, English documentation coverage, runnable demo and migration examples, the real-project `adopt` dogfood entry point, `adopt --copy-to`, copy-path collision disambiguation, `adopt-review`, migration waivers, `adopt-plan`, `import-plan`, `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `audit-agent-workflow`, the no-model controller loop example, the OpenAI-compatible Chat Completions runner dry-run path, and the OpenAI Responses runner dry-run path. `audit-stable-core --format json` also emits structured `action_items` so a maintainer or controller can see the remaining evidence files, audit commands, and acceptance criteria without treating the plan as proof.
 
 ## Positioning
 
@@ -194,6 +205,6 @@ FictionOps is best understood as a workflow and toolkit for long-form fiction co
 
 When connected to an external model API through a runner, the setup is an API-backed AI workflow. When an external controller also reads project state, chooses next steps, calls runners, and stops at review gates, the whole setup becomes an agentic workflow. FictionOps core remains the harness: it scopes context, packages tasks, receives staged outputs, and runs gates; API calls, model execution, and controller loops live outside the core. `audit-agent-workflow` is the preflight gate for checking that boundary before connecting a runner or controller. See [Agent workflow positioning](docs/agent-workflow.md).
 
-For concrete wiring patterns, including manual chat use, external runners, OpenAI Responses runner dry runs, and controller loops, see [Agent integration guide](docs/agent-integration.md).
+For concrete wiring patterns, including manual chat use, external runners, OpenAI-compatible Chat Completions runner dry runs, OpenAI Responses runner dry runs, and controller loops, see [Agent integration guide](docs/agent-integration.md).
 
 If the workflow makes the novel feel too neat, the workflow should bend. The story comes first.

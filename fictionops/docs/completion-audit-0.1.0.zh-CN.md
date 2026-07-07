@@ -38,7 +38,7 @@ FictionOps 0.1.0 的 MVP 范围已经具备可发布证据：CLI 命令、模板
 | 伏笔回声可维护 | `foreshadowing_echo_table` 模板、`audit-echoes` 测试 | 已完成 |
 | 人物记忆可维护 | 人物弧线、智慧模式、口吻资料、`audit-characters`、demo 人物审计测试 | 已完成 |
 | 文风/词频/章节波形可审计 | `audit-style`、`scan-words`、`audit-wave` 和对应测试 | 已完成 |
-| Agent 接手可范围化 | `context-pack`、`agent-prompt`、`agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`model-config`、`workflow-plan`、`revision-plan`；`agent-connect` 可生成外部 runner/controller 接入套件，`agent-smoke` 可用 no-network adapter 跑通 workflow audit、任务包、外部执行和 inbox 暂存闭环，`agent-run` 可生成 prepare-only 任务包，`agent-exec` 可把任务包交给外部 runner 并保存暂存输出，`agent-inbox` 可检查回传暂存输出，`agent-next` 可为外部 controller 选择下一条安全命令；`examples/agent_runner_echo.py` 提供不调用模型的外部 runner 示例，`examples/agent_runner_openai_responses.py` 提供 OpenAI Responses API 外部 runner dry-run 示例，`examples/agent_controller_next.py` 提供不执行命令的单步 controller 示例，`examples/agent_controller_loop.py` 提供只执行安全命令并在复核边界停止的多步 controller 示例；`docs/agent-connector-contract.md` / `docs/agent-connector-contract.zh-CN.md` 记录外部 runner/controller 的接入契约和烟测证据；`docs/agent-integration.md` / `docs/agent-integration.zh-CN.md` 说明手动聊天、外部 runner、真实模型 runner 和 controller loop 的接入方式；FictionOps 不保存密钥、不自动应用输出、不覆盖正文 | 已完成 |
+| Agent 接手可范围化 | `context-pack`、`agent-prompt`、`agent-connect`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-next`、`model-config`、`workflow-plan`、`revision-plan`；`agent-connect` 可生成外部 runner/controller 接入套件，`agent-smoke` 可用 no-network adapter 跑通 workflow audit、任务包、外部执行和 inbox 暂存闭环，`agent-run` 可生成 prepare-only 任务包，`agent-exec` 可把任务包交给外部 runner 并保存暂存输出，`agent-inbox` 可检查回传暂存输出，`agent-next` 可为外部 controller 选择下一条安全命令；`examples/agent_runner_echo.py` 提供不调用模型的外部 runner 示例，`examples/agent_runner_openai_chat.py` 提供 OpenAI-compatible Chat Completions 外部 runner dry-run 示例，`examples/agent_runner_openai_responses.py` 提供 OpenAI Responses API 外部 runner dry-run 示例，`examples/agent_controller_next.py` 提供不执行命令的单步 controller 示例，`examples/agent_controller_loop.py` 提供只执行安全命令并在复核边界停止的多步 controller 示例；`docs/agent-connector-contract.md` / `docs/agent-connector-contract.zh-CN.md` 记录外部 runner/controller 的接入契约和烟测证据；`docs/agent-integration.md` / `docs/agent-integration.zh-CN.md` 说明手动聊天、外部 runner、真实模型 runner 和 controller loop 的接入方式；FictionOps 不保存密钥、不自动应用输出、不覆盖正文 | 已完成 |
 | 单章、书级、发布门禁可用 | `review-gate`、`book-gate`、`release-gate` 和对应测试 | 已完成 |
 | 包发布证据可审计 | `audit-release-evidence` 能检查发布演练证据是否仍为空模板、未复核草稿、无效 run URL/hash、缺安装烟测或非 `accepted` 结论，避免 0.4 被弱证据误关 | 已完成 |
 | 持续 dogfood 周期证据可审计 | `audit-dogfood-cycle` 能检查 1.0 所需持续维护周期是否仍为空模板、非 ready 最终状态、非零导入队列或阻塞项、缺兼容性/恢复说明或非 `accepted` 结论 | 已完成 |
@@ -67,7 +67,7 @@ python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'
 
 验证摘要：
 
-- `127 tests OK`
+- `128 tests OK`
 - `fictionops-0.1.0-py3-none-any.whl` 构建成功
 - `fictionops-0.1.0.tar.gz` 构建成功
 - wheel 内容检查通过

@@ -1183,6 +1183,12 @@ FictionOps 的存在，是为了帮一部长篇记住自己，而不是逼它变
 
 故事优先。
 
+## 新手与模型接入
+
+- [快速开始](docs/getting-started.zh-CN.md)：按新项目、旧项目迁移、接模型/API 三条入口上手。
+- [模型供应商接入](docs/model-providers.zh-CN.md)：DeepSeek、通义千问、Kimi、GLM、豆包 Ark、硅基流动、本地 OpenAI-compatible 服务和 OpenAI Chat Completions 的 runner 配置起点。
+- [Getting started](docs/getting-started.md) and [Model providers](docs/model-providers.md) are also available in English.
+
 ## 15. 示例
 
 - [可运行 demo 项目](examples/demo_novel/README.md)：一个微型 FictionOps 项目，可跑书纲同步、场景计划、写前 brief、上下文包和 doctor 报告。

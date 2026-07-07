@@ -104,6 +104,31 @@ fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python f
 
 这个示例只解析 FictionOps 输入并生成暂存输出，适合用来确认管线。真实接入时，把示例脚本里生成 echo 文本的部分替换成你的模型调用或本地 agent 调用即可；stdin 仍然读取 FictionOps 任务包，stdout 仍然只输出暂存结果。
 
+仓库也提供一个通用 OpenAI-compatible Chat Completions runner，适合 DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动和本地 OpenAI-compatible 服务。
+
+先用不联网 dry run 检查边界：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --dry-run \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+确认边界后，再把真实 key 放在项目外的环境变量里运行：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+这个示例调用 Chat Completions 的 `/chat/completions` 端点，并会把它拼接到 `--base-url` 后。常见供应商配置起点见 [模型供应商接入](model-providers.zh-CN.md)。
+
 仓库也提供一个 OpenAI Responses API 外部 runner 示例。它仍然不属于 FictionOps 核心：API key 只从环境变量读取，任务包从 stdin 进入，模型输出只写到 stdout，再由 `agent-exec` 保存为 staging 文件。
 
 先用不联网 dry run 检查边界：

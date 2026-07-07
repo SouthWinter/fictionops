@@ -79,7 +79,48 @@ runner 契约：
 
 这样可以接本地脚本、托管模型包装器、IDE 助手或其他 orchestration 框架。
 
-## 模式三：接 OpenAI Responses Runner
+## 模式三：接 OpenAI-compatible Chat Runner
+
+仓库里有一个通用 Chat Completions runner，适合带 OpenAI-compatible API 的供应商。DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动和本地 OpenAI-compatible 服务，都可以先从这个 runner 开始。
+
+先 dry-run：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --dry-run \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+确认暂存边界后，再从环境变量读取真实 key：
+
+```bash
+set DEEPSEEK_API_KEY=...
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+`model-config` 可以记录供应商、模型名、base URL 和密钥环境变量名：
+
+```bash
+fictionops model-config my-novel \
+  --provider deepseek \
+  --planning-model deepseek-chat \
+  --drafting-model deepseek-chat \
+  --audit-model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com \
+  --write
+```
+
+这个 runner 会在 `--base-url` 后拼接 `/chat/completions`。常见供应商配置起点见 [模型供应商接入](model-providers.zh-CN.md)。
+
+## 模式四：接 OpenAI Responses Runner
 
 仓库里有一个 OpenAI Responses API runner 示例。它故意放在 FictionOps 核心之外。
 
@@ -110,7 +151,7 @@ fictionops model-config my-novel \
   --write
 ```
 
-## 模式四：接 Controller Loop
+## 模式五：接 Controller Loop
 
 适合外部 controller 要根据项目证据选择下一条安全命令。
 

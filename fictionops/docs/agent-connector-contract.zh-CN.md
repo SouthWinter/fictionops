@@ -114,6 +114,32 @@ fictionops agent-inbox my-novel/00_management/agent_runs/ch_001 --format json
 
 当 `agent-inbox` 报告只有一个可审阅暂存输出，且没有损坏请求、空输出或多输出问题时，烟测通过。
 
+## OpenAI-compatible Chat 示例
+
+仓库中的 `examples/agent_runner_openai_chat.py` 是一个通用的 Chat Completions runner，适合 OpenAI-compatible API。DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动、本地服务和类似供应商，都可以先从这个示例接起。
+
+先 dry-run：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --dry-run \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+再只从环境变量读取真实 key：
+
+```bash
+set DEEPSEEK_API_KEY=...
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
 ## OpenAI Responses 示例
 
 仓库中的 `examples/agent_runner_openai_responses.py` 是一个带供应商调用的 runner 示例。它仍然是 connector，不是 FictionOps 核心。

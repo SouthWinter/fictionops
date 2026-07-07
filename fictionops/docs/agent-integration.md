@@ -85,7 +85,48 @@ Runner contract:
 
 This makes it easy to plug in a local script, a hosted model wrapper, an IDE assistant, or a custom orchestration framework.
 
-## Pattern 3: OpenAI Responses Runner
+## Pattern 3: OpenAI-Compatible Chat Runner
+
+The repository includes a generic Chat Completions runner for providers with OpenAI-compatible APIs. This covers many hosted and local providers, including DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, and local OpenAI-compatible servers.
+
+Dry run first:
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --dry-run \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+Then run with a real provider only after setting the API key outside the project:
+
+```bash
+set DEEPSEEK_API_KEY=...
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com
+```
+
+`model-config` may record provider, model names, base URL, and the key environment-variable name:
+
+```bash
+fictionops model-config my-novel \
+  --provider deepseek \
+  --planning-model deepseek-chat \
+  --drafting-model deepseek-chat \
+  --audit-model deepseek-chat \
+  --api-key-env DEEPSEEK_API_KEY \
+  --base-url https://api.deepseek.com \
+  --write
+```
+
+The runner appends `/chat/completions` to `--base-url`. For provider starting points, see [Model providers](model-providers.md).
+
+## Pattern 4: OpenAI Responses Runner
 
 The repository includes an example runner for the OpenAI Responses API. It is intentionally outside FictionOps core.
 
@@ -116,7 +157,7 @@ fictionops model-config my-novel \
   --write
 ```
 
-## Pattern 4: Controller Loop
+## Pattern 5: Controller Loop
 
 Use this when an external controller should decide the next safe command from project evidence.
 

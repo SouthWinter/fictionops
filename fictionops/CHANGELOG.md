@@ -56,12 +56,14 @@ The project uses semantic versioning while the CLI contracts are still small eno
 - External runner bridge with `agent-exec`, sending prepared bundles to user-provided commands and saving stdout as staged output without applying it.
 - Minimal `examples/agent_runner_echo.py` runner showing how external agents receive FictionOps bundles over stdin and return staged stdout.
 - OpenAI Responses API runner example with a no-network dry-run mode, showing a concrete model-backed `agent-exec` integration while keeping FictionOps core model-free.
+- OpenAI-compatible Chat Completions runner example and provider setup docs for DeepSeek, Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, OpenAI Chat Completions, and local compatible servers.
 - Agent output inbox auditing with `agent-inbox`, checking staged runner outputs without applying them.
 - Agent next-step selection with `agent-next`, giving external controllers a read-only command recommendation without executing it.
 - Agent workflow preflight auditing with `audit-agent-workflow`, checking manual, runner, controller, and model-runner readiness before connecting external automation.
 - Minimal `examples/agent_controller_next.py` controller showing how to consume `agent-next` JSON without applying changes.
 - No-model multi-step `examples/agent_controller_loop.py` controller showing how to execute only safe commands and stop at review boundaries.
 - Agent integration guide documenting manual chat use, external runners, OpenAI Responses runner dry runs, and controller-loop wiring.
+- Getting started and model-provider guides documenting shorter onboarding paths and model/API setup without adding provider SDKs to FictionOps core.
 - Agent connector contract documenting the stable stdin/stdout runner boundary, controller stop rules, required task files, and smoke-test evidence for external agent integrations.
 - Agent inbox summaries in `doctor` and `report` when agent run directories exist.
 - Local model provider config reporting with `model-config`.
