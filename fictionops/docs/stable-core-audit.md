@@ -15,11 +15,11 @@ Execution handoff: use `docs/stable-core-remaining-checklist.md` for the concret
 | Command names and core JSON keys are stable | `docs/cli-contracts.md`, `docs/compatibility.md`, CLI help coverage, JSON parsing tests, controller guidance. | Locally strong | Needs a compatibility window where changes are tracked without silent contract drift. |
 | Compatibility policy is maintained | `docs/compatibility.md`, `docs/compatibility.zh-CN.md`, `CHANGELOG.md`, release notes, release governance tests. | Locally strong | Future behavior changes must continue updating these records. |
 | Unsafe overwrites are consistently refused | Regression tests cover no-overwrite behavior across CLI report/output commands, staged agent output, package artifacts, and project scaffolding. | Locally strong | Keep adding no-overwrite tests for new write commands. |
-| Release gates catch stale or missing publish artifacts | `release-gate`, `audit-publish`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, and tests for missing/stale/invalid artifacts. | Locally strong | Needs external release trial evidence before package release confidence is complete. |
+| Release gates catch stale or missing publish artifacts | `release-gate`, `audit-publish`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, and tests for missing/stale/invalid artifacts. | Locally strong | Continue using these gates before every publish attempt. |
 | Agent workflows remain staged and auditable | `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-next`, `examples/agent_controller_loop.py`, `docs/agent-connector-contract.md`, and controller tests. | Locally strong | Real model/controller integrations remain optional but must preserve staged output and review gates. |
 | Migration from messy legacy projects has sustained real-project proof | `docs/dogfood-legacy-adopt.zh-CN.md` records 0.2 closure, and `docs/dogfood-cycle-evidence.md` plus `audit-dogfood-cycle` define the sustained-cycle evidence gate. | Partially proven | 1.0 still needs a filled accepted post-closure maintenance cycle that passes `audit-dogfood-cycle`. |
 | Recovery paths remain current | `docs/recovery.md`, `docs/recovery.zh-CN.md`, known-limits docs, compatibility policy, release evidence tests. | Locally strong | Recovery docs must be updated whenever commands can create, repair, regenerate, or invalidate durable state. |
-| Package release exists outside the checkout | Local wheel/sdist builds, clean venv built-wheel smoke, CI/publish workflows, `docs/release-trial-evidence.md`, workflow-generated evidence draft, and `audit-release-evidence` for checking filled external records. | Externally incomplete | Needs actual GitHub Actions run URL, TestPyPI record if used, install smoke from external artifact, and release notes with those records. |
+| Package release evidence exists outside the local checkout | Local wheel/sdist builds, CI/publish workflows, accepted `docs/release-trial-evidence.md`, GitHub Actions run `28837872185`, TestPyPI `fictionops==0.1.0`, clean venv install smoke, and `audit-release-evidence` reporting `ready=true`. | Complete with external evidence | Keep future release trials recorded with real run URLs, package hashes, install smoke, reviewer, and decision. |
 | Stable behavior over time | Milestone ledger, compatibility policy, release notes, regression tests, `docs/stability-window-evidence.md`, `audit-stability-window`, and `audit-stable-core`. | Not yet provable | Needs an accepted stability-window record showing elapsed real use without undocumented breaking changes. |
 
 ## Current Local Conclusion
@@ -29,20 +29,18 @@ The local repository has enough evidence to say:
 - 0.1.0 pre-alpha MVP is locally complete.
 - 0.2 migration dogfood is locally complete.
 - 0.3 no-model controller orchestration is locally complete.
+- 0.4 release trial is complete with accepted external evidence.
 - 0.5 documentation parity is locally complete.
-- 0.4 release trial is repository-ready but externally blocked.
 - 1.0 stable core is not complete.
 
 ## 1.0 Blockers
 
 Do not mark 1.0 complete until all of these are true:
 
-1. `docs/release-trial-evidence.md` is filled with real GitHub Actions and package-install evidence.
-2. Package release evidence exists outside the local checkout.
-3. At least one sustained real-project dogfood cycle after the 0.2 migration closure is recorded and passes `audit-dogfood-cycle`.
-4. Compatibility-sensitive behavior has stayed stable across that cycle, or every breaking change has an explicit migration path, recorded in `docs/stability-window-evidence.md` and passing `audit-stability-window`.
-5. Recovery docs remain current with all commands that create, repair, regenerate, publish, or invalidate durable project state.
-6. `fictionops audit-stable-core .` reports `ready=true`.
+1. At least one sustained real-project dogfood cycle after the 0.2 migration closure is recorded and passes `audit-dogfood-cycle`.
+2. Compatibility-sensitive behavior has stayed stable across that cycle, or every breaking change has an explicit migration path, recorded in `docs/stability-window-evidence.md` and passing `audit-stability-window`.
+3. Recovery docs remain current with all commands that create, repair, regenerate, publish, or invalidate durable project state.
+4. `fictionops audit-stable-core .` reports `ready=true`.
 
 ## Action Item Contract
 
