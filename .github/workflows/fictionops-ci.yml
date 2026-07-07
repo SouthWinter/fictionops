@@ -1,0 +1,193 @@
+name: FictionOps CI
+
+on:
+  push:
+    paths:
+      - "fictionops/**"
+      - ".github/workflows/fictionops-ci.yml"
+      - ".github/workflows/fictionops-publish.yml"
+  pull_request:
+    paths:
+      - "fictionops/**"
+      - ".github/workflows/fictionops-ci.yml"
+      - ".github/workflows/fictionops-publish.yml"
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    defaults:
+      run:
+        working-directory: fictionops
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Compile sources
+        run: python -m compileall -q src tests
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build wheel
+        run: python -m pip wheel . -w dist --no-deps --no-build-isolation
+
+      - name: Inspect wheel contents
+        run: |
+          python - <<'PY'
+          import sys
+          import zipfile
+          from pathlib import Path
+
+          wheels = sorted(Path("dist").glob("fictionops-*.whl"))
+          if len(wheels) != 1:
+              raise SystemExit(f"expected one wheel, found {len(wheels)}")
+
+          required = {
+              "fictionops/templates/project.yml",
+              "fictionops/templates/chapter_engine.zh-CN.md",
+              "fictionops/templates/information_release_table.zh-CN.md",
+              "fictionops/__main__.py",
+              "fictionops/adopt.py",
+              "fictionops/adopt_plan.py",
+              "fictionops/adopt_review.py",
+              "fictionops/agent_exec.py",
+              "fictionops/agent_connect.py",
+              "fictionops/agent_inbox.py",
+              "fictionops/agent_next.py",
+              "fictionops/agent_run.py",
+              "fictionops/agent_smoke.py",
+              "fictionops/agent_workflow_audit.py",
+              "fictionops/scene_plan.py",
+              "fictionops/draft_brief.py",
+              "fictionops/context_pack.py",
+              "fictionops/dogfood_cycle.py",
+              "fictionops/import_plan.py",
+              "fictionops/release_gate.py",
+              "fictionops/release_evidence.py",
+              "fictionops/stable_core.py",
+              "fictionops/stability_window.py",
+          }
+          with zipfile.ZipFile(wheels[0]) as archive:
+              names = set(archive.namelist())
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit("missing wheel entries: " + ", ".join(missing))
+          print(f"checked {wheels[0]}")
+          PY
+
+      - name: Install built wheel smoke
+        run: |
+          python -m venv .venv-wheel-smoke
+          . .venv-wheel-smoke/bin/activate
+          python -m pip install --no-deps dist/fictionops-*.whl
+          fictionops --version
+          python -m fictionops --version
+          fictionops agent-connect --help >/tmp/fictionops-agent-connect-help.txt
+          fictionops agent-smoke --help >/tmp/fictionops-agent-smoke-help.txt
+          fictionops agent-next --help >/tmp/fictionops-agent-next-help.txt
+          fictionops audit-agent-workflow --help >/tmp/fictionops-audit-agent-workflow-help.txt
+          fictionops audit-release-evidence --help >/tmp/fictionops-audit-release-evidence-help.txt
+          fictionops audit-dogfood-cycle --help >/tmp/fictionops-audit-dogfood-cycle-help.txt
+          fictionops audit-stability-window --help >/tmp/fictionops-audit-stability-window-help.txt
+          fictionops audit-stable-core --help >/tmp/fictionops-audit-stable-core-help.txt
+          smoke_dir="$(mktemp -d)"
+          fictionops init "$smoke_dir/wheel-smoke" --title "Wheel Smoke"
+          fictionops doctor "$smoke_dir/wheel-smoke" --format json >/tmp/fictionops-doctor-smoke.json
+
+      - name: Build and inspect sdist
+        run: |
+          python - <<'PY'
+          import tarfile
+          from pathlib import Path
+
+          import setuptools.build_meta as build_meta
+
+          sdist_name = build_meta.build_sdist("dist")
+          sdist = Path("dist") / sdist_name
+          prefix = "fictionops-0.1.0/"
+          required = {
+              "LICENSE",
+              "README.md",
+              "README.zh-CN.md",
+              "CHANGELOG.md",
+              "CONTRIBUTING.md",
+              "CONTRIBUTING.zh-CN.md",
+              "MANIFEST.in",
+              "pyproject.toml",
+              "src/fictionops/__main__.py",
+              "src/fictionops/cli.py",
+              "src/fictionops/agent_connect.py",
+              "src/fictionops/agent_exec.py",
+              "src/fictionops/agent_run.py",
+              "src/fictionops/agent_inbox.py",
+              "src/fictionops/agent_next.py",
+              "src/fictionops/agent_smoke.py",
+              "src/fictionops/agent_workflow_audit.py",
+              "src/fictionops/dogfood_cycle.py",
+              "src/fictionops/release_evidence.py",
+              "src/fictionops/stable_core.py",
+              "src/fictionops/stability_window.py",
+              "src/fictionops/templates/project.yml",
+              "docs/cli.md",
+              "docs/cli-contracts.md",
+              "docs/agent-protocol.md",
+              "docs/agent-connector-contract.md",
+              "docs/agent-connector-contract.zh-CN.md",
+              "docs/agent-integration.md",
+              "docs/agent-integration.zh-CN.md",
+              "docs/agent-workflow.md",
+              "docs/agent-workflow.zh-CN.md",
+              "docs/tutorial-demo.md",
+              "docs/migration.md",
+              "docs/end-to-end-migration-publish.md",
+              "docs/testing.md",
+              "docs/release.md",
+              "docs/release-trial-evidence.md",
+              "docs/release-trial-evidence.zh-CN.md",
+              "docs/compatibility.md",
+              "docs/compatibility.zh-CN.md",
+              "docs/known-limits.md",
+              "docs/known-limits.zh-CN.md",
+              "docs/recovery.md",
+              "docs/recovery.zh-CN.md",
+              "docs/milestone-status.md",
+              "docs/milestone-status.zh-CN.md",
+              "docs/stable-core-remaining-checklist.md",
+              "docs/stable-core-remaining-checklist.zh-CN.md",
+              "docs/stable-core-audit.md",
+              "docs/stable-core-audit.zh-CN.md",
+              "docs/dogfood-cycle-evidence.md",
+              "docs/dogfood-cycle-evidence.zh-CN.md",
+              "docs/stability-window-evidence.md",
+              "docs/stability-window-evidence.zh-CN.md",
+              "docs/release-checklist.zh-CN.md",
+              "docs/pypi-release.zh-CN.md",
+              "examples/agent_runner_echo.py",
+              "examples/agent_runner_openai_responses.py",
+              "examples/agent_controller_next.py",
+              "examples/agent_controller_loop.py",
+              "examples/demo_novel/project.yml",
+              "examples/legacy_novel_source/README.md",
+              "examples/legacy_novel_source/drafts/book_01/ch_001.md",
+              "tests/test_cli.py",
+              "workflows/from-seed-to-publication.zh-CN.md",
+          }
+          with tarfile.open(sdist, "r:gz") as archive:
+              names = set(archive.getnames())
+          missing = sorted(prefix + item for item in required if prefix + item not in names)
+          if missing:
+              raise SystemExit("missing sdist entries: " + ", ".join(missing))
+          print(f"checked {sdist}")
+          PY

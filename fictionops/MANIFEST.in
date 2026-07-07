@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+include README.zh-CN.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CONTRIBUTING.zh-CN.md
+
+recursive-include docs *.md
+recursive-include examples *
+recursive-include templates *.md *.yml
+recursive-include tests *.py
+recursive-include workflows *.md
+
+global-exclude __pycache__ *.py[cod] .DS_Store

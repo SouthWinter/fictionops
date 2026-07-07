@@ -1,0 +1,6 @@
+title: "灯市回声"
+language: "zh-CN"
+version: "0.1.0"
+fictionops: "0.1.0"
+description: "A runnable miniature FictionOps project that demonstrates outline-to-engine sync, scoped context, information boundaries, character memory, and draft preparation."
+default_book: "book_01"

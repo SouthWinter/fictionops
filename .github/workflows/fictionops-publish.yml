@@ -1,0 +1,357 @@
+name: FictionOps Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target. Use testpypi before pypi."
+        required: true
+        default: testpypi
+        type: choice
+        options:
+          - testpypi
+          - pypi
+      version:
+        description: "Expected pyproject version, for example 0.1.0."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify distributions
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fictionops
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify requested version
+        id: version
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+          expected = os.environ["EXPECTED_VERSION"].strip()
+          if version != expected:
+              raise SystemExit(f"version mismatch: pyproject has {version}, workflow input was {expected}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"version={version}", file=output)
+          print(f"verified version {version}")
+          PY
+
+      - name: Compile sources
+        run: python -m compileall -q src tests
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build wheel and sdist
+        run: |
+          rm -rf dist build src/*.egg-info
+          python -m pip wheel . -w dist --no-deps --no-build-isolation
+          python - <<'PY'
+          import pathlib
+          import setuptools.build_meta as build_meta
+
+          pathlib.Path("dist").mkdir(exist_ok=True)
+          print(build_meta.build_sdist("dist"))
+          PY
+
+      - name: Inspect distribution contents
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          import tarfile
+          import zipfile
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          dist = Path("dist")
+          wheels = sorted(dist.glob("fictionops-*.whl"))
+          sdists = sorted(dist.glob("fictionops-*.tar.gz"))
+          if len(wheels) != 1:
+              raise SystemExit(f"expected one wheel, found {len(wheels)}")
+          if len(sdists) != 1:
+              raise SystemExit(f"expected one sdist, found {len(sdists)}")
+
+          wheel_required = {
+              "fictionops/templates/project.yml",
+              "fictionops/templates/chapter_engine.zh-CN.md",
+              "fictionops/templates/information_release_table.zh-CN.md",
+              "fictionops/__main__.py",
+              "fictionops/adopt.py",
+              "fictionops/adopt_plan.py",
+              "fictionops/adopt_review.py",
+              "fictionops/agent_exec.py",
+              "fictionops/agent_connect.py",
+              "fictionops/agent_inbox.py",
+              "fictionops/agent_next.py",
+              "fictionops/agent_run.py",
+              "fictionops/agent_smoke.py",
+              "fictionops/agent_workflow_audit.py",
+              "fictionops/scene_plan.py",
+              "fictionops/draft_brief.py",
+              "fictionops/context_pack.py",
+              "fictionops/dogfood_cycle.py",
+              "fictionops/import_plan.py",
+              "fictionops/release_gate.py",
+              "fictionops/release_evidence.py",
+              "fictionops/stable_core.py",
+              "fictionops/stability_window.py",
+          }
+          with zipfile.ZipFile(wheels[0]) as archive:
+              wheel_names = set(archive.namelist())
+          missing_wheel = sorted(wheel_required - wheel_names)
+          if missing_wheel:
+              raise SystemExit("missing wheel entries: " + ", ".join(missing_wheel))
+
+          prefix = f"fictionops-{version}/"
+          sdist_required = {
+              "LICENSE",
+              "README.md",
+              "README.zh-CN.md",
+              "CHANGELOG.md",
+              "CONTRIBUTING.md",
+              "CONTRIBUTING.zh-CN.md",
+              "MANIFEST.in",
+              "pyproject.toml",
+              "src/fictionops/__main__.py",
+              "src/fictionops/cli.py",
+              "src/fictionops/agent_connect.py",
+              "src/fictionops/agent_exec.py",
+              "src/fictionops/agent_run.py",
+              "src/fictionops/agent_inbox.py",
+              "src/fictionops/agent_next.py",
+              "src/fictionops/agent_smoke.py",
+              "src/fictionops/agent_workflow_audit.py",
+              "src/fictionops/dogfood_cycle.py",
+              "src/fictionops/release_evidence.py",
+              "src/fictionops/stable_core.py",
+              "src/fictionops/stability_window.py",
+              "src/fictionops/templates/project.yml",
+              "docs/cli.md",
+              "docs/cli-contracts.md",
+              "docs/agent-protocol.md",
+              "docs/agent-connector-contract.md",
+              "docs/agent-connector-contract.zh-CN.md",
+              "docs/agent-integration.md",
+              "docs/agent-integration.zh-CN.md",
+              "docs/agent-workflow.md",
+              "docs/agent-workflow.zh-CN.md",
+              "docs/tutorial-demo.md",
+              "docs/migration.md",
+              "docs/end-to-end-migration-publish.md",
+              "docs/testing.md",
+              "docs/release.md",
+              "docs/release-trial-evidence.md",
+              "docs/release-trial-evidence.zh-CN.md",
+              "docs/compatibility.md",
+              "docs/compatibility.zh-CN.md",
+              "docs/known-limits.md",
+              "docs/known-limits.zh-CN.md",
+              "docs/recovery.md",
+              "docs/recovery.zh-CN.md",
+              "docs/milestone-status.md",
+              "docs/milestone-status.zh-CN.md",
+              "docs/stable-core-remaining-checklist.md",
+              "docs/stable-core-remaining-checklist.zh-CN.md",
+              "docs/stable-core-audit.md",
+              "docs/stable-core-audit.zh-CN.md",
+              "docs/dogfood-cycle-evidence.md",
+              "docs/dogfood-cycle-evidence.zh-CN.md",
+              "docs/stability-window-evidence.md",
+              "docs/stability-window-evidence.zh-CN.md",
+              "docs/release-checklist.zh-CN.md",
+              "docs/pypi-release.zh-CN.md",
+              "examples/agent_runner_echo.py",
+              "examples/agent_runner_openai_responses.py",
+              "examples/agent_controller_next.py",
+              "examples/agent_controller_loop.py",
+              "examples/demo_novel/project.yml",
+              "examples/legacy_novel_source/README.md",
+              "examples/legacy_novel_source/drafts/book_01/ch_001.md",
+              "tests/test_cli.py",
+              "workflows/from-seed-to-publication.zh-CN.md",
+          }
+          with tarfile.open(sdists[0], "r:gz") as archive:
+              sdist_names = set(archive.getnames())
+          missing_sdist = sorted(prefix + item for item in sdist_required if prefix + item not in sdist_names)
+          if missing_sdist:
+              raise SystemExit("missing sdist entries: " + ", ".join(missing_sdist))
+          print(f"checked {wheels[0]} and {sdists[0]}")
+          PY
+
+      - name: Install built wheel smoke
+        run: |
+          python -m venv .venv-wheel-smoke
+          . .venv-wheel-smoke/bin/activate
+          python -m pip install --no-deps dist/fictionops-*.whl
+          fictionops --version
+          python -m fictionops --version
+          fictionops agent-connect --help >/tmp/fictionops-agent-connect-help.txt
+          fictionops agent-smoke --help >/tmp/fictionops-agent-smoke-help.txt
+          fictionops agent-next --help >/tmp/fictionops-agent-next-help.txt
+          fictionops audit-agent-workflow --help >/tmp/fictionops-audit-agent-workflow-help.txt
+          fictionops audit-release-evidence --help >/tmp/fictionops-audit-release-evidence-help.txt
+          fictionops audit-dogfood-cycle --help >/tmp/fictionops-audit-dogfood-cycle-help.txt
+          fictionops audit-stability-window --help >/tmp/fictionops-audit-stability-window-help.txt
+          fictionops audit-stable-core --help >/tmp/fictionops-audit-stable-core-help.txt
+          smoke_dir="$(mktemp -d)"
+          fictionops init "$smoke_dir/wheel-smoke" --title "Wheel Smoke"
+          fictionops doctor "$smoke_dir/wheel-smoke" --format json >/tmp/fictionops-doctor-smoke.json
+
+      - name: Write release trial evidence draft
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TARGET: ${{ inputs.target }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_ID: ${{ github.run_id }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p release-trial-evidence
+          evidence="release-trial-evidence/release-trial-evidence-${VERSION}.md"
+          wheel="$(ls dist/fictionops-*.whl)"
+          sdist="$(ls dist/fictionops-*.tar.gz)"
+          wheel_hash="$(sha256sum "$wheel" | awk '{print $1}')"
+          sdist_hash="$(sha256sum "$sdist" | awk '{print $1}')"
+          cat > "$evidence" <<EOF
+          # Release Trial Evidence Draft
+
+          This draft was generated by the FictionOps publish workflow. It is external workflow evidence once the GitHub Actions run exists, but it still needs a human final decision and any TestPyPI/PyPI smoke details filled in after publishing.
+
+          - Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          - Version: ${VERSION}
+          - Commit / ref / tag: ${COMMIT_SHA} / ${REF_NAME}
+          - Target: ${TARGET}
+          - Decision: deferred
+          - Reviewer:
+
+          ## GitHub Actions
+
+          - Workflow name: FictionOps Publish
+          - Workflow file: .github/workflows/fictionops-publish.yml
+          - GitHub Actions run URL: ${RUN_URL}
+          - GitHub Actions run ID: ${RUN_ID}
+          - Runner OS / Python matrix: ubuntu-latest / Python 3.12
+          - Build job status: passed when this artifact is present
+          - Test job status: passed in build job
+          - Publish job status:
+          - Distribution artifact name: fictionops-dist-${VERSION}
+          - Evidence artifact name: fictionops-release-trial-evidence-${VERSION}
+          - Artifact download URL:
+          - Artifact retention note:
+
+          ## Distribution Artifacts
+
+          - Wheel filename: $(basename "$wheel")
+          - Wheel SHA256: ${wheel_hash}
+          - sdist filename: $(basename "$sdist")
+          - sdist SHA256: ${sdist_hash}
+          - Built-wheel smoke result: passed in build job before artifact upload
+          - sdist content check result: passed in build job
+
+          ## TestPyPI
+
+          - TestPyPI used: yes / no
+          - TestPyPI project URL:
+          - TestPyPI version URL:
+          - Trusted Publishing environment: ${TARGET}
+          - Publish result:
+          - Clean venv install command:
+          - fictionops --version result:
+          - python -m fictionops --version result:
+          - fictionops init smoke result:
+          - fictionops doctor smoke result:
+          - Rollback / cleanup note:
+
+          ## Notes
+
+          - Known issue:
+          - Follow-up:
+          - Waiver, if any:
+          EOF
+          sed -i 's/^          //' "$evidence"
+          echo "wrote $evidence"
+
+      - name: Upload distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fictionops-dist-${{ steps.version.outputs.version }}
+          path: fictionops/dist/*
+          if-no-files-found: error
+
+      - name: Upload release trial evidence draft
+        uses: actions/upload-artifact@v4
+        with:
+          name: fictionops-release-trial-evidence-${{ steps.version.outputs.version }}
+          path: fictionops/release-trial-evidence/*
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    if: ${{ inputs.target == 'testpypi' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fictionops-dist-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Publish to TestPyPI with trusted publishing
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: ${{ inputs.target == 'pypi' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fictionops-dist-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Publish to PyPI with trusted publishing
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist

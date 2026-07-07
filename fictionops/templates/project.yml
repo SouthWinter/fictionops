@@ -1,0 +1,42 @@
+project:
+  title: "Untitled Novel"
+  language: "zh-CN"
+  genre: ""
+  status: "planning"
+  owner: ""
+
+workflow:
+  use_chapter_engine: true
+  use_information_release_table: true
+  use_foreshadowing_echo_table: true
+  use_continuity_audit: true
+  use_style_audit: true
+  update_handoff_log: true
+
+paths:
+  management: "00_management"
+  story_seed: "01_story_seed"
+  world: "02_world"
+  characters: "03_characters"
+  structure: "04_structure"
+  canon: "05_canon"
+  drafts: "06_drafts"
+  audits: "07_audits"
+  publish: "08_publish"
+  archive: "99_archive"
+
+chapter_defaults:
+  target_length: "flexible"
+  short_chapter: "6000-8000"
+  standard_chapter: "8000-10000"
+  heavy_chapter: "9500-12000"
+  stop_rule: "Do not pad mechanically after the chapter pressure has resolved."
+
+models:
+  provider: "configurable"
+  config_file: "00_management/model_config.json"
+  api_key_env: ""
+  base_url: ""
+  planning_model: "configurable"
+  drafting_model: "configurable"
+  audit_model: "configurable"
