@@ -84,6 +84,7 @@ The same runner can be used with Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Douba
 - [Demo tutorial](fictionops/docs/tutorial-demo.md)
 - [Migration guide](fictionops/docs/migration.md)
 - [Roadmap](fictionops/docs/roadmap.md)
+- [0.1.1 release candidate plan](fictionops/docs/release-candidate-0.1.1.md)
 - [Promotion kit](fictionops/docs/promotion-kit.md)
 - [Chinese README](fictionops/README.zh-CN.md)
 

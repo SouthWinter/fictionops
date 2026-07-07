@@ -128,6 +128,8 @@ fictionops/
 - [Demo tutorial](docs/tutorial-demo.md)
 - [Testing guide](docs/testing.md)
 - [Release guide](docs/release.md)
+- [0.1.1 release candidate plan](docs/release-candidate-0.1.1.md)
+- [0.1.1 release candidate plan, Chinese reference](docs/release-candidate-0.1.1.zh-CN.md)
 - [Release trial evidence](docs/release-trial-evidence.md)
 - [Release trial evidence, Chinese reference](docs/release-trial-evidence.zh-CN.md)
 - [Compatibility policy](docs/compatibility.md)
