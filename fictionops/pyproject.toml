@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [
   { name = "FictionOps contributors" }
 ]
-keywords = ["fiction", "writing", "novel", "workflow", "agent"]
+keywords = ["fiction", "writing", "novel", "workflow", "agent", "cli", "epub", "ai-assisted-writing"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Environment :: Console",
@@ -22,6 +22,12 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Text Processing",
 ]
+
+[project.urls]
+Homepage = "https://github.com/SouthWinter/fictionops"
+Repository = "https://github.com/SouthWinter/fictionops"
+Issues = "https://github.com/SouthWinter/fictionops/issues"
+Documentation = "https://github.com/SouthWinter/fictionops/tree/main/fictionops/docs"
 
 [project.scripts]
 fictionops = "fictionops.cli:main"

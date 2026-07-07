@@ -1084,6 +1084,9 @@ class FictionOpsCliTests(unittest.TestCase):
         for rel_path in required:
             self.assertTrue((ROOT / rel_path).exists(), f"missing release governance file: {rel_path}")
         self.assertTrue((ROOT.parent / ".github" / "workflows" / "fictionops-ci.yml").exists(), "missing FictionOps CI workflow")
+        self.assertTrue((ROOT.parent / "README.md").exists(), "missing GitHub root README")
+        self.assertTrue((ROOT.parent / "LICENSE").exists(), "missing GitHub root license")
+        self.assertTrue((ROOT.parent / "CITATION.cff").exists(), "missing GitHub citation metadata")
         publish_workflow = ROOT.parent / ".github" / "workflows" / "fictionops-publish.yml"
         self.assertTrue(publish_workflow.exists(), "missing FictionOps publish workflow")
         self.assertTrue((ROOT.parent / ".github" / "pull_request_template.md").exists(), "missing PR template")
@@ -1158,8 +1161,21 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("docs/dogfood-cycle-evidence.zh-CN.md", workflow_text)
             self.assertIn("docs/stability-window-evidence.md", workflow_text)
             self.assertIn("docs/stability-window-evidence.zh-CN.md", workflow_text)
+            self.assertIn("docs/getting-started.md", workflow_text)
+            self.assertIn("docs/model-providers.md", workflow_text)
+            self.assertIn("examples/agent_runner_openai_chat.py", workflow_text)
             self.assertIn("examples/agent_runner_openai_responses.py", workflow_text)
             self.assertIn("examples/agent_controller_loop.py", workflow_text)
+
+        root_readme = (ROOT.parent / "README.md").read_text(encoding="utf-8")
+        root_citation = (ROOT.parent / "CITATION.cff").read_text(encoding="utf-8")
+        self.assertIn("local-first CLI workflow system", root_readme)
+        self.assertIn("30 Second Quick Start", root_readme)
+        self.assertIn("python -m pip install fictionops", root_readme)
+        self.assertIn("agent_runner_openai_chat.py", root_readme)
+        self.assertIn("Roadmap", root_readme)
+        self.assertIn("cff-version: 1.2.0", root_citation)
+        self.assertIn("repository-code: \"https://github.com/SouthWinter/fictionops\"", root_citation)
 
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         readme_zh = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")

@@ -6,6 +6,33 @@ FictionOps is a file-based operating system and API-backed workflow harness for 
 
 The current package is Chinese-first and local-first. It uses Markdown, YAML, JSON, and EPUB files, and the CLI does not call a model by itself. External runners may call OpenAI, local model servers, or other APIs; external controllers may turn those calls into an agentic loop.
 
+## Start Here
+
+Install from the GitHub source checkout today:
+
+```bash
+python -m pip install "git+https://github.com/SouthWinter/fictionops.git#subdirectory=fictionops"
+```
+
+After the first formal PyPI release, the intended install command is:
+
+```bash
+python -m pip install fictionops
+```
+
+Create a tiny project:
+
+```bash
+fictionops init my-novel --title "My Novel"
+fictionops new-book my-novel --book book_01 --title "Book One"
+fictionops new-chapter my-novel --book book_01 --chapter 001 --title "Chapter One"
+fictionops plan-chapter my-novel --book book_01 --chapter 001
+fictionops draft-brief my-novel --book book_01 --chapter 001
+fictionops doctor my-novel --book book_01
+```
+
+For the shorter onboarding guide, see [Getting started](docs/getting-started.md). For model/API setup, see [Model providers](docs/model-providers.md).
+
 ## Repository Contents
 
 ```text

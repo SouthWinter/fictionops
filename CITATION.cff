@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use FictionOps in writing, research, articles, or agent workflow experiments, please cite it."
+title: "FictionOps"
+type: software
+version: "0.1.0"
+abstract: "A local-first CLI workflow system for maintaining long-form fiction projects, AI-assisted drafting boundaries, continuity audits, and publishable outputs."
+authors:
+  - name: "FictionOps contributors"
+repository-code: "https://github.com/SouthWinter/fictionops"
+url: "https://github.com/SouthWinter/fictionops"
+license: MIT
+keywords:
+  - fiction
+  - writing
+  - long-form fiction
+  - creative writing
+  - cli
+  - agent workflow
+  - ai-assisted writing

@@ -3,11 +3,17 @@ name: FictionOps CI
 on:
   push:
     paths:
+      - "README.md"
+      - "LICENSE"
+      - "CITATION.cff"
       - "fictionops/**"
       - ".github/workflows/fictionops-ci.yml"
       - ".github/workflows/fictionops-publish.yml"
   pull_request:
     paths:
+      - "README.md"
+      - "LICENSE"
+      - "CITATION.cff"
       - "fictionops/**"
       - ".github/workflows/fictionops-ci.yml"
       - ".github/workflows/fictionops-publish.yml"
@@ -153,6 +159,8 @@ jobs:
               "src/fictionops/stable_core.py",
               "src/fictionops/stability_window.py",
               "src/fictionops/templates/project.yml",
+              "docs/getting-started.md",
+              "docs/getting-started.zh-CN.md",
               "docs/cli.md",
               "docs/cli-contracts.md",
               "docs/agent-protocol.md",
@@ -160,6 +168,8 @@ jobs:
               "docs/agent-connector-contract.zh-CN.md",
               "docs/agent-integration.md",
               "docs/agent-integration.zh-CN.md",
+              "docs/model-providers.md",
+              "docs/model-providers.zh-CN.md",
               "docs/agent-workflow.md",
               "docs/agent-workflow.zh-CN.md",
               "docs/tutorial-demo.md",
@@ -188,6 +198,7 @@ jobs:
               "docs/release-checklist.zh-CN.md",
               "docs/pypi-release.zh-CN.md",
               "examples/agent_runner_echo.py",
+              "examples/agent_runner_openai_chat.py",
               "examples/agent_runner_openai_responses.py",
               "examples/agent_controller_next.py",
               "examples/agent_controller_loop.py",
