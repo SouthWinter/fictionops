@@ -12,7 +12,7 @@ on:
           - testpypi
           - pypi
       version:
-        description: "Expected pyproject version, for example 0.1.0."
+        description: "Expected pyproject version, for example 0.1.1."
         required: true
         type: string
 

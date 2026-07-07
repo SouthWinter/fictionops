@@ -4,6 +4,23 @@ All notable changes to FictionOps will be documented in this file.
 
 The project uses semantic versioning while the CLI contracts are still small enough to audit by hand.
 
+## [0.1.1] - 2026-07-07
+
+### Added
+
+- GitHub root README with concise positioning, quickstart commands, model/API integration notes, documentation links, roadmap, citation, and license pointers.
+- Root `LICENSE` and `CITATION.cff` for GitHub project presentation and citation support.
+- Quickstart terminal preview SVG included in the source distribution.
+- Promotion kit docs with GitHub Release, Show HN, community post, Chinese article, and demo-script drafts.
+- Quickstart/onboarding issue template.
+- 0.1.1 release-candidate plan explaining why the current public package candidate should not reuse the earlier 0.1.0 TestPyPI artifact.
+
+### Changed
+
+- Package metadata now includes project URLs and expanded keywords.
+- CI and publish distribution checks include the newer onboarding docs, provider docs, chat runner example, and quickstart preview asset.
+- Public-facing release and promotion copy now targets 0.1.1 as the recommended PyPI/TestPyPI candidate after the 0.1.0 MVP proof.
+
 ## [0.1.0] - 2026-07-05
 
 ### Added

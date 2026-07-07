@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use FictionOps in writing, research, articles, or agent workflow experiments, please cite it."
 title: "FictionOps"
 type: software
-version: "0.1.0"
+version: "0.1.1"
 abstract: "A local-first CLI workflow system for maintaining long-form fiction projects, AI-assisted drafting boundaries, continuity audits, and publishable outputs."
 authors:
   - name: "FictionOps contributors"

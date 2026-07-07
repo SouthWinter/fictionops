@@ -10,7 +10,7 @@ try:
     from . import __version__
     from .core import *  # noqa: F403 - re-exported for backward-compatible tests and imports.
 except ImportError:  # Allows running this file directly from a source checkout.
-    __version__ = "0.1.0"
+    __version__ = "0.1.1"
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from fictionops.core import *  # noqa: F403
 

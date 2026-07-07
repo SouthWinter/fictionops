@@ -101,7 +101,7 @@ fictionops/
 
 ## Roadmap
 
-The current package is a 0.1.0 pre-alpha MVP with 50 CLI commands and 128 regression tests. Near-term work focuses on:
+The current package is a 0.1.1 pre-alpha onboarding and packaging candidate with 50 CLI commands and 128 regression tests. Near-term work focuses on:
 
 - formal PyPI release;
 - clearer demo media and short tutorials;

@@ -63,13 +63,13 @@ Narration beats:
 Title:
 
 ```text
-FictionOps 0.1.0: local-first workflow for long-form fiction projects
+FictionOps 0.1.1: local-first workflow for long-form fiction projects
 ```
 
 Body:
 
 ```markdown
-FictionOps 0.1.0 is a pre-alpha CLI workflow system for maintaining long-form fiction projects.
+FictionOps 0.1.1 is a pre-alpha CLI workflow system for maintaining long-form fiction projects.
 
 It helps writers keep outlines, chapter plans, canon, character memory, information boundaries, AI-assisted task bundles, review gates, and publishable outputs in ordinary files.
 
@@ -163,4 +163,3 @@ Recommended order:
 6. Publish one Chinese article and one English technical post.
 7. Share to targeted communities asking for API/CLI feedback.
 8. Submit to relevant awesome lists only after external users can install and run it.
-

@@ -579,7 +579,7 @@ class FictionOpsCliTests(unittest.TestCase):
 
     def test_cli_init_and_version_entrypoints(self) -> None:
         version = self.run_cli("--version")
-        self.assertIn("fictionops 0.1.0", version.stdout)
+        self.assertIn("fictionops 0.1.1", version.stdout)
 
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "cli-demo"
@@ -1539,7 +1539,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            self.assertIn("fictionops 0.1.0", version.stdout)
+            self.assertIn("fictionops 0.1.1", version.stdout)
 
             module_version = subprocess.run(
                 [str(python), "-m", "fictionops", "--version"],
@@ -1549,7 +1549,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            self.assertIn("fictionops 0.1.0", module_version.stdout)
+            self.assertIn("fictionops 0.1.1", module_version.stdout)
 
             target = tmp_path / "installed-smoke"
             result = subprocess.run(
@@ -1665,7 +1665,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            wheels = sorted(wheelhouse.glob("fictionops-0.1.0-*.whl"))
+            wheels = sorted(wheelhouse.glob("fictionops-0.1.1-*.whl"))
             self.assertEqual(len(wheels), 1)
 
             venv = tmp_path / "venv"
@@ -1698,7 +1698,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            self.assertIn("fictionops 0.1.0", version.stdout)
+            self.assertIn("fictionops 0.1.1", version.stdout)
 
             module_version = subprocess.run(
                 [str(python), "-m", "fictionops", "--version"],
@@ -1708,7 +1708,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            self.assertIn("fictionops 0.1.0", module_version.stdout)
+            self.assertIn("fictionops 0.1.1", module_version.stdout)
 
             agent_help = subprocess.run(
                 [str(fictionops_script), "agent-next", "--help"],
@@ -1837,7 +1837,7 @@ class FictionOpsCliTests(unittest.TestCase):
             with tarfile.open(sdist_path, "r:gz") as archive:
                 names = set(archive.getnames())
 
-        prefix = "fictionops-0.1.0/"
+        prefix = "fictionops-0.1.1/"
         required = {
             "LICENSE",
             "README.md",
@@ -2948,18 +2948,19 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertNotEqual(failed.returncode, 0)
             self.assertIn("Use --force to overwrite", failed.stderr)
 
-    def test_release_evidence_audit_reports_default_record_as_accepted(self) -> None:
+    def test_release_evidence_audit_reports_default_record_as_pending_for_current_version(self) -> None:
         report = build_release_evidence_audit(ROOT)
-        self.assertEqual(report.status, "accepted")
-        self.assertTrue(report.ready)
+        self.assertEqual(report.status, "incomplete")
+        self.assertFalse(report.ready)
         self.assertEqual(report.missing_required_fields, [])
-        self.assertEqual(report.blocking_issue_count, 0)
+        self.assertEqual(report.blocking_issue_count, 1)
+        self.assertIn("release_version_mismatch", {issue.code for issue in report.issues})
 
         result = self.run_cli("audit-release-evidence", str(ROOT), "--format", "json")
         data = json.loads(result.stdout)
-        self.assertEqual(data["status"], "accepted")
-        self.assertEqual(data["ready"], True)
-        self.assertEqual(data["blocking_issue_count"], 0)
+        self.assertEqual(data["status"], "incomplete")
+        self.assertEqual(data["ready"], False)
+        self.assertEqual(data["blocking_issue_count"], 1)
 
     def test_release_evidence_audit_reports_template_as_incomplete(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -3876,12 +3877,12 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertFalse(report.ready)
         self.assertTrue(report.local_foundation_ready)
         codes = {item.code for item in report.issues}
-        self.assertNotIn("release_evidence_not_ready", codes)
+        self.assertIn("release_evidence_not_ready", codes)
         self.assertIn("dogfood_cycle_not_ready", codes)
         self.assertIn("stability_window_not_accepted", codes)
         actions = {item.item_id: item for item in report.action_items}
         self.assertEqual(actions["local-foundation"].status, "complete")
-        self.assertEqual(actions["release-trial-evidence"].status, "complete")
+        self.assertEqual(actions["release-trial-evidence"].status, "external_required")
         self.assertEqual(actions["sustained-dogfood-cycle"].status, "external_required")
         self.assertEqual(actions["stability-window"].status, "external_required")
         self.assertIn("audit-release-evidence", actions["release-trial-evidence"].audit_command)
@@ -3890,7 +3891,7 @@ class FictionOpsCliTests(unittest.TestCase):
         data = json.loads(result.stdout)
         self.assertEqual(data["status"], "not_ready")
         self.assertEqual(data["ready"], False)
-        self.assertEqual(data["evidence"]["release_evidence_status"], "accepted")
+        self.assertEqual(data["evidence"]["release_evidence_status"], "incomplete")
         self.assertIn("release_evidence_status", data["evidence"])
         self.assertIn("action_items", data)
         self.assertIn("release-trial-evidence", {item["item_id"] for item in data["action_items"]})
@@ -5295,17 +5296,17 @@ class FictionOpsCliTests(unittest.TestCase):
         package_report = build_agent_next(ROOT)
         self.assertEqual(package_report.status, "needs_human_review")
         self.assertEqual(package_report.candidates[0].stage, "stable-core")
-        self.assertIn("audit-dogfood-cycle", package_report.selected_command)
+        self.assertIn("audit-release-evidence", package_report.selected_command)
         self.assertIn(str(ROOT), package_report.selected_command)
-        self.assertNotIn("audit-dogfood-cycle . --file", package_report.selected_command)
+        self.assertNotIn("audit-release-evidence . --file", package_report.selected_command)
         self.assertEqual(package_report.evidence["fictionops_package"], True)
-        self.assertNotIn("release-trial-evidence", package_report.evidence["stable_core_action_items"])
+        self.assertIn("release-trial-evidence", package_report.evidence["stable_core_action_items"])
         self.assertIn("sustained-dogfood-cycle", package_report.evidence["stable_core_action_items"])
         package_cli = self.run_cli("agent-next", str(ROOT.relative_to(ROOT.parent)), "--format", "json")
         package_cli_data = json.loads(package_cli.stdout)
         self.assertEqual(package_cli_data["candidates"][0]["stage"], "stable-core")
         self.assertIn(str(ROOT), package_cli_data["selected_command"])
-        self.assertNotIn("audit-dogfood-cycle fictionops --file", package_cli_data["selected_command"])
+        self.assertNotIn("audit-release-evidence fictionops --file", package_cli_data["selected_command"])
 
         with tempfile.TemporaryDirectory() as tmp:
             legacy = Path(tmp) / "legacy"

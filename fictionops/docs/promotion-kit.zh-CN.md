@@ -63,13 +63,13 @@ fictionops doctor my-novel --book book_01
 标题：
 
 ```text
-FictionOps 0.1.0: local-first workflow for long-form fiction projects
+FictionOps 0.1.1: local-first workflow for long-form fiction projects
 ```
 
 正文：
 
 ```markdown
-FictionOps 0.1.0 is a pre-alpha CLI workflow system for maintaining long-form fiction projects.
+FictionOps 0.1.1 is a pre-alpha CLI workflow system for maintaining long-form fiction projects.
 
 It helps writers keep outlines, chapter plans, canon, character memory, information boundaries, AI-assisted task bundles, review gates, and publishable outputs in ordinary files.
 
@@ -163,4 +163,3 @@ I am looking for feedback on whether the quickstart and CLI workflow make sense 
 6. 发一篇中文文章和一篇英文技术帖。
 7. 到精准社区征求 API/CLI 反馈。
 8. 等外部用户能安装并跑通后，再给相关 awesome list 提 PR。
-

@@ -142,6 +142,7 @@ fictionops/
 - [Release checklist, Chinese reference](docs/release-checklist.zh-CN.md)
 - [PyPI release guide, Chinese reference](docs/pypi-release.zh-CN.md)
 - [0.1.0 release notes](docs/release-notes-0.1.0.zh-CN.md)
+- [0.1.1 release notes](docs/release-notes-0.1.1.md)
 - [0.1.0 completion audit](docs/completion-audit-0.1.0.zh-CN.md)
 - [Roadmap](docs/roadmap.md)
 - [Roadmap, Chinese reference](docs/roadmap.zh-CN.md)

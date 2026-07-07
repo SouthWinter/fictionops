@@ -135,7 +135,7 @@ jobs:
 
           sdist_name = build_meta.build_sdist("dist")
           sdist = Path("dist") / sdist_name
-          prefix = "fictionops-0.1.0/"
+          prefix = "fictionops-0.1.1/"
           required = {
               "LICENSE",
               "README.md",
