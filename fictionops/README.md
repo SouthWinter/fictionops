@@ -2,9 +2,9 @@
 
 Languages: English | [Chinese](README.zh-CN.md)
 
-FictionOps is a file-based operating system and agentic workflow harness for long-form fiction planning, drafting, auditing, migration, and publishing. It is not a one-click novel generator. Its job is to help a writer keep a large story maintainable: structure, canon, information boundaries, character memory, prose-pattern audits, handoff context, agent task bundles, and release artifacts all live in ordinary files.
+FictionOps is a file-based operating system and API-backed workflow harness for long-form fiction planning, drafting, auditing, migration, and publishing. It is not a one-click novel generator and it is not an autonomous writing agent. Its job is to help a writer keep a large story maintainable: structure, canon, information boundaries, character memory, prose-pattern audits, handoff context, model/API task bundles, staged outputs, and release artifacts all live in ordinary files.
 
-The current package is Chinese-first and local-first. It uses Markdown, YAML, JSON, and EPUB files, and the CLI does not call a model by itself.
+The current package is Chinese-first and local-first. It uses Markdown, YAML, JSON, and EPUB files, and the CLI does not call a model by itself. External runners may call OpenAI, local model servers, or other APIs; external controllers may turn those calls into an agentic loop.
 
 ## Repository Contents
 
@@ -192,7 +192,7 @@ The test suite currently covers 50 CLI commands and 127 regression tests, includ
 
 FictionOps is best understood as a workflow and toolkit for long-form fiction continuity, planning, revision, and publishing. It should protect uncertainty, silence, misreading, emotional residue, character-specific intelligence, delayed understanding, and living prose.
 
-When connected to an external model runner or controller, the whole setup is an agentic workflow. FictionOps core remains the harness: it scopes context, packages tasks, receives staged outputs, and runs gates; the external runner or controller performs the agent action. `audit-agent-workflow` is the preflight gate for checking that boundary before connecting a runner or controller. See [Agent workflow positioning](docs/agent-workflow.md).
+When connected to an external model API through a runner, the setup is an API-backed AI workflow. When an external controller also reads project state, chooses next steps, calls runners, and stops at review gates, the whole setup becomes an agentic workflow. FictionOps core remains the harness: it scopes context, packages tasks, receives staged outputs, and runs gates; API calls, model execution, and controller loops live outside the core. `audit-agent-workflow` is the preflight gate for checking that boundary before connecting a runner or controller. See [Agent workflow positioning](docs/agent-workflow.md).
 
 For concrete wiring patterns, including manual chat use, external runners, OpenAI Responses runner dry runs, and controller loops, see [Agent integration guide](docs/agent-integration.md).
 
