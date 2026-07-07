@@ -2,9 +2,9 @@
 
 [English](README.md) | 简体中文
 
-> 一个面向长篇小说的创作操作系统，用于规划、写作、复盘、审计和发布。它服务于人的审美，也允许 AI Agent 参与协作。
+> 一个面向长篇小说的创作操作系统，用于规划、写作、复盘、审计和发布。它服务于人的审美，也允许外部模型 API、runner 或 controller 参与协作。
 
-FictionOps 是一套拟开源的长篇小说工作流与 Agent 框架。它不是“一键生成小说”的工具，也不是把小说写成表格的管理软件。更准确地说，它是一套 agentic workflow harness：用文件、命令、上下文包、任务包、外部 runner、收件箱和门禁，把人类作者与 AI Agent 的协作边界固定下来。接上外部模型 runner 或 controller 之后，整套系统可以称为 agent workflow；FictionOps 本体仍然是编排、暂存和门禁层，不是直接掌权的自主小说家。它的目标是帮助作者、编辑和 AI Agent 一起维护那些可能跨越数百章、数百万字、多视角、多时间线、多卷设定和长期伏笔的故事。
+FictionOps 是一套拟开源的长篇小说工作流底座。它不是“一键生成小说”的工具，也不是把小说写成表格的管理软件，更不是自主写作 agent。更准确地说，它是一套 API-backed workflow harness：用文件、命令、上下文包、任务包、外部 runner、收件箱和门禁，把人类作者与模型 API/外部工具之间的协作边界固定下来。接上外部模型 API runner 后，它是 AI-assisted 或 API-backed workflow；再接上能够读取状态、选择下一步、调用 runner 并在复核边界停下的 controller 后，整套系统才构成 agentic workflow。FictionOps 本体仍然是编排、暂存和门禁层，不是直接掌权的自主小说家。它的目标是帮助作者、编辑、模型工具和 controller 一起维护那些可能跨越数百章、数百万字、多视角、多时间线、多卷设定和长期伏笔的故事。
 
 核心判断很简单：
 
@@ -153,7 +153,7 @@ fictionops/
 2. 再读 [从故事种子到发布](workflows/from-seed-to-publication.zh-CN.md)，理解完整流程。
 3. 读 [审计优先级](docs/audit-priority.zh-CN.md)，理解哪些问题必须先修。
 4. 读 [Agent 协作协议](docs/agent-protocol.zh-CN.md)，理解 AI 协作的输入输出边界。
-5. 读 [Agent workflow 定位说明](docs/agent-workflow.zh-CN.md)，理解“接上 AI 后算不算 agent workflow”以及 FictionOps 本体和外部 runner/controller 的边界。
+5. 读 [Agent workflow 定位说明](docs/agent-workflow.zh-CN.md)，理解“接上模型 API 后算不算 agent workflow”以及 FictionOps 本体和外部 runner/controller 的边界。
 6. 读 [CLI 使用说明](docs/cli.zh-CN.md)，了解所有 CLI 命令。
 7. 读 [CLI 契约](docs/cli-contracts.zh-CN.md)，理解命令输入、输出、失败语义和稳定承诺。
 8. 读 [测试说明](docs/testing.zh-CN.md)，了解如何验证 CLI。
@@ -1146,8 +1146,8 @@ Agent 可能让所有聪明角色说话都一样。
 
 - 可配置模型供应商边界，不保存真实密钥：`model-config`
 - 架构、正史、人物、信息、伏笔、规划、写作、风格和发布角色提示词：`agent-prompt`
-- 外部 Agent 接入套件：`agent-connect`
-- prepare-only Agent 任务包：`agent-run`
+- 外部 runner/controller 接入套件：`agent-connect`
+- prepare-only 模型/API 任务包：`agent-run`
 - 外部 runner 执行桥，保存暂存输出但不自动应用：`agent-exec`
 - Agent 输出暂存收件箱审计：`agent-inbox`
 - Level 2 controller 下一步安全命令选择：`agent-next`
