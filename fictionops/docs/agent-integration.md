@@ -1,19 +1,19 @@
 # Agent Integration Guide
 
-This guide shows how to connect an external AI agent, model runner, or controller to FictionOps without letting the model silently overwrite manuscript or canon files.
+This guide shows how to connect an external model API, runner, or controller to FictionOps without letting model output silently overwrite manuscript or canon files.
 
-FictionOps core is the workflow harness. The external tool is the agent. For the compact interface contract that external runners and controllers should follow, see [Agent connector contract](agent-connector-contract.md).
+FictionOps core is the workflow harness. A runner may be a simple API wrapper, a local script, an IDE tool, or a model service client; a controller may turn those calls into an agentic loop. For the compact interface contract that external runners and controllers should follow, see [Agent connector contract](agent-connector-contract.md).
 
 ## Integration Levels
 
 | Level | Use When | FictionOps Commands | Who Applies Output |
 | --- | --- | --- | --- |
 | Manual chat helper | A writer wants to paste scoped context into ChatGPT, Claude, a local model, or another assistant. | `context-pack`, `agent-prompt`, `draft-brief` | Human |
-| External runner | A script or model wrapper can read stdin and write stdout. | `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox` | Human, after review |
+| External runner | A script, API wrapper, or model service client can read stdin and write stdout. | `agent-connect`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox` | Human, after review |
 | Controller loop | A script should choose and run safe FictionOps commands. | `agent-connect`, `agent-next`, `examples/agent_controller_loop.py` | Human at review boundaries |
 | Provider-backed runner | A runner calls OpenAI, a local server, or another provider. | `model-config`, `agent-connect`, `agent-exec`, runner script | Human, after review |
 
-The stable rule is: **agents may produce staged output; they do not directly edit manuscript or canon.**
+The stable rule is: **external runners and controllers may produce staged output; they do not directly edit manuscript or canon.**
 
 ## Files And Data Flow
 
@@ -28,7 +28,7 @@ project files
   -> human decision
 ```
 
-The task directory is the contract between FictionOps and the external agent:
+The task directory is the contract between FictionOps and the external runner or controller:
 
 - `request.json` is the machine-readable task envelope.
 - `prompt.md` is the role prompt and output contract.
@@ -46,9 +46,9 @@ fictionops agent-smoke my-novel --connector openai-runner --dry-run
 
 Use `agent-smoke` before a real model call when you want a single local proof that the connector kit, adapter, task bundle, staged output, and inbox boundary fit together. A passed smoke test proves the staging boundary, not model quality.
 
-## Pattern 1: Manual Agent Use
+## Pattern 1: Manual Chat Or API Use
 
-Use this when the agent is a chat UI or any tool that does not have a runner script yet.
+Use this when the model is accessed through a chat UI or any API/tool that does not have a runner script yet.
 
 ```bash
 fictionops context-pack my-novel --task draft --book book_01 --chapter 001 --out context.md
@@ -60,7 +60,7 @@ Give those files to the assistant manually. When the assistant returns text, pas
 
 ## Pattern 2: External Runner
 
-Use this when your agent can be wrapped as a command that reads stdin and writes stdout.
+Use this when your model API call, local tool, or assistant can be wrapped as a command that reads stdin and writes stdout.
 
 ```bash
 fictionops agent-run my-novel \
@@ -83,7 +83,7 @@ Runner contract:
 - do not edit project files directly;
 - exit nonzero when no usable staged output should be saved.
 
-This makes it easy to plug in a local script, a hosted model wrapper, an IDE agent, or a custom orchestration framework.
+This makes it easy to plug in a local script, a hosted model wrapper, an IDE assistant, or a custom orchestration framework.
 
 ## Pattern 3: OpenAI Responses Runner
 
@@ -160,4 +160,4 @@ Before calling a real model or controller:
 
 ## What Not To Do
 
-Do not connect an agent by giving it write access to `06_drafts/`, `05_canon/`, or `04_structure/` and asking it to edit files directly. That may be useful for private experiments, but it is outside the FictionOps safety contract and cannot be treated as an auditable FictionOps workflow.
+Do not connect a model, API runner, or controller by giving it write access to `06_drafts/`, `05_canon/`, or `04_structure/` and asking it to edit files directly. That may be useful for private experiments, but it is outside the FictionOps safety contract and cannot be treated as an auditable FictionOps workflow.
