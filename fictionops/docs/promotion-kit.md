@@ -37,7 +37,7 @@ Before wide promotion:
 
 ## Demo Script
 
-Use this for a terminal recording or a two-minute video.
+Use [Two-minute demo script](two-minute-demo.md) for the shortest terminal recording or live walkthrough. The notes below are a slightly longer promotion script.
 
 ```bash
 python -m pip install "git+https://github.com/SouthWinter/fictionops.git#subdirectory=fictionops"
@@ -149,7 +149,7 @@ Structure:
 2. 普通文件夹、聊天记录和表格为什么会失控。
 3. FictionOps 的核心思路：文件结构、章节发动机、正史、人物记忆、信息边界、伏笔回声、门禁。
 4. 为什么不让 AI 直接改正文：runner 只能产出暂存文本。
-5. 三分钟 demo：init、new-chapter、plan-chapter、draft-brief、agent-run、agent-inbox、doctor。
+5. 两到三分钟 demo：plan-chapter、draft-brief、agent-run、agent-exec、agent-inbox、doctor。
 6. 当前边界：pre-alpha、中文优先、不是自动写书。
 7. 项目链接和希望获得的反馈。
 

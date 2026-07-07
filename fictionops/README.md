@@ -134,6 +134,8 @@ fictionops/
 - [Promotion kit](docs/promotion-kit.md)
 - [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)
 - [Demo tutorial](docs/tutorial-demo.md)
+- [Two-minute demo script](docs/two-minute-demo.md)
+- [Two-minute demo script, Chinese reference](docs/two-minute-demo.zh-CN.md)
 - [Testing guide](docs/testing.md)
 - [Release guide](docs/release.md)
 - [0.1.1 release candidate plan](docs/release-candidate-0.1.1.md)
