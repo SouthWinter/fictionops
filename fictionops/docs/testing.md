@@ -24,7 +24,7 @@ python -m unittest discover -s fictionops/tests -p test_cli.py -k release_smoke 
 
 ## Current Coverage
 
-The current suite covers 51 CLI commands and 129 regression tests. It checks:
+The current suite covers 51 CLI commands and 131 regression tests. It checks:
 
 - every CLI help entry;
 - CLI contracts and documentation coverage;
@@ -39,7 +39,7 @@ The current suite covers 51 CLI commands and 129 regression tests. It checks:
 - explicit migration waivers for deferred adopt-review blockers;
 - grouped migration cleanup with `adopt-plan`;
 - import queue sorting with `import-plan`;
-- agent prompt, connector kit generation, reproducible agent harness evaluation, connector smoke tests, run, exec, inbox, next-step controller, agent workflow preflight audit, no-model controller loop workflows, and OpenAI Responses runner dry-run wiring;
+- agent prompt, connector kit generation, reproducible agent harness evaluation, connector smoke tests, run, exec, inbox, next-step controller, agent workflow preflight audit, no-model controller loop workflows, OpenAI-compatible Chat runner v1 presets/env-file wiring, and OpenAI Responses runner dry-run wiring;
 - model config and context packs;
 - clean Markdown, metadata, manifest, EPUB export, and EPUB audit;
 - release, dogfood-cycle, stability-window, and stable-core evidence auditing;

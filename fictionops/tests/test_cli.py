@@ -5246,6 +5246,7 @@ class FictionOpsCliTests(unittest.TestCase):
             output = (run_dir / "output.md").read_text(encoding="utf-8")
             self.assertIn("# OpenAI-Compatible Chat Runner Dry Run", output)
             self.assertIn("- Role: `draft-writer`", output)
+            self.assertIn("- Provider: `openai-chat`", output)
             self.assertIn("- Model: `deepseek-test-model`", output)
             self.assertIn("- Endpoint: `https://api.deepseek.com/chat/completions`", output)
             self.assertIn("- API key env: `DEEPSEEK_API_KEY`", output)
@@ -5253,6 +5254,84 @@ class FictionOpsCliTests(unittest.TestCase):
 
             ready = build_agent_inbox(target)
             self.assertEqual(ready.status, "ready_for_review")
+
+    def test_openai_compatible_chat_runner_provider_preset_is_usable(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            build_agent_run(
+                target,
+                role="draft-writer",
+                chapter="001",
+                out_dir="00_management/agent_runs/chat_ch_001",
+                include_context_content=False,
+            )
+            run_dir = target / "00_management" / "agent_runs" / "chat_ch_001"
+            runner = ROOT / "examples" / "agent_runner_openai_chat.py"
+
+            cli = self.run_cli(
+                "agent-exec",
+                str(run_dir),
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+                "--dry-run",
+                "--provider",
+                "deepseek",
+                "--model",
+                "deepseek-chat",
+            )
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["written"], True)
+            self.assertEqual(data["returncode"], 0)
+
+            output = (run_dir / "output.md").read_text(encoding="utf-8")
+            self.assertIn("- Provider: `deepseek`", output)
+            self.assertIn("- Model: `deepseek-chat`", output)
+            self.assertIn("- Endpoint: `https://api.deepseek.com/chat/completions`", output)
+            self.assertIn("- API key env: `DEEPSEEK_API_KEY`", output)
+
+    def test_openai_compatible_chat_runner_env_file_and_local_preset_are_usable(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            build_agent_run(
+                target,
+                role="draft-writer",
+                chapter="001",
+                out_dir="00_management/agent_runs/local_ch_001",
+                include_context_content=False,
+            )
+            run_dir = target / "00_management" / "agent_runs" / "local_ch_001"
+            (run_dir / "runner.env").write_text("FICTIONOPS_CHAT_MODEL=local-test-model\n", encoding="utf-8")
+            runner = ROOT / "examples" / "agent_runner_openai_chat.py"
+
+            cli = self.run_cli(
+                "agent-exec",
+                str(run_dir),
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+                "--dry-run",
+                "--provider",
+                "local-openai",
+                "--env-file",
+                "runner.env",
+                "--max-output-chars",
+                "12000",
+            )
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["written"], True)
+            self.assertEqual(data["returncode"], 0)
+
+            output = (run_dir / "output.md").read_text(encoding="utf-8")
+            self.assertIn("- Provider: `local-openai`", output)
+            self.assertIn("- Model: `local-test-model`", output)
+            self.assertIn("- Endpoint: `http://127.0.0.1:8000/v1/chat/completions`", output)
+            self.assertIn("- API key env: `<none for local/no-auth provider>`", output)
+            self.assertIn("- Max output chars: 12000", output)
 
     def test_agent_inbox_tracks_staged_agent_outputs(self) -> None:
         temp, target = self.make_project()

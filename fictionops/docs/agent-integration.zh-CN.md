@@ -83,15 +83,14 @@ runner 契约：
 
 仓库里有一个通用 Chat Completions runner，适合带 OpenAI-compatible API 的供应商。DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动和本地 OpenAI-compatible 服务，都可以先从这个 runner 开始。
 
-先 dry-run：
+v1 runner 既可以显式传 `--api-key-env` / `--base-url`，也可以使用 provider preset。先 dry-run：
 
 ```bash
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
   --dry-run \
-  --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --provider deepseek \
+  --model deepseek-chat
 ```
 
 确认暂存边界后，再从环境变量读取真实 key：
@@ -100,10 +99,31 @@ fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
 set DEEPSEEK_API_KEY=...
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --max-output-chars 12000
 ```
+
+没有 preset 的供应商仍然可以显式传配置：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model custom-model \
+  --api-key-env CUSTOM_API_KEY \
+  --base-url https://example-provider.invalid/v1
+```
+
+本地无鉴权 OpenAI-compatible 服务可以这样接：
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider local-openai \
+  --model local-model
+```
+
+如果需要 runner 专用 `.env`，可以传 `--env-file path/to/runner.env`。runner 会先读取这个文件，再解析 provider、model、base URL 和 API key 环境变量；真实 key 不要提交进仓库。
 
 `model-config` 可以记录供应商、模型名、base URL 和密钥环境变量名：
 

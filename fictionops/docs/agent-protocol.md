@@ -107,7 +107,7 @@ fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python f
 
 Use it to confirm the pipe before replacing the echo body with a real model call.
 
-The repository also includes a generic OpenAI-compatible Chat Completions runner for providers such as DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, and local OpenAI-compatible servers.
+The repository also includes a generic OpenAI-compatible Chat Completions runner for providers such as DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, and local OpenAI-compatible servers. The v1 runner supports provider presets, explicit `.env` files, dry-run reports, and output-length guards.
 
 First run it without network access:
 
@@ -115,9 +115,8 @@ First run it without network access:
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
   --dry-run \
-  --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --provider deepseek \
+  --model deepseek-chat
 ```
 
 Then, after reviewing the boundary, run it with a real model and the provider key set outside the project:
@@ -125,12 +124,12 @@ Then, after reviewing the boundary, run it with a real model and the provider ke
 ```bash
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --max-output-chars 12000
 ```
 
-The example uses the Chat Completions `/chat/completions` endpoint and appends that path to `--base-url`. For provider starting points, see [Model providers](model-providers.md).
+The example uses the Chat Completions `/chat/completions` endpoint and appends that path to the resolved base URL. For providers without presets, pass `--api-key-env` and `--base-url` explicitly. For provider starting points, see [Model providers](model-providers.md).
 
 The repository also includes an OpenAI Responses API runner example. It is still external to FictionOps core: it reads the API key from the environment, receives the agent bundle on stdin, writes staged Markdown to stdout, and never applies output to manuscript or canon files.
 

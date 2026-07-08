@@ -124,7 +124,7 @@ The smoke is successful when `agent-inbox` reports one ready staged output and n
 
 ## OpenAI-Compatible Chat Example
 
-The repository includes `examples/agent_runner_openai_chat.py` as a generic provider-backed runner for OpenAI-compatible Chat Completions APIs. It is useful for DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, local servers, and similar providers.
+The repository includes `examples/agent_runner_openai_chat.py` as a generic provider-backed runner for OpenAI-compatible Chat Completions APIs. It is useful for DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, local servers, and similar providers. The v1 runner supports provider presets, explicit `.env` files, dry-run reports, and output-length guards.
 
 Dry-run first:
 
@@ -132,9 +132,8 @@ Dry-run first:
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
   --dry-run \
-  --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --provider deepseek \
+  --model deepseek-chat
 ```
 
 Then run with a real key only from the environment:
@@ -143,10 +142,12 @@ Then run with a real key only from the environment:
 set DEEPSEEK_API_KEY=...
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --max-output-chars 12000
 ```
+
+For providers without a preset, pass `--api-key-env` and `--base-url` explicitly. For local no-auth servers, use `--provider local-openai`.
 
 ## OpenAI Responses Example
 

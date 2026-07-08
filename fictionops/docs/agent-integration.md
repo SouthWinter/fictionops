@@ -89,15 +89,14 @@ This makes it easy to plug in a local script, a hosted model wrapper, an IDE ass
 
 The repository includes a generic Chat Completions runner for providers with OpenAI-compatible APIs. This covers many hosted and local providers, including DeepSeek, Qwen/DashScope compatible mode, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, and local OpenAI-compatible servers.
 
-Dry run first:
+The v1 runner accepts either explicit `--api-key-env` / `--base-url` settings or provider presets. Dry run first:
 
 ```bash
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
   --dry-run \
-  --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --provider deepseek \
+  --model deepseek-chat
 ```
 
 Then run with a real provider only after setting the API key outside the project:
@@ -106,10 +105,31 @@ Then run with a real provider only after setting the API key outside the project
 set DEEPSEEK_API_KEY=...
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --max-output-chars 12000
 ```
+
+For providers without a preset, keep using explicit settings:
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --model custom-model \
+  --api-key-env CUSTOM_API_KEY \
+  --base-url https://example-provider.invalid/v1
+```
+
+For local OpenAI-compatible servers without authentication:
+
+```bash
+fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
+  --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider local-openai \
+  --model local-model
+```
+
+You can pass `--env-file path/to/runner.env` when a runner-specific `.env` file is useful. The runner loads that file before resolving provider, model, base URL, and API key environment variables; do not commit real keys.
 
 `model-config` may record provider, model names, base URL, and the key environment-variable name:
 

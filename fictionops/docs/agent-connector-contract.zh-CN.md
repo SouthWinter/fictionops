@@ -116,7 +116,7 @@ fictionops agent-inbox my-novel/00_management/agent_runs/ch_001 --format json
 
 ## OpenAI-compatible Chat 示例
 
-仓库中的 `examples/agent_runner_openai_chat.py` 是一个通用的 Chat Completions runner，适合 OpenAI-compatible API。DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动、本地服务和类似供应商，都可以先从这个示例接起。
+仓库中的 `examples/agent_runner_openai_chat.py` 是一个通用的 Chat Completions runner，适合 OpenAI-compatible API。DeepSeek、通义千问/DashScope 兼容模式、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动、本地服务和类似供应商，都可以先从这个示例接起。v1 runner 支持 provider preset、显式 `.env`、dry-run 报告和输出长度保护。
 
 先 dry-run：
 
@@ -124,9 +124,8 @@ fictionops agent-inbox my-novel/00_management/agent_runs/ch_001 --format json
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
   --dry-run \
-  --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --provider deepseek \
+  --model deepseek-chat
 ```
 
 再只从环境变量读取真实 key：
@@ -135,10 +134,12 @@ fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
 set DEEPSEEK_API_KEY=...
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --max-output-chars 12000
 ```
+
+没有 preset 的供应商可以显式传 `--api-key-env` 和 `--base-url`。本地无鉴权服务可用 `--provider local-openai`。
 
 ## OpenAI Responses 示例
 

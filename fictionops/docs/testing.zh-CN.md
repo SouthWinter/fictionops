@@ -65,7 +65,7 @@ fictionops/tests/test_cli.py
 | `agent-smoke` | 串联 workflow audit、agent-run、agent-exec 和 agent-inbox；用 no-network adapter 证明接入边界；不应用暂存输出 |
 | `agent-run` | 准备 prepare-only Agent 任务包；写出 request/prompt/context/brief；JSON 输出；默认不覆盖；不调用模型 |
 | `agent-exec` | 执行外部 runner；把 stdout 写成暂存输出；写出执行回执；JSON 输出；默认不覆盖；不自动应用 |
-| OpenAI runner example | 验证 `examples/agent_runner_openai_responses.py --dry-run` 可通过 `agent-exec` 接收任务包并写入 staging，不联网也不需要真实 API key |
+| OpenAI runner examples | 验证 OpenAI-compatible Chat runner v1 的 provider preset / `.env` dry-run 路径，以及 `examples/agent_runner_openai_responses.py --dry-run` 可通过 `agent-exec` 接收任务包并写入 staging，不联网也不需要真实 API key |
 | `agent-inbox` | 检查 Agent run 目录里的暂存输出；识别缺输出、唯一输出和多候选输出；JSON 输出；只读不应用 |
 | `agent-next` | 读取项目健康状态、导入队列和 Agent 收件箱，选择下一条安全命令；JSON 输出；只读不执行 |
 | `audit-agent-workflow` | 检查 manual、runner、controller、model-runner 接入层级是否 ready；识别暂存输出复核边界、模型配置缺口和非标准项目 |
