@@ -1,12 +1,12 @@
 # FictionOps 研究定位
 
-FictionOps 是一个面向长周期创作项目的 workflow harness。它使用小说作为领域，但研究问题并不只属于小说：当一个 AI-assisted 或 agentic 系统进入一个庞大、持续变化、由人类负责最终质量的项目时，如何避免上下文遗忘、源文件污染、权限失控和决策不可追踪？
+FictionOps 是一个 AI-native 的长周期写作 Agent workflow。它以作者自己的真实长篇小说写作为落地场景，但研究问题并不只属于小说：当一个 AI Agent 进入一个庞大、持续变化、由人类负责最终质量的项目时，如何默认承担有用工作，同时避免上下文漂移、源文件污染和隐藏决策？
 
 本文用于研究讨论、实习面试、论文构思和系统展示。工程细节见 [Agent workflow 定位](agent-workflow.zh-CN.md)、[Agent 集成说明](agent-integration.zh-CN.md) 和 [Agent 评估协议](agent-evaluation.zh-CN.md)。
 
 ## 核心判断
 
-FictionOps 不是模型，也不是自主小说家。它是持久创作工作区的操作层：
+FictionOps 不只是一个“可以选接 AI”的写作整理工具。它后续方向是面向长篇写作的 AI Agent 系统，默认假设模型 API 可用；无模型路径只作为烟测、调试和离线降级。它是持久创作工作区的操作层：
 
 - 把长篇项目整理成稳定文件；
 - 为具体任务编排有限上下文；
@@ -14,7 +14,7 @@ FictionOps 不是模型，也不是自主小说家。它是持久创作工作区
 - 把模型或 runner 输出保存为暂存产物；
 - 在源文件变更前运行审计和门禁。
 
-研究贡献不是“模型会写小说”，而是边界设计：模型可以参与长期项目，但不能同时无声地变成项目记忆、编辑、发布者和最终权威。
+研究贡献不是“模型会写小说”，而是 AI Agent 在真实 workflow 约束下的落地方式：agent 可以参与规划、草稿、审计、修订和发布准备，但系统仍然保留项目记忆、可追踪性、可恢复性和作者采纳权。
 
 ## 问题场景
 
@@ -57,6 +57,19 @@ FictionOps 可以抽象成六层：
 
 这套设计有意区分能力和权威。模型可以起草、规划或审计，但 FictionOps 要求输出先暂存，再经过复核边界，才能影响持久项目状态。
 
+在 AI-native 产品路径里，正常循环是：
+
+```text
+agent 观察项目状态
+  -> 编译范围化上下文
+  -> 调用 OpenAI-compatible runner
+  -> 产出暂存候选结果
+  -> 读取审计/门禁反馈
+  -> 继续推进或停下等待作者采纳
+```
+
+无模型 runner 仍然适合测试和复现，但不是主要产品叙事。
+
 ## 研究问题
 
 FictionOps 可以支持以下研究问题：
@@ -67,6 +80,7 @@ FictionOps 可以支持以下研究问题：
 4. **人工复核成本：** 结构化任务轨迹和审计输出是否能降低人类判断模型贡献的成本？
 5. **Controller 行为：** 外部 controller 能否选择安全下一步，并在人工复核边界停下？
 6. **不依赖文学自动评分的评估：** 能否评估工作流可靠性，而不是假装自动指标等于文学判断？
+7. **AI 落地效果：** agent 是否真的减少作者在查上下文、准备 prompt、起草、审稿、修订和发布准备中的重复劳动？
 
 ## 假设
 
@@ -77,6 +91,7 @@ FictionOps 可以支持以下研究问题：
 - H3：FictionOps controller 比通用自主循环更可靠地停在复核边界。
 - H4：审计和门禁产物能降低坏输出之后的恢复成本。
 - H5：人类更容易接受、拒绝或隔离暂存输出，而不是自由聊天输出。
+- H6：AI-first FictionOps Agent 相比 raw chat 能减少重复上下文准备和项目查找工作，同时保留作者权威。
 
 ## 当前证据
 
@@ -87,7 +102,8 @@ FictionOps 可以支持以下研究问题：
 - 有边界的上下文包和任务包；
 - 外部 runner 执行；
 - 暂存 agent inbox；
-- 无模型 controller 示例；
+- 用于烟测的无模型 controller 示例；
+- 用于真实模型工作的 OpenAI-compatible runner v1；
 - 连续性、信息、人物、风格、表格、波形、成书、发布和 EPUB 审计；
 - 多 Python 版本 CI；
 - TestPyPI release trial 证据；
@@ -129,7 +145,7 @@ FictionOps 更接近长周期创意工作的 AgentOps / harness 层：
 - 私有 dogfood 不能暴露正文；
 - 公开 fixture 规模较小；
 - 没有公开 leaderboard；
-- 模型对比实验尚未完成；
+- 模型对比和真实 AI-assisted 写作 session 报告尚未完成；
 - 人工复核 rubric 仍早期；
 - 自动审计是启发式的，不能替代编辑判断；
 - 稳定性证据仍在等待关闭。
@@ -138,7 +154,7 @@ FictionOps 更接近长周期创意工作的 AgentOps / harness 层：
 
 ## 一句话研究 pitch
 
-FictionOps 是一个 local-first 的长周期写作 agent workflow harness。它把大型小说项目变成持久工作区，提供有边界的上下文包、显式任务信封、暂存模型输出、审计门禁和发布产物。核心研究问题是：agent 如何协助复杂创意项目，同时保留人类权威、可恢复性和长期状态一致性。
+FictionOps 是一个 AI-native 的长周期写作 Agent workflow harness。它把真实长篇小说项目变成持久工作区，让 agent 可以观察状态、构造范围化上下文、调用 model runner、生成候选草稿或审计发现、读取 workflow 反馈，并在需要作者采纳时停下。核心研究问题是：agent 如何落地到真实创意生产，同时提升上下文使用、工具调用、可复核性、可恢复性和长期状态一致性。
 
 ## 可以安全说的结论
 
@@ -147,7 +163,7 @@ FictionOps 是一个 local-first 的长周期写作 agent workflow harness。它
 - FictionOps 展示了 AI-assisted 写作 workflow 的暂存输出安全边界。
 - 它为评估长周期 agent 在持久项目状态中的行为提供了具体环境。
 - 它区分了模型能力和源文件权威。
-- 它可以接外部 runner、API、本地模型或 controller。
+- 它在主要产品路径上默认接外部模型/API runner，同时保留无模型 runner 用于烟测和降级。
 - 它在私有百万字级长篇项目上做过 dogfood，公开的是 workflow 证据，不泄露正文。
 
 不要说：

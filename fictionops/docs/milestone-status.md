@@ -19,6 +19,9 @@ Status meanings:
 | 0.3.0 Agent Controller | Complete locally | `examples/agent_controller_loop.py`, `agent-next`, `agent-exec`, `agent-inbox`, `docs/agent-connector-contract.md`, JSONL controller logs, tests for safe execution, review boundaries, placeholders, migration states, repeated suggestions, and publish-stage command handling. | Real model/controller integration is optional and remains outside core unless it preserves staged outputs and gates. |
 | 0.4.0 Release Trial | Complete with external evidence | GitHub Actions publish run `28849146871`, TestPyPI package `fictionops==0.1.1`, `docs/release-trial-evidence.md`, distribution artifact hashes, clean TestPyPI install smoke, and `audit-release-evidence` returning `ready=true`. | None for the release-trial milestone. |
 | 0.5.0 Documentation Parity Pass | Complete locally | English docs for CLI, contracts, migration, agent protocol, agent workflow, agent integration, testing, release, compatibility, known limits, contribution, demo, legacy migration example, and `docs/end-to-end-migration-publish.md`. | Full translation of every Chinese design note remains intentionally out of scope for this milestone. |
+| 0.6.0 AI Provider Onboarding | Not complete | OpenAI-compatible Chat runner v1, provider presets, model-provider docs, dry-run paths, and tests proving preset/env-file wiring. | Guided `setup-ai` or equivalent onboarding, AI-first README quickstart, secret-leakage tests across generated artifacts, and a documented real-call path as the default user story. |
+| 0.7.0 Writing Agent Commands | Not complete | Lower-level commands already exist: `plan-chapter`, `scene-plan`, `draft-brief`, `agent-run`, `agent-exec`, `agent-inbox`, audits, and controller primitives. | AI-first orchestration commands such as `write-chapter`, `revise-chapter`, `audit-chapter`, and `agent-session` with staged output and stop-boundary tests. |
+| 0.8.0 Agent Runtime Dogfood | Not complete | Private real-project workflow dogfood exists, but it mostly proves project maintenance and publishing infrastructure rather than measured AI-agent contribution. | A real AI-assisted writing dogfood report with model/provider, tasks, accepted/rejected output, useful/noisy findings, time saved, review cost, and recovery notes. |
 | 1.0.0 Stable Core | Not complete | `docs/stable-core-audit.md`, compatibility policy, known-limits docs, recovery playbook, command contracts, broad test suite, no-overwrite behavior, staged agent workflow, release gates, accepted TestPyPI release-trial evidence, real-project dogfood evidence, `docs/dogfood-cycle-evidence.md`, `docs/stability-window-evidence.md`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`. | Filled sustained real-project dogfood cycle, accepted stability-window evidence, stable core contracts over time, and proof that recovery paths remain current as behavior changes. |
 
 ## 0.2 Migration Dogfood Detail
@@ -31,7 +34,7 @@ This does **not** claim the migrated novel is editorially finished. It proves th
 
 ## 0.3 Agent Controller Detail
 
-This milestone is locally satisfied for the no-model controller scope described in the roadmap. The controller can:
+This milestone is locally satisfied for the controller-safety scope described in the roadmap. The no-model loop proves the controller boundary; later AI-native milestones must make real model APIs the default product path. The controller can:
 
 - call `agent-next`;
 - follow the external connector contract for runner and controller boundaries;
@@ -43,7 +46,7 @@ This milestone is locally satisfied for the no-model controller scope described 
 - avoid editing manuscript or canon directly;
 - handle migration-only states and publish-stage command inspection.
 
-This is not a claim that FictionOps is an autonomous novelist. It proves controller orchestration while preserving staged output and review gates.
+This is not a claim that FictionOps is an autonomous novelist. It proves controller orchestration while preserving staged output and review gates. It also does not complete the AI-native roadmap; 0.6-0.8 now track provider onboarding, writing-agent commands, and real AI dogfood.
 
 ## 0.4 Release Trial Detail
 

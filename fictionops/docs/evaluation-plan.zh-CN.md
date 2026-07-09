@@ -1,14 +1,16 @@
 # FictionOps 评估计划
 
-本文把 [Agent 评估协议](agent-evaluation.zh-CN.md) 转成可执行的研究和工程路线。目标不是按文学趣味给模型排名，而是评估 AI-assisted 长篇写作 workflow 的可靠性。
+本文把 [Agent 评估协议](agent-evaluation.zh-CN.md) 转成可执行的研究和工程路线。目标不是按文学趣味给模型排名，而是评估 AI Agent 在长篇写作 workflow 中的真实落地效果。
 
 ## 评估目标
 
-衡量 FictionOps 是否比松散 AI 工作流更能提升长项目可维护性。
+衡量 AI-native FictionOps Agent 是否比松散 AI 工作流更能提升长篇写作生产。
 
 核心问题：
 
-> 一个带暂存输出、文件化状态和审计门禁的 workflow harness，能否在模型或 controller 协助大型写作项目时，降低上下文漂移、不安全编辑、复核成本和恢复成本？
+> 当模型 API 已经足够便宜、足以默认接入时，一个具备持久项目记忆、范围化上下文、model runner、controller loop、暂存输出、审计和人类采纳边界的 AI Agent，能否改善真实长篇写作流程？
+
+无模型路径只作为烟测基础设施保留。主评估路径应该使用真实模型 API。
 
 ## 对照条件
 
@@ -21,6 +23,7 @@
 | Direct-write agent | Agent 可以直接编辑工作区文件。 | 测试宽权限带来的速度和风险。 |
 | FictionOps runner | `agent-run` 生成任务包，`agent-exec` 接收暂存输出。 | 测试任务信封和暂存输出。 |
 | FictionOps controller | 外部 controller 调 `agent-next`，执行安全命令，调用 runner，并在门禁停下。 | 测试有边界的 agentic 行为。 |
+| FictionOps AI 写作 Agent | 高层写作命令或 agent session 通过真实 model runner 完成规划、草稿、审计和暂存。 | 测试系统是否真的落进作者写作流程。 |
 
 ## Fixture
 
@@ -30,7 +33,7 @@
 | --- | --- | --- |
 | `examples/demo_novel/` | 公开 | smoke test、文档、CI 友好的无模型运行。 |
 | 中型合成 fixture | 创建后公开 | 20-50 章，预埋连续性陷阱、信息边界和修订任务。 |
-| 私有真实长篇 dogfood | 正文私有，只公开证据 | 百万字级维护和发布流程证明。 |
+| 私有真实长篇 dogfood | 正文私有，只公开证据 | 百万字级 AI-assisted 规划、草稿、审计、修订和发布流程证明。 |
 | 可选社区 fixture | 获得授权后公开 | 有外部用户后用于复现实验。 |
 
 私有项目可以公开指标和 workflow 证据，但不能公开正文。
@@ -47,6 +50,8 @@
 | E6 | 会话结束后维护交接状态。 | 所有条件 | 后续协作者能看懂改了什么、还剩什么。 |
 | E7 | 准备发布产物。 | FictionOps 条件 | clean Markdown、metadata、manifest、EPUB 和 release gate 一致。 |
 | E8 | 完成持续维护周期。 | FictionOps dogfood | 真实使用后 dogfood 和 stability-window 审计通过。 |
+| E9 | 运行 AI 写作 agent session。 | FictionOps AI 写作 Agent | Agent 到达可复核暂存候选结果和审计反馈，并有清晰停止/采纳边界。 |
+| E10 | 衡量真实写作 session 中的 AI 贡献。 | 私有 dogfood | 记录采纳输出、有效发现、节省的查资料/prompt 时间和恢复说明。 |
 
 ## 指标
 
@@ -79,13 +84,22 @@
 - `false_positive_audit_findings`：人类认为噪声或无关的发现数。
 - `accepted_output_rate`：暂存输出经复核后被接受的比例。
 
+### AI 落地效果
+
+- `prompt_prep_minutes_saved`：因为 FictionOps 自动编译上下文和任务包而节省的 prompt 准备时间。
+- `context_lookup_minutes_saved`：因为不再手动翻书纲、人物、信息表或前文章节而节省的查找时间。
+- `ai_draft_acceptance_rate`：模型生成的草稿/修订内容经人工编辑后被采纳的比例。
+- `useful_ai_audit_findings`：AI-assisted 审计中真正改变正文、规划或修订决策的发现数。
+- `author_revision_load`：作者采纳 AI-assisted 输出后仍需重写的负担。
+- `agent_session_completion_rate`：AI 写作 agent session 在不越权的情况下到达有用暂存输出的比例。
+
 指标必须配合证据和 reviewer notes。只有数字、没有轨迹，证据很弱。
 
 ## 流程
 
 ### Phase 0：无模型 Harness 验证
 
-目的：在没有 API 波动的情况下证明评估机器能跑。
+目的：在没有 API 波动的情况下证明评估机器能跑。这一阶段是基础设施验证，不是主要产品主张。
 
 运行：
 
@@ -103,7 +117,7 @@ fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out fiction
 
 ### Phase 1：单模型 Runner 评估
 
-目的：用同一个模型比较 raw chat、broad context 和 FictionOps runner。
+目的：用同一个真实模型比较 raw chat、broad context 和 FictionOps runner。
 
 步骤：
 
@@ -123,7 +137,7 @@ fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out fiction
 
 ### Phase 2：Controller 评估
 
-目的：测试外部 controller 是否能推进安全工作，同时不跨越权限边界。
+目的：测试外部 controller 是否能推进安全 AI-assisted 工作，同时不跨越权限边界。
 
 步骤：
 
@@ -143,19 +157,24 @@ fictionops eval-agent fictionops/examples/demo_novel --chapter 002 --out fiction
 
 ### Phase 3：真实 Dogfood 周期
 
-目的：在真实长项目维护中评估 workflow。
+目的：在真实长项目写作和维护中评估 AI Agent 参与。
 
 步骤：
 
 1. 使用私有或授权的长项目。
-2. 记录工作 session、命令、决策和修复动作。
-3. 在有边界改动前后运行相关审计。
-4. 记录人类接受、拒绝或推迟的内容。
-5. 条件成熟后用 `audit-dogfood-cycle`、`audit-stability-window`、`audit-stable-core` 收口。
+2. 记录 AI-assisted 规划、草稿、审计、修订和发布 session。
+3. 记录模型/供应商、命令、暂存输出、作者修改、接受/拒绝决定和修复动作。
+4. 在有边界改动前后运行相关审计。
+5. 记录 prompt 准备时间节省、上下文查找时间节省、有效 AI 发现、复核分钟数和恢复成本。
+6. 条件成熟后用 `audit-dogfood-cycle`、`audit-stability-window`、`audit-stable-core` 收口。
 
 预期证据：
 
 - 不泄露正文的公开总结；
+- 模型/供应商和 runner/controller 版本；
+- 接受/拒绝的 AI 输出；
+- 有效/噪声 AI 发现；
+- 时间节省估计和复核成本 notes；
 - dogfood cycle record；
 - stability-window record；
 - accepted 或明确 deferred 的决定。
@@ -216,10 +235,12 @@ docs/evaluation-runs/<date>-<fixture>-<condition>.md
 
 ## 近期最有价值的实现工作
 
-1. 新增一个中型公开合成 fixture，预埋连续性和信息边界陷阱。
-2. 在 `docs/evaluation-runs/` 下增加报告模板。
-3. 扩展 `eval-agent`，让它输出紧凑 JSON metrics。
-4. 用一个真实模型跑 raw chat、broad-context 和 FictionOps runner 三个条件。
-5. 记录一次 controller-loop 评估，包含 JSONL logs 和人工复核 notes。
+1. 增加 `setup-ai`，或等价的 OpenAI-compatible API 供应商引导配置路径。
+2. 增加 AI-first 写作命令，例如 `write-chapter`、`revise-chapter`、`audit-chapter` 和 `agent-session`。
+3. 在 `docs/evaluation-runs/` 下增加报告模板，记录 AI 贡献，而不仅是 harness 健康状态。
+4. 扩展 `eval-agent`，为 model-runner 和 controller-loop 输出紧凑 JSON metrics。
+5. 用同一个真实模型跑 raw chat、broad-context、FictionOps runner 和 FictionOps controller 条件。
+6. 在私有小说上记录一次真实 AI-assisted dogfood session，包括接受/拒绝输出和时间节省 notes。
+7. AI-first 路径稳定后，再新增一个中型公开合成 fixture，预埋连续性和信息边界陷阱。
 
 这些动作最好在当前公开文档和稳定性证据保持干净后推进，因为评估可信度依赖稳定命令。

@@ -19,6 +19,33 @@
 
 0.1.0 的证据记录见 [completion-audit-0.1.0.zh-CN.md](completion-audit-0.1.0.zh-CN.md)。逐里程碑当前状态见 [milestone-status.zh-CN.md](milestone-status.zh-CN.md)，更严格的 1.0 证据矩阵见 [stable-core-audit.zh-CN.md](stable-core-audit.zh-CN.md)。
 
+## AI-native 方向
+
+后续产品和研究方向应默认 **AI-native**。FictionOps 应被呈现和发展为一个默认接入模型 API 的长篇写作 Agent 系统。无模型路径仍然有价值，但定位应是 CI、烟测、调试、可复现和离线降级，而不是主要价值主张。
+
+目标用户体验应从“很多可以选接 AI 的 CLI 积木”，转向“一个嵌入真实写作流程的 AI Agent”：
+
+```text
+故事/项目状态
+  -> agent 观察工作区
+  -> 编译范围化上下文
+  -> model runner 产出候选工作
+  -> 审计/门禁提供反馈
+  -> controller 决定继续或停在复核边界
+  -> 作者接受、修改或拒绝
+```
+
+AI Agent 默认应该承担真实写作工作：
+
+- 根据书纲、人物记忆和信息边界规划章节；
+- 通过 OpenAI-compatible runner 生成候选正文或修订建议；
+- 审计信息泄露、人物失真、连续性、伏笔回声、行文模式和发布准备；
+- 准备简介、标签、元数据、clean Markdown、EPUB 和发布清单；
+- 通过 controller loop 判断安全下一步；
+- 在审美判断、源文件变更、凭据、发布或外部证据需要人类权威时停下。
+
+Echo/no-model runner 应被文档化为测试基础设施，而不是主叙事。主叙事应是 AI Agent 落地到真实长篇写作流水线。
+
 ## 里程碑矩阵
 
 | 里程碑 | 目标 | 必要证据 | 暂不要求 |
@@ -27,6 +54,9 @@
 | 0.3.0 Agent Controller | 证明 controller 可以连续推进多步，同时保留暂存输出和门禁。 | `examples/agent_controller_loop.py` 能调用 `agent-next`、执行安全命令、在人类复核边界、占位命令、重复建议和迁移诊断状态停下，并记录 JSONL run log；`docs/agent-integration.md` 记录 runner/controller 接线方式；测试覆盖非破坏性停止行为。 | 让模型直接改正文或正史。 |
 | 0.4.0 发布演练 | 证明本地 checkout 之外的安装和发布流程。 | GitHub Actions release flow 跑通；若决定发布则有 TestPyPI 记录；从构建包安装到干净虚拟环境；release notes 记录外部结果。 | 如果仍是 pre-alpha，不要求正式 PyPI 发布。 |
 | 0.5.0 英文文档补齐 | 让外部贡献者可以不依赖中文深文档完成接手。 | 英文文档覆盖 CLI 契约、迁移、Agent workflow、发布、测试、demo、贡献，以及至少一个端到端迁移/发布案例。 | 每一条中文设计笔记都完整翻译。 |
+| 0.6.0 AI 供应商接入 | 让真实模型 API 配置成为默认首次使用路径。 | `setup-ai` 或等价引导命令；OpenAI-compatible API provider preset；`.env.example`；dry-run 和真实调用文档；测试证明 API key 不进入项目文件。 | Web UI、托管账号、自动计费管理。 |
+| 0.7.0 写作 Agent 命令 | 把多命令写作流程封装成 AI-first 命令。 | `write-chapter`、`revise-chapter`、`audit-chapter` 或等价编排命令，能调用规划、brief、model runner、inbox 和审计；测试覆盖暂存输出和停止行为。 | 自动采纳进入正文/正史。 |
+| 0.8.0 Agent runtime dogfood | 证明 AI Agent 改善真实写作流程，而不只是基础设施跑通。 | 真实项目 AI dogfood 报告：模型/供应商、任务、采纳率、有效发现、prompt 准备时间节省、上下文查找时间节省、复核成本、失败案例和恢复记录。 | 公开正文或自动文学评分。 |
 | 1.0.0 稳定核心 | 固定可供真实作者和贡献者依赖的命令契约。 | 持续维护的兼容性策略；兼容性说明；完整本地测试；包发布；持续维护的已知限制文档；至少一轮通过 `audit-dogfood-cycle` 的持续真实项目 dogfood；accepted 稳定窗口证据并通过 `audit-stability-window`；`audit-stable-core` 返回 ready。 | 自动文学质量评分或自主小说作者。 |
 
 ## 0.2.0 验收清单
@@ -59,7 +89,44 @@ fictionops adopt-review <sandbox> --book <book_id> --format json
 - `agent-exec` 输出仍然只进入暂存区。
 - 测试覆盖缺失项目、导入队列、已有可复核 Agent 输出、发布门禁等状态。
 
-退出条件：贡献者可以跑一个本地 no-model controller demo，看见完整、可审计、不会静默改正文或正史的循环。
+退出条件：贡献者可以跑一个本地 controller demo，看见完整、可审计、不会静默改正文或正史的循环。no-model demo 可以作为烟测，但后续里程碑必须把真实模型 API 作为默认产品路径。
+
+## 0.6.0 AI 供应商接入验收清单
+
+0.6.0 要让 AI 配置成为正常入口：
+
+- 增加 `setup-ai`，或等价的引导命令链，面向 OpenAI-compatible providers。
+- 通过 preset 或文档支持 OpenAI、DeepSeek、通义千问/DashScope、Kimi/Moonshot、GLM/智谱、豆包/火山方舟、硅基流动和本地 OpenAI-compatible 服务。
+- 生成只含变量名和占位符的 `.env.example`，不保存真实 secrets。
+- 同时提供 `--dry-run` 和真实调用示例。
+- README quickstart 改成 AI-first，把 echo/no-model 用法移到 smoke test 区域。
+- 补测试证明真实 API key 不会写入项目文件、receipt、任务包、文档或生成报告。
+
+退出条件：新用户能配置供应商，跑 dry-run，跑真实模型调用，查看暂存输出，并理解作者采纳边界在哪里。
+
+## 0.7.0 写作 Agent 命令验收清单
+
+0.7.0 要把常规命令编排藏到 AI-first 写作命令后面：
+
+- `write-chapter`：同步章节规划，生成场景/brief/context，调用 drafting runner，保存暂存输出，运行 inbox 和基础审计。
+- `revise-chapter`：读取审稿/审计发现，构造修订任务包，调用模型 runner，保存暂存修订建议。
+- `audit-chapter`：调用信息边界、人物失真、连续性、伏笔回声和行文模式等角色审计，汇总 findings。
+- `agent-session` 或 `agent-loop`：观察项目状态，选择安全下一步，执行工具，调用 model runner，并在复核边界停下。
+- 保持采纳由人治理：agent 可以产出候选工作和结构化发现，但源文件变更仍需明确采纳。
+
+退出条件：普通用户故事从“手动拼五条命令”变成“让 FictionOps Agent 处理这一章”。
+
+## 0.8.0 AI Agent Dogfood 验收清单
+
+0.8.0 要衡量 AI Agent 在真实写作流程里改变了什么：
+
+- 记录至少一次真实章节规划/草稿/修订 session，使用 model runner。
+- 记录至少一次 AI-assisted 审计 session，覆盖信息、人物、连续性、伏笔或行文新鲜感。
+- 记录至少一次发布准备 session，让 agent 帮助 metadata、clean copy 或 release checks。
+- 记录模型/供应商、命令链、暂存输出、接受/拒绝、复核时间、有效发现、噪声发现、恢复动作和作者备注。
+- 尽可能与 raw chat 或纯人工流程对照。
+
+退出条件：项目不仅能说“AI 已接入”，还要能诚实地说“AI Agent 在真实长篇写作流程中的参与已经被观察、复核和测量”。
 
 ## 1.0.0 稳定门槛
 
