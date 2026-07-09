@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -1940,6 +1941,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "integrations/codex-skill/fictionops-writing-agent/references/dogfood-metrics.md",
             "integrations/api-agent/README.md",
             "integrations/api-agent/openapi.yaml",
+            "integrations/api-agent/server.py",
             "integrations/api-agent/schemas/agent_goal.schema.json",
             "integrations/api-agent/schemas/agent_session.schema.json",
             "integrations/api-agent/schemas/staged_output.schema.json",
@@ -5081,6 +5083,40 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(data["status"], "smoke_passed")
             self.assertEqual(data["connector_name"], "local-runner")
             self.assertEqual(data["inbox"]["status"], "ready_for_review")
+
+    def test_api_agent_server_builds_staged_session_with_echo_runner(self) -> None:
+        module_path = ROOT / "integrations" / "api-agent" / "server.py"
+        spec = importlib.util.spec_from_file_location("fictionops_api_agent_server", module_path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        temp, target = self.make_project()
+        with temp:
+            payload = {
+                "project_path": str(target),
+                "goal": "Write chapter 001 and stage the result for review.",
+                "book": "book_01",
+                "chapter": "001",
+                "role": "draft-writer",
+                "runner_command": [sys.executable, str(ROOT / "examples" / "agent_runner_echo.py")],
+                "out_dir": "00_management/agent_runs/api_ch_001",
+                "force": True,
+                "acceptance_mode": "human_governed",
+            }
+            session = module.build_session(payload, task="draft")
+
+            self.assertEqual(session["status"], "waiting_for_review")
+            self.assertEqual(session["stop_reason"], "staged_output_ready_for_review")
+            self.assertEqual(len(session["staged_outputs"]), 1)
+            output = Path(session["staged_outputs"][0]["output_file"])
+            self.assertTrue(output.exists())
+            self.assertIn(session["session_id"], module.SESSIONS)
+
+            decided = module.update_session_decision(session["session_id"], {"decision": "reject", "notes": "smoke"})
+            self.assertEqual(decided["status"], "completed")
+            self.assertEqual(decided["human_decision"]["decision"], "reject")
 
     def test_agent_exec_runs_external_runner_into_staging_output(self) -> None:
         temp, target = self.make_project()

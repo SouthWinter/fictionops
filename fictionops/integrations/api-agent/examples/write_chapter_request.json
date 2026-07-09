@@ -6,6 +6,8 @@
   "role": "draft-writer",
   "provider": "deepseek",
   "model": "deepseek-chat",
+  "runner_command": ["python", "examples/agent_runner_openai_chat.py"],
+  "out_dir": "00_management/agent_runs/api_book_01_ch_001",
   "max_steps": 3,
   "acceptance_mode": "human_governed"
 }

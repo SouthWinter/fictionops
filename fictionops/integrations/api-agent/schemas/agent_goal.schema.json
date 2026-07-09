@@ -38,6 +38,34 @@
       "minimum": 1,
       "default": 3
     },
+    "out_dir": {
+      "type": "string",
+      "description": "Optional FictionOps agent-run output directory."
+    },
+    "runner_command": {
+      "type": "array",
+      "description": "Optional external runner command. When omitted, the server only prepares the agent-run bundle.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 300
+    },
+    "force": {
+      "type": "boolean",
+      "default": false
+    },
+    "force_output": {
+      "type": "boolean",
+      "default": false
+    },
+    "output_name": {
+      "type": "string",
+      "default": "output.md"
+    },
     "acceptance_mode": {
       "type": "string",
       "enum": ["human_governed"],
