@@ -1479,6 +1479,42 @@ class WritingAgentCommandReport:
 
 
 @dataclass
+class AgentSessionStep:
+    stage: str
+    command: str
+    role: str
+    task: str
+    run_dir: str
+    status: str
+    next_command: str
+
+
+@dataclass
+class AgentSessionFile:
+    kind: str
+    path: str
+    written: bool
+
+
+@dataclass
+class AgentSessionReport:
+    target: str
+    session_id: str
+    goal: str
+    book: str
+    chapter: str | None
+    output_dir: str
+    dry_run: bool
+    written: bool
+    status: str
+    step_count: int
+    ready_count: int
+    files: list[AgentSessionFile]
+    steps: list[AgentSessionStep]
+    next_actions: list[str]
+
+
+@dataclass
 class AgentInboxIssue:
     severity: str
     code: str

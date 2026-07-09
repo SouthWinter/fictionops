@@ -48,6 +48,7 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "write-chapter",
     "revise-chapter",
     "audit-chapter",
+    "agent-session",
     "agent-next",
     "audit-agent-workflow",
     "model-config",

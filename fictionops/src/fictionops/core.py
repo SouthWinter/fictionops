@@ -7,6 +7,7 @@ from .agent_inbox import *
 from .agent_next import *
 from .agent_prompt import *
 from .agent_run import *
+from .agent_session import *
 from .agent_smoke import *
 from .agent_workflow_audit import *
 from .adopt import *

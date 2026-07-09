@@ -50,6 +50,7 @@
 | `write-chapter` | AI-first 章节写作编排 | 可选 | 是 | 否 |
 | `revise-chapter` | AI-first 章节修订编排 | 可选 | 是 | 否 |
 | `audit-chapter` | AI-first 章节审计编排 | 可选 | 是 | 否 |
+| `agent-session` | AI 写作 session 台账 | 是 | 是 | 否 |
 | `agent-next` | Agent 下一步选择器 | 否 | 是 | 不适用 |
 | `audit-agent-workflow` | Agent workflow 接入预检 | 否 | 是 | 不适用 |
 | `model-config` | 模型供应商配置 | 可选 | 是 | 否 |
@@ -794,6 +795,16 @@
 - 默认不调用模型；传入 `--runner` 时只把外部输出保存为暂存审计结果。
 - 不得自动修改正文、人物、设定或信息表；接受后的同步由作者或后续门禁决定。
 
+### `fictionops agent-session`
+
+契约：
+
+- 为单章 AI 写作链路创建或刷新持久 session 台账，默认跟踪 `write`、`revise`、`audit` 三步。
+- 台账写入 `00_management/agent_sessions/<session-id>/README.md` 和 `session.json`。
+- 每一步指向对应的 `00_management/agent_runs/<session-id>_<stage>_<book>_ch_<chapter>` 目录。
+- 命令只读取已有 staged run 状态并给出下一步建议；不调用模型、不执行 runner、不自动应用输出。
+- JSON 输出必须包含 `schema`、`session_id`、`status`、`steps`、`files` 和 `next_actions`。
+
 ### `fictionops agent-next`
 
 输入：
@@ -1302,7 +1313,7 @@ Failure:
 
 ## 7. 帮助文案契约
 
-- 根命令 `fictionops --help` 必须列出全部 54 个 MVP 命令。
+- 根命令 `fictionops --help` 必须列出全部 55 个 MVP 命令。
 - 每个子命令必须支持 `fictionops <command> --help`。
 - 帮助文案应说明默认值、是否写文件、是否覆盖、路径如何解析。
 

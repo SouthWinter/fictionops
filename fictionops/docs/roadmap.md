@@ -111,7 +111,8 @@ Exit condition: a new user can configure a provider, run a dry run, run a real m
 - `write-chapter`: synchronize chapter plan, build scene/brief/context, call a drafting runner, save staged output, run inbox and basic audits.
 - `revise-chapter`: read review/audit findings, construct a revision task bundle, call a model runner, and save a staged revision proposal.
 - `audit-chapter`: call role-specific auditors for information boundaries, character drift, continuity, echoes, and prose patterns, then collect findings.
-- `agent-session` or `agent-loop`: observe project state, select safe next steps, execute tools, call model runners, and stop at review boundaries.
+- `agent-session`: persist a multi-step chapter writing ledger across write/revise/audit runs, read staged output state, and stop at review boundaries.
+- Future `agent-loop`: observe project state, select safe next steps, execute tools, call model runners, and remain bounded by the same review gates.
 - Keep acceptance human-governed: the agent may produce candidate work and structured findings, but source-of-truth changes still require explicit adoption.
 
 Exit condition: the normal user story becomes "ask FictionOps Agent to work on a chapter" rather than "manually compose five commands."

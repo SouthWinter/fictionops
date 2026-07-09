@@ -67,7 +67,7 @@ python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'
 
 验证摘要：
 
-- `133 tests OK`
+- `135 tests OK`
 - `fictionops-0.1.0-py3-none-any.whl` 构建成功
 - `fictionops-0.1.0.tar.gz` 构建成功
 - wheel 内容检查通过

@@ -111,7 +111,8 @@ fictionops adopt-review <sandbox> --book <book_id> --format json
 - `write-chapter`：同步章节规划，生成场景/brief/context，调用 drafting runner，保存暂存输出，运行 inbox 和基础审计。
 - `revise-chapter`：读取审稿/审计发现，构造修订任务包，调用模型 runner，保存暂存修订建议。
 - `audit-chapter`：调用信息边界、人物失真、连续性、伏笔回声和行文模式等角色审计，汇总 findings。
-- `agent-session` 或 `agent-loop`：观察项目状态，选择安全下一步，执行工具，调用 model runner，并在复核边界停下。
+- `agent-session`：持久记录单章 write/revise/audit 多步台账，读取暂存输出状态，并在复核边界停下。
+- 未来的 `agent-loop`：观察项目状态，选择安全下一步，执行工具，调用 model runner，并继续受同一套复核门禁约束。
 - 保持采纳由人治理：agent 可以产出候选工作和结构化发现，但源文件变更仍需明确采纳。
 
 退出条件：普通用户故事从“手动拼五条命令”变成“让 FictionOps Agent 处理这一章”。

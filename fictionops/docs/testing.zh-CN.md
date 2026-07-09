@@ -38,7 +38,7 @@ fictionops/tests/test_cli.py
 | --- | --- |
 | `init` | 创建标准目录和文件；默认不覆盖；`force=True` 覆盖 |
 | CLI 入口 | `--version`、`init` 子进程调用 |
-| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 54 个命令 |
+| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 55 个命令 |
 | `adopt` | 只读扫描既有写作目录；分层映射旧文件；输出迁移阶段和建议目标路径；JSON/Markdown 输出；写报告默认不覆盖；忽略工具目录 |
 | `new-book` | 创建书纲、书稿目录和书级复盘；书号标准化；默认不覆盖 |
 | `new-chapter` | 创建正文、章节发动机和逐章复盘；章节号标准化；默认不覆盖 |

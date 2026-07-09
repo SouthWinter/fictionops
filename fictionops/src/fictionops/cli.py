@@ -1408,6 +1408,59 @@ def build_parser() -> argparse.ArgumentParser:
             help="Optional external runner command. Put FictionOps options before --runner; everything after it is passed to the runner.",
         )
 
+    agent_session_parser = subparsers.add_parser(
+        "agent-session",
+        help="Create or inspect a tracked multi-step AI writing session ledger.",
+    )
+    agent_session_parser.add_argument(
+        "path",
+        nargs="?",
+        default=".",
+        help="Target FictionOps project directory. Default: current directory.",
+    )
+    agent_session_parser.add_argument(
+        "--book",
+        default="book_01",
+        help="Book id or directory under 06_drafts. Default: book_01.",
+    )
+    agent_session_parser.add_argument(
+        "--chapter",
+        help="Chapter number, such as 1, 001, or ch_001.",
+    )
+    agent_session_parser.add_argument(
+        "--goal",
+        help="Human-readable session goal.",
+    )
+    agent_session_parser.add_argument(
+        "--session-id",
+        help="Stable session id. Defaults to <book>_ch_<chapter>_session.",
+    )
+    agent_session_parser.add_argument(
+        "--stages",
+        default="write,revise,audit",
+        help="Comma-separated stages to track. Choices: write,revise,audit. Default: write,revise,audit.",
+    )
+    agent_session_parser.add_argument(
+        "--out-dir",
+        help="Session ledger output directory. Relative paths are resolved inside PATH.",
+    )
+    agent_session_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing session ledger files.",
+    )
+    agent_session_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Build the session report without writing the ledger.",
+    )
+    agent_session_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format. Default: markdown.",
+    )
+
     agent_next_parser = subparsers.add_parser(
         "agent-next",
         help="Select the next safe FictionOps command for an external agent controller.",
@@ -3281,6 +3334,33 @@ def handle_writing_agent_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_agent_session(args: argparse.Namespace) -> int:
+    target = Path(args.path)
+    try:
+        report = build_agent_session(
+            target,
+            book=args.book,
+            chapter=args.chapter,
+            goal=args.goal,
+            session_id=args.session_id,
+            stages=args.stages,
+            out_dir=args.out_dir,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+    except FileExistsError as exc:
+        print(f"fictionops: agent-session failed: {exc}. Use --force to overwrite.", file=sys.stderr)
+        return 1
+    except (OSError, ValueError) as exc:
+        print(f"fictionops: agent-session failed: {exc}", file=sys.stderr)
+        return 1
+
+    if report.written and args.format != "json":
+        print(f"Wrote FictionOps agent session to: {report.output_dir}")
+    print(render_agent_session(report, args.format))
+    return 0
+
+
 def handle_agent_next(args: argparse.Namespace) -> int:
     target = Path(args.path)
     try:
@@ -3836,6 +3916,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_agent_inbox(args)
     if args.command in {"write-chapter", "revise-chapter", "audit-chapter"}:
         return handle_writing_agent_command(args)
+    if args.command == "agent-session":
+        return handle_agent_session(args)
     if args.command == "agent-next":
         return handle_agent_next(args)
     if args.command == "audit-agent-workflow":

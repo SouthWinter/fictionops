@@ -54,6 +54,7 @@ CLI_COMMANDS = [
     "write-chapter",
     "revise-chapter",
     "audit-chapter",
+    "agent-session",
     "agent-next",
     "audit-agent-workflow",
     "model-config",
@@ -84,6 +85,7 @@ from fictionops.core import (  # noqa: E402
     build_agent_next,
     build_agent_prompt,
     build_agent_run,
+    build_agent_session,
     build_agent_smoke,
     build_agent_workflow_audit,
     build_adopt_report,
@@ -130,7 +132,9 @@ from fictionops.core import (  # noqa: E402
     normalize_chapter_number,
     plan_chapter,
 )
+from fictionops.agent_session import session_status  # noqa: E402
 from fictionops.dogfood_cycle import RECOGNIZED_FICTIONOPS_COMMANDS  # noqa: E402
+from fictionops.models import AgentSessionStep  # noqa: E402
 
 
 class FictionOpsCliTests(unittest.TestCase):
@@ -1873,6 +1877,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/agent_evaluation.py",
             "src/fictionops/agent_exec.py",
             "src/fictionops/agent_run.py",
+            "src/fictionops/agent_session.py",
             "src/fictionops/agent_inbox.py",
             "src/fictionops/writing_agent.py",
             "src/fictionops/agent_next.py",
@@ -5180,6 +5185,83 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(audit_data["command"], "audit-chapter")
             self.assertEqual(audit_data["role"], "info-boundary-auditor")
             self.assertEqual(audit_data["task"], "review")
+
+    def test_agent_session_tracks_multistep_writing_workflow(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            session = build_agent_session(
+                target,
+                book="book_01",
+                chapter="001",
+                goal="Draft, revise, and audit chapter 001.",
+                session_id="demo-session",
+            )
+            session_dir = target / "00_management" / "agent_sessions" / "demo-session"
+            self.assertEqual(session.status, "planned")
+            self.assertEqual(session.step_count, 3)
+            self.assertTrue((session_dir / "session.json").exists())
+            self.assertTrue((session_dir / "README.md").exists())
+            self.assertIn("write-chapter", session.steps[0].next_command)
+
+            runner = ROOT / "examples" / "agent_runner_echo.py"
+            self.run_cli(
+                "write-chapter",
+                str(target),
+                "--chapter",
+                "001",
+                "--out-dir",
+                "00_management/agent_runs/demo-session_write_book_01_ch_001",
+                "--force",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            updated = self.run_cli(
+                "agent-session",
+                str(target),
+                "--book",
+                "book_01",
+                "--chapter",
+                "001",
+                "--goal",
+                "Draft, revise, and audit chapter 001.",
+                "--session-id",
+                "demo-session",
+                "--force",
+                "--format",
+                "json",
+            )
+            data = json.loads(updated.stdout)
+            self.assertEqual(data["schema"], "fictionops.agent_session.v1")
+            self.assertEqual(data["status"], "waiting_for_review")
+            self.assertEqual(data["ready_count"], 1)
+            self.assertEqual(data["steps"][0]["status"], "ready_for_review")
+            self.assertIn("agent-inbox", data["next_actions"][0])
+
+    def test_agent_session_status_prioritizes_terminal_completion(self) -> None:
+        steps = [
+            AgentSessionStep(
+                stage="write",
+                command="write-chapter",
+                role="draft-writer",
+                task="draft",
+                run_dir="00_management/agent_runs/demo_write",
+                status="completed",
+                next_command="fictionops write-chapter .",
+            ),
+            AgentSessionStep(
+                stage="revise",
+                command="revise-chapter",
+                role="style-auditor",
+                task="review",
+                run_dir="00_management/agent_runs/demo_revise",
+                status="completed",
+                next_command="fictionops revise-chapter .",
+            ),
+        ]
+        self.assertEqual(session_status(steps), "completed")
 
     def test_agent_exec_runs_external_runner_into_staging_output(self) -> None:
         temp, target = self.make_project()
