@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fictionops.example/schemas/agent_goal.schema.json",
+  "title": "AgentGoal",
+  "type": "object",
+  "required": ["project_path", "goal", "role", "acceptance_mode"],
+  "properties": {
+    "project_path": {
+      "type": "string",
+      "description": "Path or project identifier for the FictionOps project."
+    },
+    "goal": {
+      "type": "string",
+      "description": "Human-readable task goal."
+    },
+    "book": {
+      "type": "string",
+      "description": "Book identifier such as book_01."
+    },
+    "chapter": {
+      "type": "string",
+      "description": "Chapter identifier such as 001."
+    },
+    "role": {
+      "type": "string",
+      "description": "Agent role such as draft-writer, revision-editor, or continuity-auditor."
+    },
+    "provider": {
+      "type": "string",
+      "description": "Model provider preset or deployment name."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model name passed to the provider."
+    },
+    "max_steps": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 3
+    },
+    "acceptance_mode": {
+      "type": "string",
+      "enum": ["human_governed"],
+      "description": "FictionOps v1 adapter drafts require human-governed acceptance."
+    }
+  },
+  "additionalProperties": true
+}

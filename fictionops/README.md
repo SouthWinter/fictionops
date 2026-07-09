@@ -103,6 +103,11 @@ fictionops/
     agent_runner_openai_responses.py
     demo_novel/
     legacy_novel_source/
+  integrations/
+    codex-skill/
+      fictionops-writing-agent/
+    api-agent/
+      openapi.yaml
   tests/
     test_cli.py
 ```
@@ -174,6 +179,9 @@ fictionops/
 - [Sustained dogfood cycle evidence, Chinese reference](docs/dogfood-cycle-evidence.zh-CN.md)
 - [Stability window evidence](docs/stability-window-evidence.md)
 - [Stability window evidence, Chinese reference](docs/stability-window-evidence.zh-CN.md)
+- [Integration adapters](integrations/README.md)
+- [Codex Skill adapter draft](integrations/codex-skill/README.md)
+- [API Agent contract draft](integrations/api-agent/README.md)
 - [Legacy migration example](examples/legacy_novel_source/README.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Contribution guide, Chinese reference](CONTRIBUTING.zh-CN.md)

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fictionops.example/schemas/agent_session.schema.json",
+  "title": "AgentSession",
+  "type": "object",
+  "required": ["session_id", "status", "goal", "staged_outputs"],
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "running", "waiting_for_review", "completed", "failed"]
+    },
+    "goal": {
+      "$ref": "./agent_goal.schema.json"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "summary": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "staged_outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "./staged_output.schema.json"
+      }
+    },
+    "stop_reason": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

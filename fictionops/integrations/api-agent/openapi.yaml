@@ -1,0 +1,124 @@
+openapi: 3.1.0
+info:
+  title: FictionOps API Agent Contract
+  version: 0.1.0-draft
+  description: Draft HTTP contract for external AI agents using FictionOps as a writing workflow harness.
+servers:
+  - url: http://localhost:8765
+paths:
+  /v1/sessions:
+    post:
+      summary: Create an agent session for a FictionOps goal.
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/agent_goal.schema.json"
+      responses:
+        "200":
+          description: Created session.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"
+  /v1/write-chapter:
+    post:
+      summary: Stage an AI-generated chapter draft.
+      operationId: writeChapter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/agent_goal.schema.json"
+      responses:
+        "200":
+          description: Session with staged output ready for review.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"
+  /v1/revise-chapter:
+    post:
+      summary: Stage a chapter revision from a scoped goal.
+      operationId: reviseChapter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/agent_goal.schema.json"
+      responses:
+        "200":
+          description: Session with staged revision output.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"
+  /v1/audit-chapter:
+    post:
+      summary: Run an AI-assisted chapter audit and stage findings.
+      operationId: auditChapter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/agent_goal.schema.json"
+      responses:
+        "200":
+          description: Session with staged audit output.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"
+  /v1/sessions/{session_id}:
+    get:
+      summary: Read current session state.
+      operationId: getSession
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current session state.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"
+  /v1/sessions/{session_id}/decision:
+    post:
+      summary: Submit a human review decision for staged outputs.
+      operationId: submitDecision
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - decision
+              properties:
+                decision:
+                  type: string
+                  enum: [accept, reject, revise]
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Updated session state.
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/agent_session.schema.json"

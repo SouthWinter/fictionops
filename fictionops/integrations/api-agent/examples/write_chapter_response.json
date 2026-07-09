@@ -1,0 +1,54 @@
+{
+  "session_id": "sess_20260710_001",
+  "status": "waiting_for_review",
+  "goal": {
+    "project_path": "C:/path/to/my-novel",
+    "goal": "Write chapter 001 from the approved brief and stage the result for review.",
+    "book": "book_01",
+    "chapter": "001",
+    "role": "draft-writer",
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+    "max_steps": 3,
+    "acceptance_mode": "human_governed"
+  },
+  "steps": [
+    {
+      "name": "build_context_pack",
+      "status": "completed",
+      "summary": "Collected chapter brief, scene plan, character notes, and information boundaries."
+    },
+    {
+      "name": "call_model_runner",
+      "status": "completed",
+      "summary": "Generated a staged chapter draft with an OpenAI-compatible provider."
+    },
+    {
+      "name": "stage_output",
+      "status": "completed",
+      "summary": "Saved the draft for human review."
+    }
+  ],
+  "staged_outputs": [
+    {
+      "run_dir": "00_management/agent_runs/book_01_ch_001",
+      "output_file": "00_management/agent_runs/book_01_ch_001/output.md",
+      "role": "draft-writer",
+      "task": "write_chapter",
+      "book": "book_01",
+      "chapter": "001",
+      "state": "draft",
+      "review_required": true,
+      "source": {
+        "provider": "deepseek",
+        "model": "deepseek-chat",
+        "runner": "openai-compatible-chat"
+      }
+    }
+  ],
+  "stop_reason": "staged_output_ready_for_review",
+  "metrics": {
+    "context_files": 6,
+    "review_required": true
+  }
+}
