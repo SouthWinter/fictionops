@@ -24,7 +24,7 @@ python -m unittest discover -s fictionops/tests -p test_cli.py -k release_smoke 
 
 ## Current Coverage
 
-The current suite covers 51 CLI commands and 132 regression tests. It checks:
+The current suite covers 54 CLI commands and 133 regression tests. It checks:
 
 - every CLI help entry;
 - CLI contracts and documentation coverage;

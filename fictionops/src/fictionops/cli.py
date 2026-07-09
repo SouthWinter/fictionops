@@ -1321,6 +1321,93 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Default: markdown.",
     )
 
+    for command_name, help_text, default_role in [
+        ("write-chapter", "Prepare or execute an AI-first staged chapter drafting workflow.", "draft-writer"),
+        ("revise-chapter", "Prepare or execute an AI-first staged chapter revision workflow.", "style-auditor"),
+        ("audit-chapter", "Prepare or execute an AI-first staged chapter audit workflow.", "info-boundary-auditor"),
+    ]:
+        writing_parser = subparsers.add_parser(command_name, help=help_text)
+        writing_parser.add_argument(
+            "path",
+            nargs="?",
+            default=".",
+            help="Target FictionOps project directory. Default: current directory.",
+        )
+        writing_parser.add_argument(
+            "--book",
+            default="book_01",
+            help="Book id or directory under 06_drafts. Default: book_01.",
+        )
+        writing_parser.add_argument(
+            "--chapter",
+            required=True,
+            help="Chapter number, such as 1, 001, or ch_001.",
+        )
+        writing_parser.add_argument(
+            "--role",
+            choices=AGENT_ROLE_CHOICES,
+            default=default_role,
+            help=f"Agent role. Default: {default_role}.",
+        )
+        writing_parser.add_argument(
+            "--out-dir",
+            help="Write the prepared agent bundle to this directory. Relative paths are resolved inside PATH.",
+        )
+        writing_parser.add_argument(
+            "--output-name",
+            default=DEFAULT_AGENT_EXEC_OUTPUT,
+            help="Staging output filename when --runner is provided. Default: output.md.",
+        )
+        writing_parser.add_argument(
+            "--timeout-seconds",
+            type=int,
+            default=300,
+            help="External runner timeout in seconds. Default: 300.",
+        )
+        writing_parser.add_argument(
+            "--no-context-content",
+            action="store_true",
+            help="Only list scoped context files; do not embed file contents in prompt/context artifacts.",
+        )
+        writing_parser.add_argument(
+            "--max-chars-per-file",
+            type=int,
+            default=6000,
+            help="Maximum characters embedded from each context file. Default: 6000.",
+        )
+        writing_parser.add_argument(
+            "--max-total-chars",
+            type=int,
+            default=60000,
+            help="Maximum total characters embedded across context files. Default: 60000.",
+        )
+        writing_parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Overwrite existing bundle files if they already exist.",
+        )
+        writing_parser.add_argument(
+            "--force-output",
+            action="store_true",
+            help="Overwrite an existing staged output or execution receipt when --runner is provided.",
+        )
+        writing_parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Build the report without writing or executing the external runner.",
+        )
+        writing_parser.add_argument(
+            "--format",
+            choices=["markdown", "json"],
+            default="markdown",
+            help="Output format. Default: markdown.",
+        )
+        writing_parser.add_argument(
+            "--runner",
+            nargs=argparse.REMAINDER,
+            help="Optional external runner command. Put FictionOps options before --runner; everything after it is passed to the runner.",
+        )
+
     agent_next_parser = subparsers.add_parser(
         "agent-next",
         help="Select the next safe FictionOps command for an external agent controller.",
@@ -3158,6 +3245,42 @@ def handle_agent_inbox(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_writing_agent_command(args: argparse.Namespace) -> int:
+    target = Path(args.path)
+    runner = list(args.runner or [])
+    if runner and runner[0] == "--":
+        runner = runner[1:]
+    try:
+        report = build_writing_agent_command(
+            target,
+            command=args.command,
+            book=args.book,
+            chapter=args.chapter,
+            role=args.role,
+            out_dir=args.out_dir,
+            runner=runner or None,
+            output_name=args.output_name,
+            timeout_seconds=args.timeout_seconds,
+            include_context_content=not args.no_context_content,
+            max_chars_per_file=args.max_chars_per_file,
+            max_total_context_chars=args.max_total_chars,
+            force=args.force,
+            force_output=args.force_output,
+            dry_run=args.dry_run,
+        )
+    except FileExistsError as exc:
+        print(f"fictionops: {args.command} failed: {exc}. Use --force or --force-output to overwrite.", file=sys.stderr)
+        return 1
+    except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
+        print(f"fictionops: {args.command} failed: {exc}", file=sys.stderr)
+        return 1
+
+    if report.prepared and args.format != "json":
+        print(f"Wrote FictionOps {args.command} run to: {report.run_dir}")
+    print(render_writing_agent_command(report, args.format))
+    return 0
+
+
 def handle_agent_next(args: argparse.Namespace) -> int:
     target = Path(args.path)
     try:
@@ -3711,6 +3834,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_agent_exec(args)
     if args.command == "agent-inbox":
         return handle_agent_inbox(args)
+    if args.command in {"write-chapter", "revise-chapter", "audit-chapter"}:
+        return handle_writing_agent_command(args)
     if args.command == "agent-next":
         return handle_agent_next(args)
     if args.command == "audit-agent-workflow":

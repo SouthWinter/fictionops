@@ -47,6 +47,9 @@
 | `agent-run` | Agent 任务包 | 可选 | 是 | 否 |
 | `agent-exec` | Agent 外部执行桥 | 否 | 是 | 是 |
 | `agent-inbox` | Agent 输出收件箱 | 否 | 是 | 不适用 |
+| `write-chapter` | AI-first 章节写作编排 | 可选 | 是 | 否 |
+| `revise-chapter` | AI-first 章节修订编排 | 可选 | 是 | 否 |
+| `audit-chapter` | AI-first 章节审计编排 | 可选 | 是 | 否 |
 | `agent-next` | Agent 下一步选择器 | 否 | 是 | 不适用 |
 | `audit-agent-workflow` | Agent workflow 接入预检 | 否 | 是 | 不适用 |
 | `model-config` | 模型供应商配置 | 可选 | 是 | 否 |
@@ -763,6 +766,34 @@
 - 输入 `path` 不存在或不是目录。
 - `request.json` 无法读取时应进入问题列表；除非底层文件系统异常，命令本身不应因为单个坏 run 中断整个收件箱审计。
 
+### `fictionops write-chapter`
+
+契约：
+
+- 准备 AI-first 单章写作任务包，默认 role 为 `draft-writer`，task 为 `draft`。
+- 默认只写 `agent-run` 任务包；只有传入 `--runner` 时才执行外部 runner。
+- runner 输出必须进入暂存文件，并通过 `agent-inbox` 检查；命令不得自动应用到正文或正史。
+- `--force` 只覆盖任务包；`--force-output` 才覆盖已有暂存输出或执行回执。
+- JSON 输出必须包含 `command`、`role`、`task`、`run_dir`、`stop_reason`、`ready_count` 和 `staged_outputs`。
+
+### `fictionops revise-chapter`
+
+契约：
+
+- 准备 AI-first 单章修订任务包，默认 role 为 `style-auditor`，task 为 `review`。
+- 默认只准备任务包；传入 `--runner` 后才调用外部模型 runner 并写入暂存输出。
+- 不得直接重写章节正文；修订建议必须经过 `agent-inbox` 和人工接受。
+- 路径、覆盖、JSON 和 runner 规则与 `write-chapter` 保持一致。
+
+### `fictionops audit-chapter`
+
+契约：
+
+- 准备 AI-first 单章审计任务包，默认 role 为 `info-boundary-auditor`，task 为 `review`。
+- 适合信息边界、知识泄露、章节风险等审计型输出。
+- 默认不调用模型；传入 `--runner` 时只把外部输出保存为暂存审计结果。
+- 不得自动修改正文、人物、设定或信息表；接受后的同步由作者或后续门禁决定。
+
 ### `fictionops agent-next`
 
 输入：
@@ -1271,7 +1302,7 @@ Failure:
 
 ## 7. 帮助文案契约
 
-- 根命令 `fictionops --help` 必须列出全部 51 个 MVP 命令。
+- 根命令 `fictionops --help` 必须列出全部 54 个 MVP 命令。
 - 每个子命令必须支持 `fictionops <command> --help`。
 - 帮助文案应说明默认值、是否写文件、是否覆盖、路径如何解析。
 

@@ -15,6 +15,7 @@ The project uses semantic versioning while the CLI contracts are still small eno
 - Quickstart/onboarding issue template.
 - 0.1.1 release-candidate plan explaining why the current public package candidate should not reuse the earlier 0.1.0 TestPyPI artifact.
 - Draft API Agent thin server under `integrations/api-agent/server.py`, wrapping `agent-run`, `agent-exec`, `agent-inbox`, and human decisions behind a local HTTP adapter.
+- AI-first `write-chapter`, `revise-chapter`, and `audit-chapter` commands that compose staged `agent-run`, optional `agent-exec`, and `agent-inbox` workflows.
 
 ### Changed
 

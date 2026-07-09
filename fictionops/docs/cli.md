@@ -105,11 +105,14 @@ fictionops agent-run my-novel --role draft-writer --book book_01 --chapter 001 -
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python fictionops/examples/agent_runner_echo.py
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python fictionops/examples/agent_runner_openai_responses.py --dry-run --model your-model
 fictionops agent-inbox my-novel
+fictionops write-chapter my-novel --book book_01 --chapter 001 --runner python fictionops/examples/agent_runner_openai_chat.py --model your-model
+fictionops revise-chapter my-novel --book book_01 --chapter 001
+fictionops audit-chapter my-novel --book book_01 --chapter 001
 fictionops agent-next my-novel --book book_01 --chapter 001 --format json
 fictionops audit-agent-workflow my-novel --level runner --connector local-runner
 ```
 
-FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, reproducible harness smoke reports, and preflight audits before agent integration. It does not store API keys, call models on its own, or apply model output to the manuscript automatically. `eval-agent` runs on a temporary fixture copy and uses an internal no-network runner; real model calls still go through `agent-exec` and produce staged output. See [agent-protocol.md](agent-protocol.md), [agent-integration.md](agent-integration.md), and [agent-evaluation.md](agent-evaluation.md).
+FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, reproducible harness smoke reports, and preflight audits before agent integration. `write-chapter`, `revise-chapter`, and `audit-chapter` are AI-first orchestration commands over the same staged `agent-run` / `agent-exec` / `agent-inbox` contract. It does not store API keys or apply model output to the manuscript automatically. `eval-agent` runs on a temporary fixture copy and uses an internal no-network runner; real model calls still go through explicit runners and produce staged output. See [agent-protocol.md](agent-protocol.md), [agent-integration.md](agent-integration.md), and [agent-evaluation.md](agent-evaluation.md).
 
 ### Book And Release Gates
 

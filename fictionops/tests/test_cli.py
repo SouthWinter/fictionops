@@ -51,6 +51,9 @@ CLI_COMMANDS = [
     "agent-run",
     "agent-exec",
     "agent-inbox",
+    "write-chapter",
+    "revise-chapter",
+    "audit-chapter",
     "agent-next",
     "audit-agent-workflow",
     "model-config",
@@ -1871,6 +1874,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/agent_exec.py",
             "src/fictionops/agent_run.py",
             "src/fictionops/agent_inbox.py",
+            "src/fictionops/writing_agent.py",
             "src/fictionops/agent_next.py",
             "src/fictionops/agent_smoke.py",
             "src/fictionops/agent_workflow_audit.py",
@@ -5117,6 +5121,65 @@ class FictionOpsCliTests(unittest.TestCase):
             decided = module.update_session_decision(session["session_id"], {"decision": "reject", "notes": "smoke"})
             self.assertEqual(decided["status"], "completed")
             self.assertEqual(decided["human_decision"]["decision"], "reject")
+
+    def test_ai_first_chapter_commands_stage_or_prepare_outputs(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            runner = ROOT / "examples" / "agent_runner_echo.py"
+            write = self.run_cli(
+                "write-chapter",
+                str(target),
+                "--chapter",
+                "001",
+                "--out-dir",
+                "00_management/agent_runs/write_cli_ch_001",
+                "--force",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            write_data = json.loads(write.stdout)
+            self.assertEqual(write_data["command"], "write-chapter")
+            self.assertEqual(write_data["role"], "draft-writer")
+            self.assertEqual(write_data["task"], "draft")
+            self.assertEqual(write_data["stop_reason"], "staged_output_ready_for_review")
+            self.assertEqual(write_data["ready_count"], 1)
+            self.assertTrue((target / "00_management" / "agent_runs" / "write_cli_ch_001" / "output.md").exists())
+
+            revise = self.run_cli(
+                "revise-chapter",
+                str(target),
+                "--chapter",
+                "001",
+                "--out-dir",
+                "00_management/agent_runs/revise_cli_ch_001",
+                "--force",
+                "--format",
+                "json",
+            )
+            revise_data = json.loads(revise.stdout)
+            self.assertEqual(revise_data["command"], "revise-chapter")
+            self.assertEqual(revise_data["role"], "style-auditor")
+            self.assertEqual(revise_data["task"], "review")
+            self.assertEqual(revise_data["stop_reason"], "agent_run_ready_for_runner")
+
+            audit = self.run_cli(
+                "audit-chapter",
+                str(target),
+                "--chapter",
+                "001",
+                "--out-dir",
+                "00_management/agent_runs/audit_cli_ch_001",
+                "--force",
+                "--format",
+                "json",
+            )
+            audit_data = json.loads(audit.stdout)
+            self.assertEqual(audit_data["command"], "audit-chapter")
+            self.assertEqual(audit_data["role"], "info-boundary-auditor")
+            self.assertEqual(audit_data["task"], "review")
 
     def test_agent_exec_runs_external_runner_into_staging_output(self) -> None:
         temp, target = self.make_project()

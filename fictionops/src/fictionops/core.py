@@ -20,6 +20,7 @@ from .continuity_audit import *
 from .context_pack import *
 from .draft_brief import *
 from .workflow_plan import *
+from .writing_agent import *
 from .word_scan import *
 from .doctor import *
 from .dogfood_cycle import *

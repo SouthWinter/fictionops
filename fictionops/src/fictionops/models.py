@@ -1458,6 +1458,27 @@ class AgentExecReport:
 
 
 @dataclass
+class WritingAgentCommandReport:
+    command: str
+    target: str
+    role: str
+    task: str
+    book: str
+    chapter: str | None
+    run_dir: str | None
+    prepared: bool
+    executed: bool
+    inbox_status: str | None
+    ready_count: int
+    staged_outputs: list[dict[str, object]]
+    stop_reason: str
+    next_actions: list[str]
+    agent_run: AgentRunReport
+    agent_exec: AgentExecReport | None
+    inbox: AgentInboxReport | None
+
+
+@dataclass
 class AgentInboxIssue:
     severity: str
     code: str

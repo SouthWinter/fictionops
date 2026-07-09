@@ -14,13 +14,13 @@
 
 | 里程碑 | 状态 | 当前证据 | 剩余证据 |
 | --- | --- | --- | --- |
-| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、132 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
+| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、133 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
 | 0.2.0 Migration Dogfood | 本地已完成 | 真实项目 dogfood 记录、`adopt --copy-to`、`adopt-review`、`adopt-plan`、`import-plan`、迁移豁免、导入队列清理路径、分组修复文件，以及 0.2 收口复跑中的 `ready: true`、`import_queue_files: 0`、`blocking_issue_count: 0`、无 blocking repair groups。 | 后续正史归一属于常规项目维护，不再是迁移里程碑阻塞。 |
 | 0.3.0 Agent Controller | 本地已完成 | `examples/agent_controller_loop.py`、`agent-next`、`agent-exec`、`agent-inbox`、`docs/agent-connector-contract.zh-CN.md`、JSONL controller log，以及覆盖安全执行、复核边界、占位命令、迁移状态、重复建议和发布阶段命令的测试。 | 对 0.3 来说真实模型不是阻塞，但 0.6+ 已把真实模型 API 设为默认产品路径。 |
 | 0.4.0 Release Trial | 已由外部证据完成 | GitHub Actions publish run `28849146871`、TestPyPI 包 `fictionops==0.1.1`、`docs/release-trial-evidence.md`、分发包哈希、干净环境 TestPyPI 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 发布演练里程碑无剩余项。 |
 | 0.5.0 Documentation Parity Pass | 本地已完成 | 英文 CLI、契约、迁移、Agent 协议、Agent workflow、Agent 接入、测试、发布、兼容性、已知限制、贡献、demo、legacy migration example，以及 `docs/end-to-end-migration-publish.md`。 | 每一条中文设计笔记的完整翻译仍然明确不纳入这个里程碑。 |
 | 0.6.0 AI Provider Onboarding | 未完成 | OpenAI-compatible Chat runner v1、provider preset、模型供应商文档、dry-run 路径，以及证明 preset/env-file 接线的测试。 | `setup-ai` 或等价引导入口、AI-first README quickstart、覆盖生成产物的密钥泄露测试，以及默认用户故事中的真实调用路径。 |
-| 0.7.0 Writing Agent Commands | 未完成 | 底层命令已存在：`plan-chapter`、`scene-plan`、`draft-brief`、`agent-run`、`agent-exec`、`agent-inbox`、审计命令和 controller primitives。 | `write-chapter`、`revise-chapter`、`audit-chapter`、`agent-session` 等 AI-first 编排命令，以及暂存输出和停止边界测试。 |
+| 0.7.0 Writing Agent Commands | 部分证明 | AI-first `write-chapter`、`revise-chapter`、`audit-chapter` 已封装 `agent-run`、可选 `agent-exec` 和 `agent-inbox`，并有暂存输出测试。 | session 持久化、更完整 telemetry、真实供应商 dogfood，以及 `agent-session` 式多步编排。 |
 | 0.8.0 Agent Runtime Dogfood | 未完成 | 已有私有真实项目 workflow dogfood，但主要证明项目维护和发布基础设施，不是量化 AI Agent 贡献。 | 真实 AI-assisted 写作 dogfood 报告：模型/供应商、任务、接受/拒绝输出、有效/噪声发现、节省时间、复核成本和恢复说明。 |
 | 1.0.0 Stable Core | 未完成 | `docs/stable-core-audit.zh-CN.md`、兼容性策略、已知限制、恢复手册、命令契约、大范围测试、拒绝危险覆盖、暂存式 Agent workflow、发布门禁、已接受的 TestPyPI 发布演练证据、真实项目 dogfood 证据、`docs/dogfood-cycle-evidence.zh-CN.md`、`docs/stability-window-evidence.zh-CN.md`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。 | 填实的持续真实项目 dogfood、已接受的稳定窗口证据、核心契约经过时间稳定，以及恢复路径随行为变化持续更新的证据。 |
 
