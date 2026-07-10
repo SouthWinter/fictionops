@@ -52,6 +52,7 @@ CLI_COMMANDS = [
     "agent-run",
     "agent-exec",
     "agent-inbox",
+    "agent-revise-workflow",
     "write-chapter",
     "revise-chapter",
     "audit-chapter",
@@ -86,6 +87,7 @@ from fictionops.core import (  # noqa: E402
     build_agent_inbox,
     build_agent_next,
     build_agent_prompt,
+    build_agent_revise_workflow,
     build_agent_run,
     build_agent_session,
     build_agent_smoke,
@@ -1885,6 +1887,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/agent_connect.py",
             "src/fictionops/agent_evaluation.py",
             "src/fictionops/agent_exec.py",
+            "src/fictionops/agent_revise_workflow.py",
             "src/fictionops/agent_run.py",
             "src/fictionops/agent_session.py",
             "src/fictionops/agent_inbox.py",
@@ -4865,6 +4868,69 @@ class FictionOpsCliTests(unittest.TestCase):
             data = json.loads(cli.stdout)
             self.assertEqual(data["file_count"], 1)
             self.assertEqual(data["files"][0]["path"], chapter.name)
+
+    def test_agent_revise_workflow_stages_revision_from_review_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            management = target / "00_总纲与管理"
+            chapter_dir = target / "卷一" / "第一本"
+            management.mkdir()
+            chapter_dir.mkdir(parents=True)
+            chapter = chapter_dir / "ch_026.md"
+            chapter.write_text(
+                "# Chapter 26\n\n"
+                "不是风，也不是雪。没有声音，没有人动。\n"
+                "白影像雪一样过去，剑光像针一样亮。\n",
+                encoding="utf-8",
+            )
+            review = management / "ch_026_review_workflow.md"
+            review.write_text(
+                "# FictionOps Review Workflow\n\n"
+                "## Revision Queue\n\n"
+                "- Review low-value `不是A，也不是B` negation patterns.\n"
+                "- Convert ordinary `没有...` lines into action, silence, or object evidence.\n",
+                encoding="utf-8",
+            )
+
+            report = build_agent_revise_workflow(
+                chapter,
+                review=review,
+                out_dir="00_总纲与管理/agent_runs/revise_026",
+            )
+            self.assertTrue(report.prepared)
+            self.assertFalse(report.executed)
+            run_dir = Path(report.run_dir)
+            self.assertTrue((run_dir / "source_chapter.md").exists())
+            self.assertTrue((run_dir / "review_workflow.md").exists())
+            self.assertIn("Write only the revised chapter text", (run_dir / "revision_contract.md").read_text(encoding="utf-8"))
+            request = json.loads((run_dir / "request.json").read_text(encoding="utf-8"))
+            self.assertEqual(request["schema"], "fictionops.agent_run_request.v1")
+            self.assertEqual(request["source_chapter_file"], str(chapter.resolve()))
+
+            runner = ROOT / "examples" / "agent_runner_echo.py"
+            cli = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--review",
+                str(review),
+                "--out-dir",
+                "00_总纲与管理/agent_runs/revise_026_cli",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["command"], "agent-revise-workflow")
+            self.assertTrue(data["prepared"])
+            self.assertTrue(data["executed"])
+            self.assertEqual(data["stop_reason"], "staged_output_ready_for_review")
+            self.assertEqual(data["ready_count"], 1)
+            output = Path(data["staged_outputs"][0]["output_file"])
+            self.assertTrue(output.exists())
+            self.assertIn("Echo Agent Staging Output", output.read_text(encoding="utf-8"))
+            self.assertIn("不是风", chapter.read_text(encoding="utf-8"))
 
     def test_audit_continuity_detects_standard_project_gaps(self) -> None:
         temp, target = self.make_project()

@@ -72,6 +72,10 @@ def load_env_file(path: str | None) -> None:
         os.environ.setdefault(key, value)
 
 
+def read_stdin_utf8() -> str:
+    return sys.stdin.buffer.read().decode("utf-8")
+
+
 def choose_provider(request: dict[str, object], override: str | None) -> str:
     candidates = [override or "", os.environ.get("FICTIONOPS_CHAT_PROVIDER", ""), text_value(request, "provider")]
     for candidate in candidates:
@@ -325,7 +329,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_output_chars is not None and args.max_output_chars <= 0:
         raise ValueError("--max-output-chars must be greater than zero when provided")
     load_env_file(args.env_file)
-    payload = sys.stdin.read()
+    payload = read_stdin_utf8()
     request = extract_request(payload)
     provider = choose_provider(request, args.provider)
     api_key_env = resolve_provider_setting(

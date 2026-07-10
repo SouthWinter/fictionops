@@ -167,9 +167,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def read_stdin_utf8() -> str:
+    return sys.stdin.buffer.read().decode("utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    payload = sys.stdin.read()
+    payload = read_stdin_utf8()
     request = extract_request(payload)
     model = choose_model(request, args.model, args.model_env)
     if args.dry_run:

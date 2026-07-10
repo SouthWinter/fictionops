@@ -1363,6 +1363,86 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Default: markdown.",
     )
 
+    agent_revise_workflow_parser = subparsers.add_parser(
+        "agent-revise-workflow",
+        help="Prepare or execute a staged model revision from a chapter review workflow.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "chapter",
+        help="Source chapter Markdown file to revise.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--review",
+        help="Existing review-workflow Markdown report. If omitted, one is generated into the bundle.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--out-dir",
+        help="Agent run bundle directory. Relative paths are resolved from the discovered project anchor.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--role",
+        default="style-auditor",
+        choices=AGENT_ROLE_CHOICES,
+        help="Agent role recorded in request.json. Default: style-auditor.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--provider",
+        help="Provider label recorded in request.json. Defaults to model_config provider when available.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--model",
+        help="Model label recorded in request.json. Defaults to model_config audit model when available.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--output-name",
+        default=DEFAULT_AGENT_EXEC_OUTPUT,
+        help="Staging output filename when --runner is provided. Default: output.md.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=300,
+        help="External runner timeout in seconds. Default: 300.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--max-chapter-chars",
+        type=int,
+        default=120000,
+        help="Maximum chapter characters embedded in context_pack.md. Full text is still copied to source_chapter.md. Default: 120000.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--max-review-chars",
+        type=int,
+        default=50000,
+        help="Maximum review characters embedded in context_pack.md. Full report is still copied to review_workflow.md. Default: 50000.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing bundle files if they already exist.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--force-output",
+        action="store_true",
+        help="Overwrite an existing staged output or execution receipt when --runner is provided.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Build the report without writing files or executing the external runner.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format. Default: markdown.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--runner",
+        nargs=argparse.REMAINDER,
+        help="Optional external runner command. Put FictionOps options before --runner; everything after it is passed to the runner.",
+    )
+
     for command_name, help_text, default_role in [
         ("write-chapter", "Prepare or execute an AI-first staged chapter drafting workflow.", "draft-writer"),
         ("revise-chapter", "Prepare or execute an AI-first staged chapter revision workflow.", "style-auditor"),
@@ -3454,6 +3534,44 @@ def handle_writing_agent_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_agent_revise_workflow(args: argparse.Namespace) -> int:
+    chapter = Path(args.chapter)
+    review = Path(args.review) if args.review else None
+    runner = list(args.runner or [])
+    if runner and runner[0] == "--":
+        runner = runner[1:]
+    try:
+        report = build_agent_revise_workflow(
+            chapter,
+            review=review,
+            out_dir=args.out_dir,
+            role=args.role,
+            provider=args.provider,
+            model=args.model,
+            runner=runner or None,
+            output_name=args.output_name,
+            timeout_seconds=args.timeout_seconds,
+            force=args.force,
+            force_output=args.force_output,
+            dry_run=args.dry_run,
+            max_chapter_chars=args.max_chapter_chars,
+            max_review_chars=args.max_review_chars,
+        )
+    except FileExistsError as exc:
+        print(f"fictionops: agent-revise-workflow failed: {exc}. Use --force or --force-output to overwrite.", file=sys.stderr)
+        return 1
+    except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
+        print(f"fictionops: agent-revise-workflow failed: {exc}", file=sys.stderr)
+        return 1
+
+    if report.prepared and args.format != "json":
+        print(f"Wrote FictionOps agent revision bundle to: {report.run_dir}")
+    if report.executed and report.staged_outputs and args.format != "json":
+        print(f"Wrote FictionOps staged revision to: {report.staged_outputs[0]['output_file']}")
+    print(render_agent_revise_workflow(report, args.format))
+    return 0
+
+
 def handle_agent_session(args: argparse.Namespace) -> int:
     target = Path(args.path)
     try:
@@ -4070,6 +4188,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_agent_exec(args)
     if args.command == "agent-inbox":
         return handle_agent_inbox(args)
+    if args.command == "agent-revise-workflow":
+        return handle_agent_revise_workflow(args)
     if args.command in {"write-chapter", "revise-chapter", "audit-chapter"}:
         return handle_writing_agent_command(args)
     if args.command == "agent-session":

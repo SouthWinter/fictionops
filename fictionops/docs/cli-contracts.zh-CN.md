@@ -48,6 +48,7 @@
 | `agent-run` | Agent 任务包 | 可选 | 是 | 否 |
 | `agent-exec` | Agent 外部执行桥 | 否 | 是 | 是 |
 | `agent-inbox` | Agent 输出收件箱 | 否 | 是 | 不适用 |
+| `agent-revise-workflow` | Agent 审读驱动修订 workflow | 可选 | 是 | 否 |
 | `write-chapter` | AI-first 章节写作编排 | 可选 | 是 | 否 |
 | `revise-chapter` | AI-first 章节修订编排 | 可选 | 是 | 否 |
 | `audit-chapter` | AI-first 章节审计编排 | 可选 | 是 | 否 |
@@ -794,6 +795,33 @@
 
 - 输入 `path` 不存在或不是目录。
 - `request.json` 无法读取时应进入问题列表；除非底层文件系统异常，命令本身不应因为单个坏 run 中断整个收件箱审计。
+
+### `fictionops agent-revise-workflow`
+
+输入：
+
+- `chapter`：要修订的 Markdown 正文章节文件。
+- `--review`：已有 `review-workflow` Markdown 报告；未传时命令会基于章节临时生成并写入 bundle。
+- `--out-dir`：Agent run bundle 目录；相对路径从发现到的项目锚点解析，默认写入 `00_management/agent_runs/`、`00_总纲与管理/agent_runs/` 或章节旁的 `.fictionops_agent_runs/`。
+- `--role`：写入 `request.json` 的 Agent 角色，默认 `style-auditor`。
+- `--provider` / `--model`：写入 `request.json` 的供应商和模型标签；未传时使用可发现的 model config。
+- `--runner ...`：可选外部 runner；未传时只准备 bundle。
+- `--output-name`、`--timeout-seconds`、`--force`、`--force-output`、`--dry-run`、`--format markdown|json` 遵循 Agent 执行类命令契约。
+
+输出：
+
+- 写出自包含 bundle：`request.json`、`prompt.md`、`context_pack.md`、`source_chapter.md`、`review_workflow.md`、`revision_contract.md` 和 `README.md`。
+- `revision_contract.md` 要求 runner 只输出修订后的章节全文，不输出解释、总结或诊断。
+- 传入 `--runner` 时，命令通过 `agent-exec` 执行外部 runner，把 stdout 保存为暂存输出，再用 `agent-inbox` 汇总 ready 状态。
+- JSON 输出必须包含 `command`、`chapter_file`、`review_file`、`run_dir`、`prepared`、`executed`、`stop_reason`、`ready_count`、`files` 和 `staged_outputs`。
+- 命令不得自动覆盖源章节；接受 staged revision 必须由人类人工完成。
+
+失败：
+
+- `chapter` 不存在、不是文件，或 `--review` 指向不存在/非文件。
+- bundle 文件已存在且未传 `--force`。
+- runner 输出或执行回执已存在且未传 `--force-output` 或 `--force`。
+- runner 返回非零、超时或 stdout 为空。
 
 ### `fictionops write-chapter`
 

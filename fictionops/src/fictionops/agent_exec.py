@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from dataclasses import asdict
 from pathlib import Path
@@ -110,6 +111,12 @@ def agent_exec_safety() -> dict[str, object]:
     }
 
 
+def runner_environment() -> dict[str, str]:
+    env = os.environ.copy()
+    env.setdefault("PYTHONIOENCODING", "utf-8")
+    return env
+
+
 def next_actions_for_agent_exec(report: AgentExecReport) -> list[str]:
     if report.dry_run:
         return ["Rerun without `--dry-run` when the external runner command is ready."]
@@ -170,6 +177,7 @@ def build_agent_exec(
                 input=runner_input,
                 text=True,
                 encoding="utf-8",
+                env=runner_environment(),
                 capture_output=True,
                 timeout=timeout_seconds,
                 check=False,

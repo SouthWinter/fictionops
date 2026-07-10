@@ -46,6 +46,7 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "agent-run",
     "agent-exec",
     "agent-inbox",
+    "agent-revise-workflow",
     "write-chapter",
     "revise-chapter",
     "audit-chapter",

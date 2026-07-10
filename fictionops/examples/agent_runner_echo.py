@@ -26,8 +26,12 @@ def text_value(request: dict[str, object], key: str, default: str = "-") -> str:
     return text or default
 
 
+def read_stdin_utf8() -> str:
+    return sys.stdin.buffer.read().decode("utf-8")
+
+
 def main() -> int:
-    payload = sys.stdin.read()
+    payload = read_stdin_utf8()
     request = extract_request(payload)
     role = text_value(request, "role")
     task = text_value(request, "task")
