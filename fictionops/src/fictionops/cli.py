@@ -868,6 +868,48 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Default: table.",
     )
 
+    review_workflow_parser = subparsers.add_parser(
+        "review-workflow",
+        help="Build a staged chapter review workflow from scans, issue families, agent tasks, and recheck targets.",
+    )
+    review_workflow_parser.add_argument("path", nargs="?", default=".", help="Target chapter file or directory. Default: current directory.")
+    review_workflow_parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Include all Markdown files instead of only detected chapter files.",
+    )
+    review_workflow_parser.add_argument(
+        "--pattern",
+        default="**/*.md",
+        help="Glob pattern used when PATH is a directory. Default: **/*.md.",
+    )
+    review_workflow_parser.add_argument(
+        "--focus",
+        default="style",
+        help="Human-readable focus label for the workflow report. Default: style.",
+    )
+    review_workflow_parser.add_argument(
+        "--top-lines",
+        type=int,
+        default=40,
+        help="Maximum evidence lines to capture per file. Default: 40.",
+    )
+    review_workflow_parser.add_argument(
+        "--out",
+        help="Write the workflow report to a file. Relative paths are resolved inside PATH.",
+    )
+    review_workflow_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --out if it already exists.",
+    )
+    review_workflow_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format. Default: markdown.",
+    )
+
     continuity_parser = subparsers.add_parser("audit-continuity", help="Run a static continuity maintenance audit.")
     continuity_parser.add_argument("path", nargs="?", default=".", help="Target project, book, chapter file, or directory.")
     continuity_parser.add_argument(
@@ -3082,6 +3124,37 @@ def handle_audit_style(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_review_workflow(args: argparse.Namespace) -> int:
+    target = Path(args.path)
+    if not target.exists():
+        print(f"fictionops: review-workflow failed: path does not exist: {target}", file=sys.stderr)
+        return 1
+    try:
+        report = build_review_workflow_report(
+            target,
+            all_markdown=args.all,
+            pattern=args.pattern,
+            focus=args.focus,
+            top_lines=args.top_lines,
+        )
+        rendered = render_review_workflow_report(report, args.format)
+        if args.out:
+            output = Path(args.out)
+            if not output.is_absolute():
+                output = (target if target.is_dir() else target.parent) / output
+            if output.exists() and not args.force:
+                print(f"fictionops: review-workflow failed: output exists: {output}. Use --force to overwrite.", file=sys.stderr)
+                return 1
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(rendered + "\n", encoding="utf-8")
+            print(f"Wrote FictionOps review workflow to: {output}")
+        print(rendered)
+    except (OSError, ValueError) as exc:
+        print(f"fictionops: review-workflow failed: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def handle_audit_continuity(args: argparse.Namespace) -> int:
     target = Path(args.path)
     if not target.exists():
@@ -3973,6 +4046,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_audit_wave(args)
     if args.command == "audit-style":
         return handle_audit_style(args)
+    if args.command == "review-workflow":
+        return handle_review_workflow(args)
     if args.command == "audit-continuity":
         return handle_audit_continuity(args)
     if args.command == "audit-echoes":

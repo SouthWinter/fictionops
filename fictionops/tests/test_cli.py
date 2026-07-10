@@ -40,6 +40,7 @@ CLI_COMMANDS = [
     "check-tables",
     "audit-wave",
     "audit-style",
+    "review-workflow",
     "audit-continuity",
     "audit-echoes",
     "audit-info",
@@ -106,6 +107,7 @@ from fictionops.core import (  # noqa: E402
     build_post_draft_report,
     build_publish_copy,
     build_review_gate,
+    build_review_workflow_report,
     build_book_gate,
     build_release_gate,
     build_release_evidence_audit,
@@ -4835,6 +4837,34 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(report.file_count, 1)
             self.assertEqual(report.watch_total, 3)
             self.assertTrue(any(item.item.startswith("他说") and item.count == 3 for item in report.repeated_openings))
+
+    def test_review_workflow_builds_agent_revision_queue_from_pattern_families(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            chapter = target / "第26章_冰中四人.md"
+            chapter.write_text(
+                "# 第二十六章 冰中四人\n\n"
+                "不是怪物的黑，也不是死人的黑。\n"
+                "他不是想帮这些人。他只是看见那条布。\n"
+                "没有声音。没有嘲笑。没有人动。\n"
+                "白影像雪粒一样过去，剑光像针尖一样亮。\n"
+                "可它不是灾厄。它有名字。\n",
+                encoding="utf-8",
+            )
+
+            report = build_review_workflow_report(chapter, top_lines=20)
+            self.assertEqual(report.file_count, 1)
+            file_report = report.files[0]
+            families = {issue.family for issue in file_report.issues}
+            self.assertIn("exclusionary_narration", families)
+            self.assertIn("absence_filter", families)
+            self.assertTrue(any(task["role"] == "style-auditor" for task in file_report.agent_tasks))
+            self.assertTrue(any("不是A，也不是B" in item or "不是A" in item for item in file_report.revision_queue))
+
+            cli = self.run_cli("review-workflow", str(chapter), "--format", "json")
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["file_count"], 1)
+            self.assertEqual(data["files"][0]["path"], chapter.name)
 
     def test_audit_continuity_detects_standard_project_gaps(self) -> None:
         temp, target = self.make_project()

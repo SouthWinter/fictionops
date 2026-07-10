@@ -47,6 +47,7 @@ from .report import *
 from .retrospective import *
 from .revision_plan import *
 from .review_gate import *
+from .review_workflow import *
 from .book_gate import *
 from .release_gate import *
 from .release_evidence import *

@@ -36,6 +36,7 @@
 | `check-tables` | 通用表格检查 | 否 | 是 | 不适用 |
 | `audit-wave` | 章节体量波形审计 | 否 | 是 | 不适用 |
 | `audit-style` | 风格模式审计 | 否 | 是 | 不适用 |
+| `review-workflow` | 章节审读 workflow 编排 | 可选 | 是 | 否 |
 | `audit-continuity` | 连续性维护审计 | 否 | 是 | 不适用 |
 | `audit-echoes` | 伏笔回声审计 | 否 | 是 | 不适用 |
 | `audit-info` | 信息边界审计 | 否 | 是 | 不适用 |
@@ -487,6 +488,32 @@
 失败：
 
 - 目标路径不存在。
+
+### `fictionops review-workflow`
+
+输入：
+
+- `path`：目标章节文件或目录，默认当前目录。
+- `--all`：扫描所有 Markdown，而不只识别出的章节文件。
+- `--pattern`：目录扫描 glob，默认 `**/*.md`。
+- `--focus`：写入报告的人工可读审读焦点标签，默认 `style`。
+- `--top-lines`：每个文件最多收集多少条证据行，默认 `40`。
+- `--out`：写入 Markdown 或 JSON workflow 报告；相对路径解析到目标目录或章节所在目录。
+- `--force`：覆盖已有 `--out`。
+- `--format markdown|json`：默认 `markdown`。
+
+输出：
+
+- 对目标章节或章节集合做预扫，统计 `不是`、`没有`、`像`、`忽然/突然`、冷系、热系和解释标记等问题族。
+- 把高密度模式归入 `exclusionary_narration`、`absence_filter`、`simile_translation`、`sensory_default`、`turn_signal_overuse` 或 `authorial_explanation`。
+- 为每个文件输出 P1-P4 风险、证据行、建议 agent 角色任务、修订队列和修后复检目标。
+- 只生成审读 workflow，不调用模型、不改正文、不自动应用修订；真实模型审读仍应通过 `agent-run` / `agent-exec` / `agent-inbox` 或外部 runner 暂存。
+
+失败：
+
+- 目标路径不存在。
+- `--top-lines` 小于 `1`。
+- `--out` 已存在且未传 `--force`。
 
 ### `fictionops audit-continuity`
 

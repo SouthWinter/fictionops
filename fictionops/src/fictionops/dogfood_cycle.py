@@ -34,6 +34,7 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "check-tables",
     "audit-wave",
     "audit-style",
+    "review-workflow",
     "audit-continuity",
     "audit-echoes",
     "audit-info",
