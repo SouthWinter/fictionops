@@ -78,7 +78,12 @@ REQUIRED_FIELDS = [
     "End date",
     "Version / commit range",
     "Scope",
+    "Book / chapter scope",
+    "Focused tasks",
     "Commands exercised",
+    "AI workflow evidence",
+    "Human review boundary",
+    "Day-by-day ledger",
     "Initial adopt-review status",
     "Final adopt-review status",
     "import_queue_files",
@@ -174,6 +179,74 @@ def command_names(value: str) -> list[str]:
 
 def recognized_command_count(value: str) -> int:
     return len({name for name in command_names(value) if name in RECOGNIZED_FICTIONOPS_COMMANDS})
+
+
+def has_book_or_project_scope(value: str) -> bool:
+    lowered = value.lower()
+    return bool(
+        re.search(r"\bbook[_ -]?\d+\b", lowered)
+        or re.search(r"\bbook\s+\d+\b", lowered)
+        or any(token in value for token in ("第一本", "第二本", "第三本", "全书", "卷", "本"))
+    )
+
+
+def has_chapter_scope(value: str) -> bool:
+    lowered = value.lower()
+    return bool(
+        re.search(r"\bch[_ -]?\d+", lowered)
+        or "chapter" in lowered
+        or any(token in value for token in ("章节", "章", "全章", "全部"))
+    )
+
+
+def has_ai_workflow_evidence(value: str) -> bool:
+    lowered = value.lower()
+    if any(token in lowered for token in ("none", "no ai", "without ai", "not used")):
+        return False
+    return any(
+        token in lowered
+        for token in (
+            "agent",
+            "runner",
+            "controller",
+            "eval-agent",
+            "agent-run",
+            "agent-exec",
+            "agent-inbox",
+            "model",
+            "api",
+            "ai",
+        )
+    )
+
+
+def has_human_review_boundary(value: str) -> bool:
+    lowered = value.lower()
+    return any(
+        token in lowered
+        for token in (
+            "review",
+            "human",
+            "staged",
+            "inbox",
+            "gate",
+            "no source overwrite",
+            "manual",
+            "复核",
+            "人工",
+            "暂存",
+            "收件箱",
+            "门禁",
+            "不覆盖",
+        )
+    )
+
+
+def ledger_entry_count(value: str) -> int:
+    iso_dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", value)
+    day_labels = re.findall(r"\bday\s*\d+\b", value, flags=re.IGNORECASE)
+    chinese_days = re.findall(r"第\s*[一二三四五六七八九十\d]+\s*天", value)
+    return max(len(iso_dates), len(day_labels) + len(chinese_days))
 
 
 def build_dogfood_cycle_audit(target: Path, *, file_path: str | None = None) -> DogfoodCycleReport:
@@ -306,6 +379,62 @@ def build_dogfood_cycle_audit(target: Path, *, file_path: str | None = None) -> 
                 "unrecognized_command_coverage",
                 "Commands exercised",
                 "Commands exercised must include at least three recognized FictionOps CLI command paths.",
+            )
+        )
+
+    book_scope = fields.get("Book / chapter scope", "")
+    if book_scope and not is_placeholder(book_scope):
+        if not has_book_or_project_scope(book_scope) or not has_chapter_scope(book_scope):
+            issues.append(
+                issue(
+                    "P2",
+                    "missing_book_chapter_scope",
+                    "Book / chapter scope",
+                    "Accepted dogfood evidence must name the real book/project slice and chapter range or target chapters.",
+                )
+            )
+
+    focused_tasks = fields.get("Focused tasks", "")
+    if focused_tasks and not is_placeholder(focused_tasks) and len(focused_tasks.strip()) < 20:
+        issues.append(
+            issue(
+                "P2",
+                "thin_focused_tasks",
+                "Focused tasks",
+                "Focused tasks should summarize the real maintenance or writing work, not just say smoke/test.",
+            )
+        )
+
+    ai_evidence = fields.get("AI workflow evidence", "")
+    if ai_evidence and not is_placeholder(ai_evidence) and decision == "accepted" and not has_ai_workflow_evidence(ai_evidence):
+        issues.append(
+            issue(
+                "P2",
+                "missing_ai_workflow_evidence",
+                "AI workflow evidence",
+                "Accepted dogfood evidence must describe the agent/API runner, controller, or eval-agent path used.",
+            )
+        )
+
+    review_boundary = fields.get("Human review boundary", "")
+    if review_boundary and not is_placeholder(review_boundary) and decision == "accepted" and not has_human_review_boundary(review_boundary):
+        issues.append(
+            issue(
+                "P2",
+                "missing_human_review_boundary",
+                "Human review boundary",
+                "Accepted dogfood evidence must state how staged model or tool output stopped for human review.",
+            )
+        )
+
+    ledger = fields.get("Day-by-day ledger", "")
+    if ledger and not is_placeholder(ledger) and decision == "accepted" and ledger_entry_count(ledger) < 2:
+        issues.append(
+            issue(
+                "P2",
+                "thin_day_by_day_ledger",
+                "Day-by-day ledger",
+                "Accepted sustained evidence needs at least a start and close ledger entry, not only a date range.",
             )
         )
 

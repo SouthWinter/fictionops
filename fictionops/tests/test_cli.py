@@ -211,7 +211,12 @@ class FictionOpsCliTests(unittest.TestCase):
                     "- End date: 2026-07-07",
                     "- Version / commit range: 0.1.0 / abc123..def456",
                     "- Scope: post-migration maintenance cycle",
+                    "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007 and ch_010",
+                    "- Focused tasks: structure recovery, reader-experience triage, and bounded chapter revision",
                     "- Commands exercised: adopt-review, adopt-plan, import-plan, doctor",
+                    "- AI workflow evidence: eval-agent ch_002 plus agent-run staged output in inbox",
+                    "- Human review boundary: staged output stopped at human review and no source overwrite was allowed",
+                    "- Day-by-day ledger: 2026-07-01 baseline; 2026-07-07 close rerun",
                     "- Initial adopt-review status: ready",
                     "- Final adopt-review status: ready",
                     "- import_queue_files: 0",
@@ -3357,7 +3362,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-07",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle for a real long-form project",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007, ch_010, ch_012",
+                        "- Focused tasks: structure recovery, context handoff, AI staged-output review, and bounded prose maintenance",
                         "- Commands exercised: adopt-review, adopt-plan, import-plan, doctor, report, context-pack",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-run/agent-inbox staged-output checks",
+                        "- Human review boundary: model or tool output stayed staged for human review and no source overwrite was allowed",
+                        "- Day-by-day ledger: 2026-07-01 baseline audit; 2026-07-07 close audit and reviewer decision",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",
@@ -3399,7 +3409,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-01",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle for a real long-form project",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007",
+                        "- Focused tasks: structure recovery and chapter review",
                         "- Commands exercised: adopt-review, adopt-plan, import-plan, doctor",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-inbox staged-output checks",
+                        "- Human review boundary: staged output stopped at human review",
+                        "- Day-by-day ledger: 2026-07-07 close audit; 2026-07-01 baseline audit",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",
@@ -3439,7 +3454,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-03",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle for a real long-form project",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007",
+                        "- Focused tasks: structure recovery and chapter review",
                         "- Commands exercised: adopt-review, adopt-plan, import-plan, doctor",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-inbox staged-output checks",
+                        "- Human review boundary: staged output stopped at human review",
+                        "- Day-by-day ledger: 2026-07-01 baseline; 2026-07-03 close audit",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",
@@ -3482,7 +3502,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-07",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle for a real long-form project",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007",
+                        "- Focused tasks: structure recovery and chapter review",
                         "- Commands exercised: doctor, report",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-inbox staged-output checks",
+                        "- Human review boundary: staged output stopped at human review",
+                        "- Day-by-day ledger: 2026-07-01 baseline; 2026-07-07 close audit",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",
@@ -3522,7 +3547,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-07",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle for a real long-form project",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007",
+                        "- Focused tasks: structure recovery and chapter review",
                         "- Commands exercised: alpha, beta, gamma",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-inbox staged-output checks",
+                        "- Human review boundary: staged output stopped at human review",
+                        "- Day-by-day ledger: 2026-07-01 baseline; 2026-07-07 close audit",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",
@@ -3549,6 +3579,59 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(vague_data["status"], "incomplete")
             self.assertFalse(vague_data["ready"])
             self.assertIn("unrecognized_command_coverage", {issue["code"] for issue in vague_data["issues"]})
+
+    def test_dogfood_cycle_audit_rejects_vague_task_and_ai_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            evidence = target / "dogfood-cycle-vague-task-evidence.md"
+            evidence.write_text(
+                "\n".join(
+                    [
+                        "# Dogfood Cycle Evidence",
+                        "",
+                        "- Cycle ID: 2026-07-maintenance-01",
+                        "- Project / sandbox: C:/tmp/fictionops-real-project-cycle",
+                        "- Start date: 2026-07-01",
+                        "- End date: 2026-07-07",
+                        "- Version / commit range: 0.1.0 / abc123..def456",
+                        "- Scope: post-migration maintenance cycle",
+                        "- Book / chapter scope: real project maintenance",
+                        "- Focused tasks: smoke",
+                        "- Commands exercised: adopt-review, doctor, context-pack, revision-plan",
+                        "- AI workflow evidence: no AI used",
+                        "- Human review boundary: normal process",
+                        "- Day-by-day ledger: 2026-07-01 baseline only",
+                        "- Initial adopt-review status: ready",
+                        "- Final adopt-review status: ready",
+                        "- import_queue_files: 0",
+                        "- blocking_issue_count: 0",
+                        "- Waiver count: 0",
+                        "- Compatibility notes: stable surfaces reviewed",
+                        "- Recovery notes: recovery docs reviewed",
+                        "- Decision: accepted",
+                        "- Reviewer: maintainer",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            data = json.loads(
+                self.run_cli(
+                    "audit-dogfood-cycle",
+                    str(target),
+                    "--file",
+                    str(evidence),
+                    "--format",
+                    "json",
+                ).stdout
+            )
+            codes = {issue["code"] for issue in data["issues"]}
+            self.assertEqual(data["status"], "incomplete")
+            self.assertFalse(data["ready"])
+            self.assertIn("missing_book_chapter_scope", codes)
+            self.assertIn("thin_focused_tasks", codes)
+            self.assertIn("missing_ai_workflow_evidence", codes)
+            self.assertIn("missing_human_review_boundary", codes)
+            self.assertIn("thin_day_by_day_ledger", codes)
 
     def test_stability_window_audit_reports_template_as_incomplete(self) -> None:
         report = build_stability_window_audit(ROOT)
@@ -4013,7 +4096,12 @@ class FictionOpsCliTests(unittest.TestCase):
                         "- End date: 2026-07-07",
                         "- Version / commit range: 0.1.0 / abc123..def456",
                         "- Scope: post-migration maintenance cycle",
+                        "- Book / chapter scope: Book 01 ch_001-ch_033, focused review on ch_007 and ch_010",
+                        "- Focused tasks: structure recovery, AI staged-output review, and bounded prose maintenance",
                         "- Commands exercised: adopt-review, adopt-plan, import-plan, doctor",
+                        "- AI workflow evidence: eval-agent ch_002 and agent-run/agent-inbox staged-output checks",
+                        "- Human review boundary: staged output stopped at human review and no source overwrite was allowed",
+                        "- Day-by-day ledger: 2026-07-01 baseline audit; 2026-07-07 close audit and reviewer decision",
                         "- Initial adopt-review status: ready",
                         "- Final adopt-review status: ready",
                         "- import_queue_files: 0",

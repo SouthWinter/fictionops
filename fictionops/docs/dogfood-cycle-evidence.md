@@ -6,9 +6,11 @@ This file records the sustained real-project dogfood cycle required before Ficti
 
 - Record a cycle after the 0.2 migration closure, not the initial migration itself.
 - Include the project or sandbox path, version or commit range, commands exercised, before/after gate states, compatibility notes, recovery notes, and final decision.
+- Name the actual book/project slice, chapter range, focused tasks, AI/agent runner path, and human review boundary. A cycle that only says "maintenance" or "smoke" is not specific enough.
 - Use `YYYY-MM-DD` for start/end dates; the end date must not be earlier than the start date, and the cycle must cover at least 7 calendar days.
 - Exercise at least three command paths; a one-command or two-command smoke is not enough for accepted 1.0 dogfood evidence.
 - The command coverage must name at least three recognized FictionOps CLI commands, such as `adopt-review`, `adopt-plan`, `import-plan`, `doctor`, `report`, or `context-pack`; vague labels are not enough.
+- Accepted sustained evidence must include a day-by-day ledger with at least a start checkpoint and a close checkpoint. The seven-day window proves recovery and continuation across time; it is not a reason to stretch one day's work across a week.
 - Do not mark the cycle `accepted` unless `import_queue_files` and `blocking_issue_count` are both `0`, the final status is ready/complete, and any compatibility-sensitive behavior changes have an explicit note.
 - Do not mark the cycle `accepted` without a named human reviewer.
 - Run `fictionops audit-dogfood-cycle . --file <filled-cycle.md>` before using the record as 1.0 evidence.
@@ -26,7 +28,12 @@ Copy this section for each sustained cycle.
 - End date:
 - Version / commit range:
 - Scope:
+- Book / chapter scope:
+- Focused tasks:
 - Commands exercised:
+- AI workflow evidence:
+- Human review boundary:
+- Day-by-day ledger:
 - Initial adopt-review status:
 - Final adopt-review status:
 - import_queue_files:
@@ -54,7 +61,12 @@ Copy this section for each sustained cycle.
 - End date: 2026-07-14
 - Version / commit range: 3e0703f..cycle-close
 - Scope: sustained post-migration maintenance pass covering project health, context packaging, review gates, and agent-harness evidence after the 0.2 migration closure
+- Book / chapter scope: Book 01 (`book_01`, first book of the private long-form fiction sandbox), full structural pass over `ch_001` to `ch_033`, focused prose/review passes on `ch_007`, `ch_010`, `ch_012`, `ch_013`, `ch_014`, `ch_026`, `ch_027`, and `ch_028`; agent/eval smoke used `ch_002`
+- Focused tasks: repair active project memory tables, align Book 01 outline/draft/chapter-engine inventory, separate active echo tracking from imported retrospective material, triage reader-experience signals, apply bounded prose maintenance to selected chapters, and run a Book 01 publish-chain smoke check
 - Commands exercised: adopt-review, doctor, context-pack, report, audit-info, audit-characters, revision-plan, eval-agent
+- AI workflow evidence: `eval-agent` was run on `ch_002`, and the agent harness stopped at the human-review boundary with staged output remaining quarantined; the current public evidence does not claim autonomous direct-writing
+- Human review boundary: style/wave/word signals were converted into a reader-experience memo and targeted review before prose edits; staged agent output remained in the inbox/review path and no source overwrite was allowed during diagnostics
+- Day-by-day ledger: 2026-07-07 day-one checkpoint: baseline audit, project-memory repairs, Book 01 outline sync, echo/continuity cleanup, reader-experience triage, bounded prose passes, and publish-chain smoke; 2026-07-14 close checkpoint: pending rerun of the same command family and human review before any accepted decision
 - Initial adopt-review status: baseline_pending_on_private_sandbox
 - Final adopt-review status: deferred_until_cycle_close
 - import_queue_files: 0
