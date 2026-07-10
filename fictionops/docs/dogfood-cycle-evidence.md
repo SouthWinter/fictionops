@@ -13,6 +13,7 @@ This file records the sustained real-project dogfood cycle required before Ficti
 - Accepted sustained evidence must include a day-by-day ledger with at least a start checkpoint and a close checkpoint. The seven-day window proves recovery and continuation across time; it is not a reason to stretch one day's work across a week.
 - Do not mark the cycle `accepted` unless `import_queue_files` and `blocking_issue_count` are both `0`, the final status is ready/complete, and any compatibility-sensitive behavior changes have an explicit note.
 - Do not mark the cycle `accepted` without a named human reviewer.
+- Use [Dogfood cycle close runbook](dogfood-cycle-close-runbook.md) when the real close date arrives.
 - Run `fictionops audit-dogfood-cycle . --file <filled-cycle.md>` before using the record as 1.0 evidence.
 
 ## Dogfood Cycle Template

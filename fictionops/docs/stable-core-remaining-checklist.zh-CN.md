@@ -70,7 +70,8 @@ fictionops audit-release-evidence . --file docs/release-trial-evidence.md --form
 3. 周期内至少使用 3 个可识别的 FictionOps CLI 命令，建议覆盖 `adopt-review`、`adopt-plan`、`import-plan`、`doctor`、`report`、`context-pack`、`revision-plan` 里的多个类别。
 4. 记录开始和结束时的项目状态，包括 `ready`、`import_queue_files`、`blocking_issue_count`、waiver、延期项和恢复动作。
 5. 记录周期内发现的兼容性问题、恢复路径问题和人工决策。
-6. 填写 `docs/dogfood-cycle-evidence.md`。
+6. 在真实关闭日期到来时，按 `docs/dogfood-cycle-close-runbook.zh-CN.md` 复跑关闭 checkpoint。
+7. 填写 `docs/dogfood-cycle-evidence.md`。
 
 验收命令：
 

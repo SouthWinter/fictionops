@@ -91,6 +91,8 @@ fictionops/
     stable-core-remaining-checklist.zh-CN.md
     end-to-end-migration-publish.md
     dogfood-legacy-adopt.zh-CN.md
+    dogfood-cycle-close-runbook.md
+    dogfood-cycle-close-runbook.zh-CN.md
     pypi-release.zh-CN.md
     release-checklist.zh-CN.md
     release-notes-0.1.0.zh-CN.md
@@ -177,6 +179,8 @@ fictionops/
 - [Real-project adopt dogfood report](docs/dogfood-legacy-adopt.zh-CN.md)
 - [Sustained dogfood cycle evidence](docs/dogfood-cycle-evidence.md)
 - [Sustained dogfood cycle evidence, Chinese reference](docs/dogfood-cycle-evidence.zh-CN.md)
+- [Dogfood cycle close runbook](docs/dogfood-cycle-close-runbook.md)
+- [Dogfood cycle close runbook, Chinese reference](docs/dogfood-cycle-close-runbook.zh-CN.md)
 - [Stability window evidence](docs/stability-window-evidence.md)
 - [Stability window evidence, Chinese reference](docs/stability-window-evidence.zh-CN.md)
 - [Integration adapters](integrations/README.md)

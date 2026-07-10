@@ -13,6 +13,7 @@
 - accepted 的持续证据必须包含 day-by-day ledger，至少要有开始 checkpoint 和关闭 checkpoint。七天窗口证明的是跨日恢复和接续，不是把一天能做完的任务硬拖成七天。
 - 只有 `import_queue_files` 与 `blocking_issue_count` 都为 `0`，最终状态 ready/complete，且兼容性敏感变化有说明时，才可以写 `accepted`。
 - 缺少具名复核人时，不能把周期写成 `accepted`。
+- 真实关闭日期到来时，按 [Dogfood 周期关闭 Runbook](dogfood-cycle-close-runbook.zh-CN.md) 复跑 checkpoint 并关闭证据。
 - 关闭 1.0 前运行 `fictionops audit-dogfood-cycle . --file <filled-cycle.md>`。
 
 ## 证据模板

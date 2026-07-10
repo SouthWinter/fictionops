@@ -70,7 +70,8 @@ Steps:
 3. Exercise at least 3 recognized FictionOps CLI commands, preferably across categories such as `adopt-review`, `adopt-plan`, `import-plan`, `doctor`, `report`, `context-pack`, and `revision-plan`.
 4. Record initial and final project states, including `ready`, `import_queue_files`, `blocking_issue_count`, waivers, deferred items, and recovery actions.
 5. Record compatibility issues, recovery-path issues, and human decisions from the cycle.
-6. Fill `docs/dogfood-cycle-evidence.md`.
+6. On the real close date, follow `docs/dogfood-cycle-close-runbook.md`.
+7. Fill `docs/dogfood-cycle-evidence.md`.
 
 Acceptance command:
 

@@ -84,6 +84,8 @@ fictionops/
     release-trial-evidence.zh-CN.md
     dogfood-cycle-evidence.md
     dogfood-cycle-evidence.zh-CN.md
+    dogfood-cycle-close-runbook.md
+    dogfood-cycle-close-runbook.zh-CN.md
     stability-window-evidence.md
     stability-window-evidence.zh-CN.md
     compatibility.md
@@ -170,9 +172,10 @@ fictionops/
 19. 读 [PyPI 发布说明](docs/pypi-release.zh-CN.md)，了解 trusted publishing、凭据隔离和回滚记录。
 20. 读 [发布演练证据模板](docs/release-trial-evidence.zh-CN.md)，了解如何记录 GitHub Actions run、artifact、TestPyPI URL、安装烟测和最终结论；publish workflow 也会生成独立的 release trial evidence draft artifact，避免证据草稿混入 wheel/sdist 发布包。
 21. 读 [持续 dogfood 周期证据模板](docs/dogfood-cycle-evidence.zh-CN.md)，了解 1.0 前如何记录收口后的真实项目维护周期。
-22. 读 [稳定窗口证据模板](docs/stability-window-evidence.zh-CN.md)，了解 1.0 前如何记录兼容性窗口。
-23. 读 [1.0 剩余执行清单](docs/stable-core-remaining-checklist.zh-CN.md)，明确哪些工作已经只是维护，哪些必须等真实外部发布、dogfood 和稳定窗口证据。
-24. 然后复制 `templates/` 里的模板，建立自己的长篇项目，或读 [长篇大纲迁移案例](examples/long_novel_outline_migration_case_zh.md)，看一部复杂长篇如何从混乱材料变成可维护结构。
+22. 读 [Dogfood 周期关闭 Runbook](docs/dogfood-cycle-close-runbook.zh-CN.md)，了解如何在真实结束日复跑 checkpoint 并关闭证据。
+23. 读 [稳定窗口证据模板](docs/stability-window-evidence.zh-CN.md)，了解 1.0 前如何记录兼容性窗口。
+24. 读 [1.0 剩余执行清单](docs/stable-core-remaining-checklist.zh-CN.md)，明确哪些工作已经只是维护，哪些必须等真实外部发布、dogfood 和稳定窗口证据。
+25. 然后复制 `templates/` 里的模板，建立自己的长篇项目，或读 [长篇大纲迁移案例](examples/long_novel_outline_migration_case_zh.md)，看一部复杂长篇如何从混乱材料变成可维护结构。
 
 英文外部接手入口包括 [CLI guide](docs/cli.md)、[CLI contracts](docs/cli-contracts.md)、[Agent protocol](docs/agent-protocol.md)、[Agent connector contract](docs/agent-connector-contract.md)、[Agent integration guide](docs/agent-integration.md)、[Migration guide](docs/migration.md)、[Dogfood case study](docs/dogfood-case-study.md)、[Interview brief](docs/interview-brief.md)、[Testing guide](docs/testing.md)、[Release guide](docs/release.md)、[Compatibility policy](docs/compatibility.md)、[Known limits](docs/known-limits.md)、[Milestone status](docs/milestone-status.md)、[Stable core remaining checklist](docs/stable-core-remaining-checklist.md)、[Stable core audit](docs/stable-core-audit.md)、[Demo tutorial](docs/tutorial-demo.md)、[Legacy migration example](examples/legacy_novel_source/README.md) 和 [Contributing](CONTRIBUTING.md)。
 
