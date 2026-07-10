@@ -63,9 +63,9 @@
 - Book / chapter scope: Book 01（`book_01`），结构层覆盖 `ch_001` 到 `ch_033`；重点复盘/修订 `ch_007`、`ch_010`、`ch_012`、`ch_013`、`ch_014`、`ch_026`、`ch_027`、`ch_028`；`eval-agent` 和真实 DeepSeek runner 检查使用 `ch_002`
 - Focused tasks: 修复 active 项目记忆表、同步第一本书纲/正文/chapter engine、分离 active 伏笔表与导入旧材料、整理 reader-experience 信号、对重点章节做有边界的维护修订、运行第一本发布链路 smoke、验证真实 API runner 暂存边界
 - Commands exercised: adopt-review, doctor, context-pack, report, audit-info, audit-characters, revision-plan, eval-agent, audit-chapter, agent-inbox
-- AI workflow evidence: `eval-agent` 在 `ch_002` 上运行并停在人类复核边界；2026-07-10 私有沙盒新增真实 DeepSeek OpenAI-compatible runner checkpoint，使用 `audit-chapter --role info-boundary-auditor` 审读 `book_01/ch_002`，输出只进入 agent run 暂存目录，`agent-inbox` 返回 `ready_for_review`，没有覆盖正文或正史
+- AI workflow evidence: `eval-agent` 在 `ch_002` 上运行并停在人类复核边界；2026-07-10 私有沙盒新增真实 DeepSeek OpenAI-compatible runner checkpoints，使用 `audit-chapter --role info-boundary-auditor` 审读 `book_01/ch_002`：第一次验证 API runner 边界，第二次完成一条有边界的信息释放小审读。两次输出都只进入 agent run 暂存目录，`agent-inbox` 返回 `ready_for_review`，没有覆盖正文或正史
 - Human review boundary: style/wave/word 信号先转成 reader-experience memo 和 targeted review，再决定是否修订；真实 runner 输出保持 staged，需要人工判断后才可采纳
-- Day-by-day ledger: 2026-07-07 day-one checkpoint：基线审计、项目记忆修复、第一本大纲同步、伏笔/连续性清理、阅读体验分诊、重点 prose pass、发布链路 smoke；2026-07-10 AI runner checkpoint：真实 DeepSeek `audit-chapter` 审读 `book_01/ch_002`，输出进入 staged inbox，不覆盖源文件；2026-07-14 close checkpoint：待复跑同一命令族并由人类复核后再决定是否 accepted
+- Day-by-day ledger: 2026-07-07 day-one checkpoint：基线审计、项目记忆修复、第一本大纲同步、伏笔/连续性清理、阅读体验分诊、重点 prose pass、发布链路 smoke；2026-07-10 AI runner checkpoints：真实 DeepSeek `audit-chapter` 审读 `book_01/ch_002`，包括一条完整的信息释放小审读，输出进入 staged inbox，不覆盖源文件；2026-07-14 close checkpoint：待复跑同一命令族并由人类复核后再决定是否 accepted
 - Initial adopt-review status: baseline_pending_on_private_sandbox
 - Final adopt-review status: deferred_until_cycle_close
 - import_queue_files: 0
