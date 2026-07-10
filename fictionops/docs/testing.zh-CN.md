@@ -38,7 +38,7 @@ fictionops/tests/test_cli.py
 | --- | --- |
 | `init` | 创建标准目录和文件；默认不覆盖；`force=True` 覆盖 |
 | CLI 入口 | `--version`、`init` 子进程调用 |
-| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 55 个命令 |
+| CLI help/contracts | 根命令和全部子命令 `--help`；CLI 契约文档覆盖 56 个命令 |
 | `adopt` | 只读扫描既有写作目录；分层映射旧文件；输出迁移阶段和建议目标路径；JSON/Markdown 输出；写报告默认不覆盖；忽略工具目录 |
 | `new-book` | 创建书纲、书稿目录和书级复盘；书号标准化；默认不覆盖 |
 | `new-chapter` | 创建正文、章节发动机和逐章复盘；章节号标准化；默认不覆盖 |
@@ -71,6 +71,7 @@ fictionops/tests/test_cli.py
 | `audit-agent-workflow` | 检查 manual、runner、controller、model-runner 接入层级是否 ready；识别暂存输出复核边界、模型配置缺口和非标准项目 |
 | controller loop example | 验证 `examples/agent_controller_loop.py` 只执行安全命令、写出 JSONL log，并在人工复核边界停止 |
 | `model-config` | 生成本地模型供应商配置；不保存真实密钥；JSON 输出；写出配置且默认不覆盖 |
+| `setup-ai` | 生成 AI 供应商 preset 配置、无密钥 env 示例、dry-run/real-run 建议命令；证明真实 key 不进入项目文件 |
 | `context-pack` | 范围化上下文收集；缺必读文件提示；每文件和整包预算截断；写出 Markdown 且默认不覆盖 |
 | `workflow-plan` | 生成分阶段工作流清单；章节型阶段需要章节号；JSON 输出；写出 Markdown 且默认不覆盖 |
 | `revision-plan` | 汇总审计问题为 P1-P5 修订任务；纳入词频提示和表格结构问题；JSON 输出；写出 Markdown 且默认不覆盖 |

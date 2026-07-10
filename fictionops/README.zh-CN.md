@@ -184,7 +184,7 @@ fictionops/
 
 ### CLI 快速开始
 
-当前 CLI 实现了五十五个最小 MVP 命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`eval-agent`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`write-chapter`、`revise-chapter`、`audit-chapter`、`agent-session`、`agent-next`、`audit-agent-workflow`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
+当前 CLI 实现了五十六个最小 MVP 命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`eval-agent`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`write-chapter`、`revise-chapter`、`audit-chapter`、`agent-session`、`agent-next`、`audit-agent-workflow`、`setup-ai`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
 
 在仓库根目录运行：
 

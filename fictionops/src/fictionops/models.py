@@ -1367,6 +1367,35 @@ class ModelConfigReport:
 
 
 @dataclass
+class AiSetupFile:
+    kind: str
+    path: str
+    written: bool
+
+
+@dataclass
+class AiSetupReport:
+    target: str
+    provider: str
+    model: str
+    planning_model: str
+    drafting_model: str
+    audit_model: str
+    api_key_env: str
+    base_url: str
+    env_example_file: str
+    dry_run: bool
+    written: bool
+    file_count: int
+    files: list[AiSetupFile]
+    model_config: ModelConfigReport
+    dry_run_command: str
+    real_run_command: str
+    next_actions: list[str]
+    safety: dict[str, object]
+
+
+@dataclass
 class AgentRunFile:
     kind: str
     path: str

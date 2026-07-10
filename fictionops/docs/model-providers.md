@@ -1,6 +1,6 @@
 # Model Providers
 
-FictionOps core is model-free. It records provider metadata with `model-config`, prepares task bundles with `agent-run`, and saves staged output through `agent-exec`. The actual API call belongs to an external runner.
+FictionOps core is model-free. It records provider metadata with `setup-ai` or `model-config`, prepares task bundles with `agent-run`/`write-chapter`, and saves staged output through `agent-exec`. The actual API call belongs to an external runner.
 
 This keeps FictionOps usable with OpenAI, Chinese mainstream model providers, local model servers, and future providers without adding every vendor SDK to the core package.
 
@@ -11,6 +11,14 @@ This keeps FictionOps usable with OpenAI, Chinese mainstream model providers, lo
 - Write a custom runner when the provider does not expose an OpenAI-compatible chat endpoint or needs special authentication.
 
 ## DeepSeek Example
+
+```bash
+fictionops setup-ai my-novel --provider deepseek --model deepseek-chat
+```
+
+`setup-ai` writes `00_management/model_config.json` and `00_management/ai_runner.env.example`. The env example contains variable names only, never a real key.
+
+For the lower-level command sequence:
 
 ```bash
 fictionops model-config my-novel \

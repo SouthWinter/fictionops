@@ -96,6 +96,7 @@ Audits are maintenance signals, not literary quality scores. They help find miss
 
 ```bash
 fictionops model-config my-novel --provider local --planning-model planner --drafting-model writer --audit-model auditor --write
+fictionops setup-ai my-novel --provider deepseek --model deepseek-chat
 fictionops context-pack my-novel --task draft --book book_01 --chapter 001
 fictionops agent-prompt my-novel --role draft-writer --book book_01 --chapter 001
 fictionops agent-connect my-novel --name local-runner --mode runner
@@ -113,7 +114,7 @@ fictionops agent-next my-novel --book book_01 --chapter 001 --format json
 fictionops audit-agent-workflow my-novel --level runner --connector local-runner
 ```
 
-FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, reproducible harness smoke reports, and preflight audits before agent integration. `write-chapter`, `revise-chapter`, and `audit-chapter` are AI-first orchestration commands over the same staged `agent-run` / `agent-exec` / `agent-inbox` contract; `agent-session` records a multi-step session ledger that ties those runs together without applying model output. It does not store API keys or apply model output to the manuscript automatically. `eval-agent` runs on a temporary fixture copy and uses an internal no-network runner; real model calls still go through explicit runners and produce staged output. See [agent-protocol.md](agent-protocol.md), [agent-integration.md](agent-integration.md), and [agent-evaluation.md](agent-evaluation.md).
+FictionOps prepares connector handshakes, bounded inputs, staged-output checks, safe next-command suggestions, reproducible harness smoke reports, and preflight audits before agent integration. `setup-ai` is the guided first-run path for OpenAI-compatible providers: it writes model metadata and an API-key-free env example. `write-chapter`, `revise-chapter`, and `audit-chapter` are AI-first orchestration commands over the same staged `agent-run` / `agent-exec` / `agent-inbox` contract; `agent-session` records a multi-step session ledger that ties those runs together without applying model output. It does not store API keys or apply model output to the manuscript automatically. `eval-agent` runs on a temporary fixture copy and uses an internal no-network runner; real model calls still go through explicit runners and produce staged output. See [agent-protocol.md](agent-protocol.md), [agent-integration.md](agent-integration.md), and [agent-evaluation.md](agent-evaluation.md).
 
 ### Book And Release Gates
 

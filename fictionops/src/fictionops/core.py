@@ -51,6 +51,7 @@ from .book_gate import *
 from .release_gate import *
 from .release_evidence import *
 from .scene_plan import *
+from .setup_ai import *
 from .stats import *
 from .stable_core import *
 from .stability_window import *

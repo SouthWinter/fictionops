@@ -37,30 +37,20 @@ fictionops adopt-plan migrated-novel --write-groups 07_audits/adopt_review/repai
 FictionOps 核心不直接调用模型。它只准备任务包，接收外部 runner 的暂存输出。比如接 DeepSeek：
 
 ```bash
-fictionops model-config my-novel \
-  --provider deepseek \
-  --planning-model deepseek-chat \
-  --drafting-model deepseek-chat \
-  --audit-model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com \
-  --write
+fictionops setup-ai my-novel --provider deepseek --model deepseek-chat
 
-fictionops agent-run my-novel \
-  --role draft-writer \
+fictionops write-chapter my-novel \
   --book book_01 \
   --chapter 001 \
-  --out-dir my-novel/00_management/agent_runs/ch_001
-
-fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
-  --dry-run \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --dry-run
+
+fictionops agent-inbox my-novel
 ```
 
-确认暂存边界没问题后，再去掉 `--dry-run`。DeepSeek、通义千问、Kimi、GLM、豆包 Ark、硅基流动、本地 OpenAI-compatible 服务和 OpenAI 的接法见 [模型供应商接入](model-providers.zh-CN.md)。
+先在项目外设置 `DEEPSEEK_API_KEY`，确认暂存边界没问题后，再去掉 `--dry-run`。DeepSeek、通义千问、Kimi、GLM、豆包 Ark、硅基流动、本地 OpenAI-compatible 服务和 OpenAI 的接法见 [模型供应商接入](model-providers.zh-CN.md)。
 
 ## 下一步读什么
 

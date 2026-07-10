@@ -37,30 +37,20 @@ Use this when a long project already has drafts, outlines, notes, or scattered c
 FictionOps core does not call a model. It prepares task bundles and receives staged output. Connect a model through an external runner:
 
 ```bash
-fictionops model-config my-novel \
-  --provider deepseek \
-  --planning-model deepseek-chat \
-  --drafting-model deepseek-chat \
-  --audit-model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com \
-  --write
+fictionops setup-ai my-novel --provider deepseek --model deepseek-chat
 
-fictionops agent-run my-novel \
-  --role draft-writer \
+fictionops write-chapter my-novel \
   --book book_01 \
   --chapter 001 \
-  --out-dir my-novel/00_management/agent_runs/ch_001
-
-fictionops agent-exec my-novel/00_management/agent_runs/ch_001 \
   --runner python fictionops/examples/agent_runner_openai_chat.py \
-  --dry-run \
+  --provider deepseek \
   --model deepseek-chat \
-  --api-key-env DEEPSEEK_API_KEY \
-  --base-url https://api.deepseek.com
+  --dry-run
+
+fictionops agent-inbox my-novel
 ```
 
-Remove `--dry-run` only after the staged-output boundary looks right. See [Model providers](model-providers.md) for DeepSeek, Qwen, Kimi, GLM, Doubao/Ark, SiliconFlow, local OpenAI-compatible servers, and OpenAI.
+Set `DEEPSEEK_API_KEY` outside the project and remove `--dry-run` only after the staged-output boundary looks right. See [Model providers](model-providers.md) for DeepSeek, Qwen, Kimi, GLM, Doubao/Ark, SiliconFlow, local OpenAI-compatible servers, and OpenAI.
 
 ## What To Read Next
 

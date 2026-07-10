@@ -19,7 +19,7 @@ All FictionOps commands follow these rules:
 
 ## Command Groups
 
-The current CLI exposes 55 MVP commands:
+The current CLI exposes 56 MVP commands:
 
 | Group | Commands | Contract Summary |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ The current CLI exposes 55 MVP commands:
 | Chapter planning | `plan-chapter`, `scene-plan`, `draft-brief` | Turn book-outline material into chapter engines, scene plans, and task briefs without writing prose. |
 | Draft closure | `post-draft`, `review-gate`, `book-gate`, `retrospective` | Check whether draft, chapter, and book memory are ready for the next step. |
 | Audits | `audit-plan`, `stats`, `scan-words`, `check-tables`, `audit-wave`, `audit-style`, `audit-continuity`, `audit-echoes`, `audit-info`, `audit-characters` | Report structure, prose-pattern, continuity, information, echo, and character-memory issues. |
-| Agent workflow | `model-config`, `context-pack`, `agent-prompt`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `write-chapter`, `revise-chapter`, `audit-chapter`, `agent-session`, `agent-next`, `audit-agent-workflow`, `workflow-plan`, `revision-plan` | Scope context, create connector handshakes, run no-network harness evaluations and connector smoke tests, package tasks, run external runners, inspect staged outputs, run AI-first chapter workflows, persist multi-step session ledgers, audit agent-integration readiness, and select safe next steps. |
+| Agent workflow | `setup-ai`, `model-config`, `context-pack`, `agent-prompt`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `write-chapter`, `revise-chapter`, `audit-chapter`, `agent-session`, `agent-next`, `audit-agent-workflow`, `workflow-plan`, `revision-plan` | Scope context, create connector handshakes, run no-network harness evaluations and connector smoke tests, configure provider metadata, package tasks, run external runners, inspect staged outputs, run AI-first chapter workflows, persist multi-step session ledgers, audit agent-integration readiness, and select safe next steps. |
 | Publishing | `export-clean`, `audit-publish`, `publish-copy`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, `release-gate` | Generate and audit clean manuscript, metadata, manifest, EPUB, and final release readiness. |
 | Package release governance | `audit-release-evidence`, `audit-dogfood-cycle`, `audit-stability-window`, `audit-stable-core` | Audit FictionOps package release-trial, sustained dogfood-cycle, stability-window, and aggregate stable-core evidence so empty templates, too-short evidence windows, or unfinished drafts cannot close release or 1.0 milestones; stable-core JSON also exposes structured `action_items` for the remaining evidence lanes. |
 | Reporting | `doctor`, `report` | Aggregate project health into human-readable or machine-readable reports. |
@@ -50,6 +50,7 @@ The current CLI exposes 55 MVP commands:
 | `write-chapter`, `revise-chapter`, `audit-chapter` | Optional | They prepare a staged task bundle and only execute a model or external command when `--runner` is provided; returned output still goes through `agent-inbox`. |
 | `agent-session` | Yes | It writes a session ledger under `00_management/agent_sessions/` that tracks planned chapter write/revise/audit runs and next review actions. It does not execute a runner or apply output. |
 | `agent-inbox`, `agent-next`, `audit-agent-workflow`, `model-config` without `--write` | No | They inspect or report state. |
+| `setup-ai` | Yes | It writes `00_management/model_config.json` and an API-key-free `00_management/ai_runner.env.example`. It records environment variable names only, never raw keys, and does not call a provider. |
 | `model-config --write` | Yes | It records provider/model names and an environment-variable name for the key, not the key value. |
 | `export-clean`, `export-metadata`, `export-manifest`, `export-epub` | Yes | They generate publish artifacts and refuse unsafe overwrites unless forced. |
 
@@ -68,6 +69,7 @@ FictionOps treats agent output as staged evidence, not as authority.
 - `agent-inbox` checks whether returned output is present, unique, and ready for review.
 - `write-chapter`, `revise-chapter`, and `audit-chapter` compose the staged agent workflow for common writing tasks while preserving the same review boundary.
 - `agent-session` persists the intended multi-step workflow and reads staged run state, but it still stops at `agent-inbox` review boundaries.
+- `setup-ai` may generate provider setup files and suggested commands, but it must not store raw API keys or make a model call.
 - `agent-next` recommends a safe next command for an external controller, but it does not execute it. When the target is a FictionOps package checkout, it selects from stable-core governance action items instead of legacy-project migration.
 - `audit-agent-workflow` checks whether the project is ready for manual, runner, controller, or model-runner integration before a runner/controller is connected; with `--connector <name>`, it also validates the connector kit manifest, required files, smoke commands, and safety flags. When the target is a FictionOps package checkout and the level is `controller`, it reports package-governance evidence from `agent-next` and stops at human-review boundaries rather than recommending project adoption.
 

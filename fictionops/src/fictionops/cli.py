@@ -1581,6 +1581,53 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Default: markdown.",
     )
 
+    setup_ai_parser = subparsers.add_parser(
+        "setup-ai",
+        help="Configure an OpenAI-compatible AI runner preset without storing raw API keys.",
+    )
+    setup_ai_parser.add_argument(
+        "path",
+        nargs="?",
+        default=".",
+        help="Target FictionOps project directory. Default: current directory.",
+    )
+    setup_ai_parser.add_argument(
+        "--provider",
+        default="deepseek",
+        help="Provider preset such as deepseek, qwen, kimi, glm, doubao, siliconflow, openai-chat, or local-openai. Default: deepseek.",
+    )
+    setup_ai_parser.add_argument("--model", help="Concrete model id for all roles unless role-specific models are provided.")
+    setup_ai_parser.add_argument("--planning-model", help="Planning model id. Defaults to --model or provider preset.")
+    setup_ai_parser.add_argument("--drafting-model", help="Drafting model id. Defaults to --model or provider preset.")
+    setup_ai_parser.add_argument("--audit-model", help="Audit model id. Defaults to --model or provider preset.")
+    setup_ai_parser.add_argument("--api-key-env", help="Environment variable name containing the API key. Raw keys are never written.")
+    setup_ai_parser.add_argument("--base-url", help="OpenAI-compatible API base URL.")
+    setup_ai_parser.add_argument(
+        "--env-file",
+        help="Path for the generated .env example. Default: 00_management/ai_runner.env.example.",
+    )
+    setup_ai_parser.add_argument("--book", default="book_01", help="Book id used in suggested runner commands. Default: book_01.")
+    setup_ai_parser.add_argument("--chapter", default="001", help="Chapter id used in suggested runner commands. Default: 001.")
+    setup_ai_parser.add_argument("--max-context-chars", type=int, default=60000, help="Maximum context characters to record.")
+    setup_ai_parser.add_argument("--max-output-tokens", type=int, default=4000, help="Maximum model output tokens to record.")
+    setup_ai_parser.add_argument("--timeout-seconds", type=int, default=120, help="Model request timeout to record.")
+    setup_ai_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite generated setup files if they already exist.",
+    )
+    setup_ai_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Build the setup report without writing files.",
+    )
+    setup_ai_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format. Default: markdown.",
+    )
+
     context_parser = subparsers.add_parser("context-pack", help="Build a scoped context pack for agent handoff.")
     context_parser.add_argument(
         "path",
@@ -3429,6 +3476,40 @@ def handle_model_config(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_setup_ai(args: argparse.Namespace) -> int:
+    target = Path(args.path)
+    try:
+        report = build_ai_setup(
+            target,
+            provider=args.provider,
+            model=args.model,
+            planning_model=args.planning_model,
+            drafting_model=args.drafting_model,
+            audit_model=args.audit_model,
+            api_key_env=args.api_key_env,
+            base_url=args.base_url,
+            env_file=args.env_file,
+            book=args.book,
+            chapter=args.chapter,
+            max_context_chars=args.max_context_chars,
+            max_output_tokens=args.max_output_tokens,
+            timeout_seconds=args.timeout_seconds,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+    except FileExistsError as exc:
+        print(f"fictionops: setup-ai failed: {exc}. Use --force to overwrite.", file=sys.stderr)
+        return 1
+    except (OSError, ValueError) as exc:
+        print(f"fictionops: setup-ai failed: {exc}", file=sys.stderr)
+        return 1
+
+    if report.written and args.format != "json":
+        print(f"Wrote FictionOps AI setup files under: {target.resolve() / '00_management'}")
+    print(render_ai_setup(report, args.format))
+    return 0
+
+
 def handle_context_pack(args: argparse.Namespace) -> int:
     target = Path(args.path)
     try:
@@ -3924,6 +4005,8 @@ def main(argv: list[str] | None = None) -> int:
         return handle_agent_workflow_audit(args)
     if args.command == "model-config":
         return handle_model_config(args)
+    if args.command == "setup-ai":
+        return handle_setup_ai(args)
     if args.command == "context-pack":
         return handle_context_pack(args)
     if args.command == "workflow-plan":

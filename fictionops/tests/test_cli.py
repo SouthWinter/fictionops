@@ -57,6 +57,7 @@ CLI_COMMANDS = [
     "agent-session",
     "agent-next",
     "audit-agent-workflow",
+    "setup-ai",
     "model-config",
     "context-pack",
     "workflow-plan",
@@ -125,6 +126,7 @@ from fictionops.core import (  # noqa: E402
     build_scene_plan,
     build_stats_report,
     build_style_audit_report,
+    build_ai_setup,
     create_book,
     create_chapter,
     create_project,
@@ -1883,6 +1885,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/agent_next.py",
             "src/fictionops/agent_smoke.py",
             "src/fictionops/agent_workflow_audit.py",
+            "src/fictionops/setup_ai.py",
             "src/fictionops/stable_core.py",
             "src/fictionops/doctor.py",
             "src/fictionops/dogfood_cycle.py",
@@ -6096,6 +6099,74 @@ class FictionOpsCliTests(unittest.TestCase):
             failed = self.run_cli("model-config", str(target), "--provider", "local", "--write", check=False)
             self.assertNotEqual(failed.returncode, 0)
             self.assertIn("Use --force to overwrite", failed.stderr)
+
+    def test_setup_ai_writes_provider_config_and_env_example_without_keys(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            report = build_ai_setup(
+                target,
+                provider="deepseek",
+                model="deepseek-chat",
+                force=False,
+            )
+            self.assertTrue(report.written)
+            self.assertEqual(report.provider, "deepseek")
+            self.assertEqual(report.api_key_env, "DEEPSEEK_API_KEY")
+            self.assertIn("write-chapter", report.dry_run_command)
+            self.assertIn("--dry-run", report.dry_run_command)
+
+            config_path = target / "00_management" / "model_config.json"
+            env_path = target / "00_management" / "ai_runner.env.example"
+            self.assertTrue(config_path.exists())
+            self.assertTrue(env_path.exists())
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            self.assertEqual(config["provider"], "deepseek")
+            self.assertEqual(config["api_key_env"], "DEEPSEEK_API_KEY")
+            env_text = env_path.read_text(encoding="utf-8")
+            self.assertIn("FICTIONOPS_CHAT_PROVIDER=deepseek", env_text)
+            self.assertIn("DEEPSEEK_API_KEY=", env_text)
+            self.assertNotIn("sk-", env_text)
+            self.assertNotIn("secret", env_text.lower())
+
+            failed = self.run_cli("setup-ai", str(target), "--provider", "deepseek", check=False)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn("Use --force to overwrite", failed.stderr)
+
+            dry = self.run_cli(
+                "setup-ai",
+                str(target),
+                "--provider",
+                "qwen",
+                "--dry-run",
+                "--format",
+                "json",
+            )
+            data = json.loads(dry.stdout)
+            self.assertEqual(data["schema"], "fictionops.ai_setup.v1")
+            self.assertEqual(data["provider"], "dashscope")
+            self.assertEqual(data["written"], False)
+            self.assertEqual(data["safety"]["stores_api_keys"], False)
+
+    def test_setup_ai_supports_local_openai_without_api_key_env(self) -> None:
+        temp, target = self.make_project()
+        with temp:
+            cli = self.run_cli(
+                "setup-ai",
+                str(target),
+                "--provider",
+                "local-openai",
+                "--model",
+                "local-writer",
+                "--format",
+                "json",
+            )
+            data = json.loads(cli.stdout)
+            self.assertEqual(data["provider"], "local-openai")
+            self.assertEqual(data["api_key_env"], "")
+            self.assertIn("local OpenAI-compatible server", data["next_actions"][0])
+            env_text = (target / "00_management" / "ai_runner.env.example").read_text(encoding="utf-8")
+            self.assertIn("FICTIONOPS_CHAT_API_KEY_ENV=", env_text)
+            self.assertNotIn("API_KEY=", env_text)
 
     def test_doctor_includes_model_config_summary(self) -> None:
         temp, target = self.make_project()

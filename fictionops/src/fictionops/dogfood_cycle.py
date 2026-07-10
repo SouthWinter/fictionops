@@ -51,6 +51,7 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "agent-session",
     "agent-next",
     "audit-agent-workflow",
+    "setup-ai",
     "model-config",
     "context-pack",
     "workflow-plan",

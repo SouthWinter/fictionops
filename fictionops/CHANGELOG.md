@@ -17,6 +17,7 @@ The project uses semantic versioning while the CLI contracts are still small eno
 - Draft API Agent thin server under `integrations/api-agent/server.py`, wrapping `agent-run`, `agent-exec`, `agent-inbox`, and human decisions behind a local HTTP adapter.
 - AI-first `write-chapter`, `revise-chapter`, and `audit-chapter` commands that compose staged `agent-run`, optional `agent-exec`, and `agent-inbox` workflows.
 - `agent-session` command for durable multi-step AI writing session ledgers across chapter write, revise, and audit runs.
+- `setup-ai` command for guided OpenAI-compatible provider setup, safe model config generation, and API-key-free runner env examples.
 
 ### Changed
 

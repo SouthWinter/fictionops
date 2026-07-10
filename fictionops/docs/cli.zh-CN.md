@@ -1006,7 +1006,25 @@ fictionops audit-characters my-novel --pattern "03_characters/**/*.md"
 
 `audit-characters` 只审维护资料是否足够支持长线写作，不判断某个角色是否“写得好”。它适合在写新幕或做人物复盘前运行，帮助作者确认谁的弧线、说话方式和智慧模式还缺记录。
 
-## 15.3 `fictionops model-config`
+## 15.3 `fictionops setup-ai`
+
+按 provider preset 生成真实模型 runner 的安全接入配置。
+
+```bash
+fictionops setup-ai my-novel --provider deepseek --model deepseek-chat
+fictionops setup-ai my-novel --provider qwen --model qwen-plus --dry-run --format json
+fictionops setup-ai my-novel --provider local-openai --model local-writer
+```
+
+它会写出：
+
+- `00_management/model_config.json`：供应商、模型名、base URL、API key 环境变量名；
+- `00_management/ai_runner.env.example`：runner 可读取的环境变量示例；
+- dry-run 和真实 staged call 的建议命令。
+
+`setup-ai` 不保存真实 API key，不调用模型，不写正文。真实 key 应该放在 shell 或私有 env 文件里；模型输出仍然只能通过 runner 写成暂存文件，再由 `agent-inbox` 和人工复核接住。
+
+## 15.3.1 `fictionops model-config`
 
 生成或写出本地模型供应商配置。
 

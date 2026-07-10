@@ -53,6 +53,7 @@
 | `agent-session` | AI 写作 session 台账 | 是 | 是 | 否 |
 | `agent-next` | Agent 下一步选择器 | 否 | 是 | 不适用 |
 | `audit-agent-workflow` | Agent workflow 接入预检 | 否 | 是 | 不适用 |
+| `setup-ai` | AI 供应商引导配置 | 是 | 是 | 否 |
 | `model-config` | 模型供应商配置 | 可选 | 是 | 否 |
 | `context-pack` | 范围化上下文包 | 可选 | 是 | 否 |
 | `workflow-plan` | 分阶段工作流清单 | 可选 | 是 | 否 |
@@ -854,6 +855,18 @@
 - `--level` 不是支持的接入层级。
 - 底层收件箱、模型配置或 `agent-next` 检查遇到文件系统异常。
 
+### `fictionops setup-ai`
+
+契约：
+
+- 面向首次接入真实模型 API，按 provider preset 写入 `00_management/model_config.json` 和 `00_management/ai_runner.env.example`。
+- 支持 OpenAI-compatible provider：`openai-chat`、`deepseek`、`qwen`/`dashscope`、`kimi`/`moonshot`、`glm`/`zhipu`、`doubao`/`volcengine-ark`、`siliconflow`、`local-openai`。
+- 只记录 API key 所在环境变量名，不得写入真实 API key。
+- 默认不覆盖已有 setup 文件；传入 `--force` 才能覆盖。
+- `--dry-run` 只输出计划，不写文件。
+- JSON 输出必须包含 `schema=fictionops.ai_setup.v1`、`provider`、`model_config`、`files`、`dry_run_command`、`real_run_command`、`next_actions` 和 `safety`。
+- 命令不得调用模型，不得写正文或正史；真实模型调用仍必须通过 runner 暂存输出并进入 `agent-inbox`。
+
 ### `fictionops model-config`
 
 输入：
@@ -1313,7 +1326,7 @@ Failure:
 
 ## 7. 帮助文案契约
 
-- 根命令 `fictionops --help` 必须列出全部 55 个 MVP 命令。
+- 根命令 `fictionops --help` 必须列出全部 56 个 MVP 命令。
 - 每个子命令必须支持 `fictionops <command> --help`。
 - 帮助文案应说明默认值、是否写文件、是否覆盖、路径如何解析。
 
