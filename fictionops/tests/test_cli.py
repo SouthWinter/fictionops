@@ -166,6 +166,11 @@ from fictionops.agent_preservation_verifier import (  # noqa: E402
     deterministic_preservation_decisions,
     parse_preservation_verification,
 )
+from fictionops.agent_counterevidence_review import (  # noqa: E402
+    COUNTEREVIDENCE_EVALUATION_SCHEMA,
+    build_counterevidence_from_run,
+    evaluate_counterevidence,
+)
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -6646,6 +6651,69 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertTrue(blind_path.exists())
             self.assertTrue(key_path.exists())
             self.assertEqual(len(json.loads(blind_path.read_text(encoding="utf-8"))["samples"]), 20)
+
+    def test_counterevidence_blind_export_and_scoring_keep_labels_private(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            packet_path = Path(tmp) / "counterevidence.json"
+            key_path = Path(tmp) / "counterevidence-key.json"
+            exported = self.run_cli(
+                "agent",
+                "counterevidence",
+                "export",
+                str(ROOT / "docs" / "evidence" / "deepseek-preservation-verifier-v1.json"),
+                "--benchmark",
+                str(ROOT / "docs" / "evidence" / "deepseek-benchmark-v2.json"),
+                "--fixtures",
+                str(ROOT / "tests" / "fixtures" / "agent_benchmark_v2_cases.json"),
+                "--out",
+                str(packet_path),
+                "--key-out",
+                str(key_path),
+            )
+            self.assertEqual(exported.returncode, 0, exported.stderr)
+            packet = json.loads(packet_path.read_text(encoding="utf-8"))
+            key = json.loads(key_path.read_text(encoding="utf-8"))
+            self.assertEqual(packet["sample_count"], 16)
+            self.assertEqual(packet["sample_count"], key["sample_count"])
+            serialized_packet = json.dumps(packet, ensure_ascii=False)
+            self.assertNotIn('"prompt_id"', serialized_packet)
+            self.assertNotIn('"control_class"', serialized_packet)
+            self.assertIn('"control_class"', json.dumps(key))
+            with self.assertRaisesRegex(ValueError, "valid annotation decision"):
+                evaluate_counterevidence(packet_path, key_path)
+
+            control_by_id = {item["sample_id"]: item["control_class"] for item in key["samples"]}
+            for sample in packet["samples"]:
+                control = control_by_id[sample["sample_id"]]
+                sample["annotation"] = {
+                    "decision": "withdraw" if control == "preserve" else "uphold" if control == "detect" else "insufficient",
+                    "evidence_grounded": control != "unevaluable",
+                    "repair_harm_risk": "high" if control == "preserve" else "low",
+                    "effort_minutes": 1.5,
+                    "notes": "synthetic regression annotation",
+                }
+            packet_path.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            evaluation = evaluate_counterevidence(packet_path, key_path)
+            self.assertEqual(evaluation["schema"], COUNTEREVIDENCE_EVALUATION_SCHEMA)
+            self.assertEqual(evaluation["control_accuracy"], 1.0)
+            self.assertEqual(evaluation["total_effort_minutes"], 24.0)
+            self.assertGreater(evaluation["decision_counts"]["insufficient"], 0)
+
+            run_dir = Path(tmp) / "revision-run"
+            run_dir.mkdir()
+            (run_dir / "source_chapter.md").write_text("# Chapter\n\nOriginal text.\n", encoding="utf-8")
+            (run_dir / "project_context.md").write_text("Authoritative context.\n", encoding="utf-8")
+            (run_dir / "comprehensive_review.json").write_text(
+                json.dumps({"reviewer_issues": [{"category": "style", "evidence": ["Original text"], "problem": "Maybe flat.", "suggested_action": "Inspect it."}]}),
+                encoding="utf-8",
+            )
+            (run_dir / "preservation_verification.json").write_text(
+                json.dumps({"decisions": [{"issue_index": 0, "verdict": "needs_counterevidence", "evidence": ["Original text"], "reason": "More context needed."}]}),
+                encoding="utf-8",
+            )
+            run_packet, run_key = build_counterevidence_from_run(run_dir)
+            self.assertEqual(run_packet["sample_count"], 1)
+            self.assertEqual(run_key["samples"][0]["control_class"], "unevaluable")
 
     def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
         review = {

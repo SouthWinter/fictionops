@@ -822,6 +822,8 @@
 
 `agent benchmark` 可在同一 runner 上重复运行 `raw/rag/full/no_memory/no_guard/no_contract`，fixture 标准答案不会进入 prompt。Benchmark v2 同时使用正例和 preservation 负例，报告 precision、recall、accuracy、false-positive rate 与 grounded evidence；`--blind-out` 和 `--blind-key-out` 分开写入匿名人工评审包与条件映射。`agent failure-lab` 在临时工作区注入源文件、checkpoint 产物、预算、receipt、reviewer 证据和故事契约故障，并报告发现点、恢复率与受保护哈希。
 
+`agent counterevidence export` 把 preservation verifier 留下的 `needs_counterevidence` finding 导出为匿名标注包，并把 prompt/case/condition/control 标签隔离到单独私钥。输入可以是 `agent revise` 运行目录，也可以是 preservation evidence、benchmark 输出和 fixture 三件套。`agent counterevidence score` 拒绝未填、非法或 packet/key 不匹配的标注，统计裁决、证据落地、误修风险、人工耗时，并且只对具备可靠 issue-level 真值的 control 计算混淆矩阵。
+
 ### `fictionops agent-memory`
 
 契约：

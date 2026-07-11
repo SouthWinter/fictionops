@@ -1,0 +1,461 @@
+{
+  "schema": "fictionops.counterevidence_blind_packet.v1",
+  "instructions": {
+    "decision": "uphold = finding should reach the reviser; withdraw = preserve the text; insufficient = human also needs more evidence.",
+    "evidence_grounded": "Whether the finding is supported by the supplied excerpt and authoritative context.",
+    "repair_harm_risk": "Risk that acting on the finding would damage intended characterization, ambiguity, voice, or rhythm: low, medium, or high.",
+    "privacy": "Do not inspect the separately stored key while annotating."
+  },
+  "sample_count": 16,
+  "samples": [
+    {
+      "sample_id": "ce-1ba55fc142fa50",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {
+        "G-B06-RHYTHMIC-ANCHOR": "保留最有功能的一组重复，不做机械同义词替换。"
+      },
+      "reviewer_finding": {
+        "category": "foreshadowing",
+        "evidence": "The simile '窗像一块冻住的水' suggests a frozen, trapped state, but it is isolated and not connected to any larger narrative thread.",
+        "problem": "The image of frozen water could function as foreshadowing (e.g., of a character's paralysis or an impending thaw/event), but it is not developed or linked to any prior or future element in the excerpt or context.",
+        "suggested_action": "If the frozen window is intended as foreshadowing, reinforce it with a subtle echo in the next paragraph or a contrasting image (e.g., a crack or a drip) to create a thread. If not, consider replacing it with a simile that more directly serves the paragraph's function."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "窗像一块冻住的水"
+        ],
+        "reason": "The claim that the frozen water simile could function as foreshadowing but is not developed is speculative. The excerpt does not provide enough context to determine whether this is intended as foreshadowing or simply a static atmospheric image. Without more chapter context, the issue lacks sufficient evidence to be upheld or withdrawn.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-f8b3c8a089e6b3",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "continuity",
+        "evidence": "The context states that the adjacent two paragraphs already use exclusionary narration, triple parallelism, and simile. This paragraph continues the same devices without escalation or transformation.",
+        "problem": "The lack of progression in the prose technique may cause the scene to feel static rather than building tension, as the reader experiences the same stylistic move three times in a row.",
+        "suggested_action": "Introduce a subtle shift in the third paragraph—for instance, moving from external negation ('不是雨') to internal negation ('不是恐惧') or from simile to personification—to maintain continuity of mood while advancing the reader's experience."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+          "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-59ba6d88eb92dd",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {
+        "G-B08-CHILD-INTELLIGENCE": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+      },
+      "reviewer_finding": {
+        "category": "information boundaries",
+        "evidence": "The girl references 'three granaries' being pressed down, implying knowledge of stored grain quantities and their status.",
+        "problem": "The context does not establish how a 12-year-old, even a merchant's daughter, would have access to precise inventory information about multiple granaries. This may violate realistic information boundaries for her age and role.",
+        "suggested_action": "Provide a subtle justification for her knowledge, such as her father discussing inventory within earshot, or her having accompanied him to the granaries, to make the information access plausible."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+        ],
+        "reason": "The issue questions how a 12-year-old knows about 'three granaries' and their status. The chapter provides no explicit mechanism for her knowledge—no scene of her overhearing inventory talk or visiting granaries. The context says she learns from 'price, hunger, goods, and her father's expressions,' but precise inventory numbers are not clearly within that scope. The guard G-B08-CHILD-INTELLIGENCE allows intelligence but does not specify information access boundaries. Without counterevidence showing a plausible source, the claim may be valid, but the evidence is insufficient to uphold or withdraw.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-e5cbf0686b0b80",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "character",
+        "evidence": "The girl points to the empty rice vat and says: 'Dad, the people over there have empty pots, but we still have three granaries pressed down here. Why not transport it over first?'",
+        "problem": "The girl's question demonstrates a sophisticated understanding of resource allocation and logistics (identifying surplus, proposing redistribution) that may exceed the cognitive framework established in the context, where she is described as learning business through price, hunger, goods, and her father's expressions, without formal training. The leap from experiential learning to strategic supply-chain reasoning feels abrupt.",
+        "suggested_action": "Consider adding a brief internal or external cue that connects this question to her lived experience—e.g., a memory of seeing hungry people or overhearing a trade conversation—to bridge the gap between her informal education and this specific analytical insight."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+          "Preservation guard: 少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-63cdaa391c9c77",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "foreshadowing",
+        "evidence": "The simile '窗像一块冻住的水' suggests a frozen, trapped state, but it is isolated and not connected to any larger narrative thread.",
+        "problem": "The image of frozen water could function as foreshadowing (e.g., of a character's paralysis or an impending thaw/event), but it is not developed or linked to any prior or future element in the excerpt or context.",
+        "suggested_action": "If the frozen window is intended as foreshadowing, reinforce it with a subtle echo in the next paragraph or a contrasting image (e.g., a crack or a drip) to create a thread. If not, consider replacing it with a simile that more directly serves the paragraph's function."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "窗像一块冻住的水"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-ef8bcf1cb93b88",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {
+        "G-B08-CHILD-INTELLIGENCE": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+      },
+      "reviewer_finding": {
+        "category": "prose/reader experience",
+        "evidence": "The dialogue is direct and functional, but the girl's question ('为什么不先运过去？') carries an implicit critique of her father's decision-making.",
+        "problem": "The tone may read as precocious or confrontational without context of their relationship dynamics. The false-positive guard warns against age-based 'dumbing down,' but the lack of softening (e.g., a deferential tone or a question framed as curiosity) could alienate readers expecting a more hierarchical family interaction.",
+        "suggested_action": "Add a small behavioral cue—like a hesitant tone, a glance at her father's face, or a qualifying phrase ('爹，我有个想法…')—to maintain her intelligence while respecting the parent-child dynamic."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+        ],
+        "reason": "The issue claims the dialogue lacks softening cues and may read as precocious or confrontational. The chapter shows the girl speaks directly, without hesitation or deferential tone. The context does not specify the father-daughter relationship dynamic, so it is unclear whether this tone is appropriate. The guard G-B08-CHILD-INTELLIGENCE permits intelligence but does not address tone or hierarchy. The claim may be valid, but without evidence of the expected relationship norms, the verdict is needs_counterevidence.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-bda4e3afae5889",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "chapter function",
+        "evidence": "The excerpt is the third in a sequence of similarly structured paragraphs, but its function within the chapter (e.g., as a climax, transition, or pause) is unclear from the excerpt alone.",
+        "problem": "Without a clear chapter function, the paragraph may feel like filler or a stylistic exercise rather than a purposeful beat in the narrative arc.",
+        "suggested_action": "Clarify the paragraph's role—for example, if it is the final beat before a revelation, intensify the imagery or introduce a rupture; if it is a plateau, signal stasis more explicitly through a shift in rhythm or a single, longer sentence."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-44db4bcc1f4b3e",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {
+        "G-B08-CHILD-INTELLIGENCE": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+      },
+      "reviewer_finding": {
+        "category": "character",
+        "evidence": "The girl points to the empty rice vat and says: 'Dad, the people over there have empty pots, but we still have three granaries pressed down here. Why not transport it over first?'",
+        "problem": "The girl's question demonstrates a sophisticated understanding of resource allocation and logistics (identifying surplus, proposing redistribution) that may exceed the cognitive framework established in the context, where she is described as learning business through price, hunger, goods, and her father's expressions, without formal training. The leap from experiential learning to strategic supply-chain reasoning feels abrupt.",
+        "suggested_action": "Consider adding a brief internal or external cue that connects this question to her lived experience—e.g., a memory of seeing hungry people or overhearing a trade conversation—to bridge the gap between her informal education and this specific analytical insight."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+        ],
+        "reason": "The issue claims the girl's question exceeds her cognitive framework, but the chapter shows she points to an empty rice vat and contrasts it with 'three granaries'—a concrete observation from her immediate environment. The context establishes she learns from 'price, hunger, goods, and her father's expressions,' which could plausibly include noticing empty pots and full granaries. However, the leap to proposing redistribution as a strategic solution is not directly supported by the supplied evidence; the chapter does not show a memory or overheard conversation that bridges this. The guard G-B08-CHILD-INTELLIGENCE permits intelligence but does not specifically authorize this level of logistical reasoning without additional cues. Needs_counterevidence is appropriate because the claim may be valid but lacks enough evidence to uphold or withdraw.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-449f2fcd2947d2",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {
+        "G-B06-RHYTHMIC-ANCHOR": "保留最有功能的一组重复，不做机械同义词替换。"
+      },
+      "reviewer_finding": {
+        "category": "information boundaries",
+        "evidence": "The excerpt provides no new information about setting, character, or plot beyond the oppressive atmosphere established in prior paragraphs.",
+        "problem": "The paragraph risks being purely atmospheric without advancing narrative information, which may stall the chapter's forward momentum.",
+        "suggested_action": "Embed a small piece of new information—such as a sensory detail that hints at a change (e.g., a sound or a shift in light)—to serve as a boundary marker that this paragraph is not merely a repetition but a progression."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+        ],
+        "reason": "The claim that the paragraph provides no new information about setting, character, or plot is plausible but not fully supported by the supplied chapter alone. The excerpt is a single paragraph; its function within the broader chapter (e.g., as a deliberate atmospheric plateau) cannot be determined without more context. The issue may be valid but lacks sufficient evidence from the provided material.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-1ca4c02499cb5d",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "information boundaries",
+        "evidence": "The girl references 'three granaries' being pressed down, implying knowledge of stored grain quantities and their status.",
+        "problem": "The context does not establish how a 12-year-old, even a merchant's daughter, would have access to precise inventory information about multiple granaries. This may violate realistic information boundaries for her age and role.",
+        "suggested_action": "Provide a subtle justification for her knowledge, such as her father discussing inventory within earshot, or her having accompanied him to the granaries, to make the information access plausible."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+          "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-728697a1b3e691",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "authoritative_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "supplied_preservation_context": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "prose/reader experience",
+        "evidence": "The dialogue is direct and functional, but the girl's question ('为什么不先运过去？') carries an implicit critique of her father's decision-making.",
+        "problem": "The tone may read as precocious or confrontational without context of their relationship dynamics. The false-positive guard warns against age-based 'dumbing down,' but the lack of softening (e.g., a deferential tone or a question framed as curiosity) could alienate readers expecting a more hierarchical family interaction.",
+        "suggested_action": "Add a small behavioral cue—like a hesitant tone, a glance at her father's face, or a qualifying phrase ('爹，我有个想法…')—to maintain her intelligence while respecting the parent-child dynamic."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "她十二岁，是粮商女儿；聪明、爱抢话",
+          "Preservation guard: 少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-4cc0b7156d626e",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {
+        "G-B06-RHYTHMIC-ANCHOR": "保留最有功能的一组重复，不做机械同义词替换。"
+      },
+      "reviewer_finding": {
+        "category": "chapter function",
+        "evidence": "The excerpt is the third in a sequence of similarly structured paragraphs, but its function within the chapter (e.g., as a climax, transition, or pause) is unclear from the excerpt alone.",
+        "problem": "Without a clear chapter function, the paragraph may feel like filler or a stylistic exercise rather than a purposeful beat in the narrative arc.",
+        "suggested_action": "Clarify the paragraph's role—for example, if it is the final beat before a revelation, intensify the imagery or introduce a rupture; if it is a plateau, signal stasis more explicitly through a shift in rhythm or a single, longer sentence."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+        ],
+        "reason": "The claim that the paragraph's function within the chapter is unclear is based on the excerpt alone, which is insufficient to determine whether the paragraph serves a specific narrative beat (e.g., climax, transition, pause). More chapter context is needed to assess this as a material defect.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-30097a5e780f27",
+      "chapter_excerpt": "她把烧剩的半张纸收进袖里。她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+      "authoritative_context": "本章应让物件和动作形成回声，答案只开一条缝，不由旁白完整结算父亲的双重意图。",
+      "supplied_preservation_context": "人物可以形成局部猜测，但旁白不应把两个动机都认证为事实。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "prose/reader experience",
+        "evidence": "她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+        "problem": "旁白过度解释，剥夺了读者参与推理的空间，降低了文本的含蓄性和回味感。",
+        "suggested_action": "将旁白改为更克制的表达，如'她终于明白，父亲烧掉一半，是为了毁去证据。至于另一半……'，以制造悬念而非直接给出答案。"
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-970ddf3804ae5d",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "prose/reader experience",
+        "evidence": "The False-Positive Guard instructs to 'retain the most functional set of repetition' and avoid mechanical synonym replacement. The excerpt's triple-triple structure is fully retained.",
+        "problem": "While the guard is followed, the instruction does not address whether the repetition is functional or merely habitual. The triple structure may be functional for building rhythm, but its identical application across three paragraphs may undermine its function.",
+        "suggested_action": "Evaluate which set of repetitions (e.g., the negations or the similes) carries the most narrative weight, and consider breaking the other set to create a hierarchy of repetition that guides reader attention more effectively."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-c9706b33b20fdb",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "prose/reader experience",
+        "evidence": "The excerpt uses three parallel clauses ('不是雨，不是风，不是脚步'), three parallel clauses ('没有人开门，没有人抬头，没有人说话'), and three parallel similes ('灯像眼，桌像井，窗像一块冻住的水'). This triple-triple structure is identical in form to the adjacent paragraphs described in the context.",
+        "problem": "The excerpt repeats the same rhetorical device (exclusionary narration, triple parallelism, and simile) as the preceding two paragraphs, creating a mechanical pattern that may reduce the intended oppressive effect through over-familiarity.",
+        "suggested_action": "Consider varying the syntactic structure within this paragraph—for example, shifting to a single extended metaphor or a fragmented, breathless list—while preserving the oppressive tone, to avoid reader fatigue from identical triadic repetition across three consecutive paragraphs."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+          "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    },
+    {
+      "sample_id": "ce-606b0131a33065",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "authoritative_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "supplied_preservation_context": "保留最有功能的一组重复，不做机械同义词替换。",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "information boundaries",
+        "evidence": "The excerpt provides no new information about setting, character, or plot beyond the oppressive atmosphere established in prior paragraphs.",
+        "problem": "The paragraph risks being purely atmospheric without advancing narrative information, which may stall the chapter's forward momentum.",
+        "suggested_action": "Embed a small piece of new information—such as a sensory detail that hints at a change (e.g., a sound or a shift in light)—to serve as a boundary marker that this paragraph is not merely a repetition but a progression."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。"
+        ],
+        "reason": "model_withdrawal_lacks_authorized_guard",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": null,
+        "evidence_grounded": null,
+        "repair_harm_risk": null,
+        "effort_minutes": null,
+        "notes": ""
+      }
+    }
+  ]
+}

@@ -484,6 +484,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 - 发布 Codex skill；
 - 稳定 Python API、JSON schema 和 provider adapter；
 - 建立匿名化 benchmark 与真实 dogfood 数据；
+- 对 `needs_counterevidence` 导出匿名人工标注包，把身份与 control 标签隔离到私钥；完成标注后只在有可靠 issue-level 真值的 control 上计算混淆矩阵，同时记录人工耗时和误修风险。未标注队列不得表述为已完成人评。
 - 对照 raw chat、单次 RAG 和 FictionOps closed loop；
 - 报告采纳率、不变量错误、返工、成本与作者时间。
 

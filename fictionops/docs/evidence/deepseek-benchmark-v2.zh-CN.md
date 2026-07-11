@@ -56,4 +56,4 @@
 
 ## 下一步结论
 
-Preservation-aware verifier 已实现并完成真实 dogfood，结果见 [`deepseek-preservation-verifier-v1.zh-CN.md`](deepseek-preservation-verifier-v1.zh-CN.md)。它将自动修订集合的 FPR 从 75% 降到 0%，但 actionable recall 从 100% 降到 83.3%；被挡下的真实问题进入 counterevidence 人工队列后，总保留 recall 仍为 100%。下一步应为作者保留约束建立稳定 guard id，并盲评 counterevidence 队列。
+Preservation-aware verifier 已实现并完成真实 dogfood，结果见 [`deepseek-preservation-verifier-v1.zh-CN.md`](deepseek-preservation-verifier-v1.zh-CN.md)。它将自动修订集合的 FPR 从 75% 降到 0%，但 actionable recall 从 100% 降到 83.3%；被挡下的真实问题进入 counterevidence 人工队列后，总保留 recall 仍为 100%。稳定 author guard id 与匿名标注导出/评分已实现；16 条盲包正在等待独立人工标注，见 [`deepseek-counterevidence-v1.zh-CN.md`](deepseek-counterevidence-v1.zh-CN.md)。

@@ -158,6 +158,20 @@ def build_parser() -> argparse.ArgumentParser:
     agent_benchmark_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     agent_benchmark_parser.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
 
+    agent_counterevidence_parser = agent_subparsers.add_parser("counterevidence", help="Export and score anonymous review of disputed findings.")
+    agent_counterevidence_subparsers = agent_counterevidence_parser.add_subparsers(dest="counterevidence_action", required=True)
+    agent_counterevidence_export = agent_counterevidence_subparsers.add_parser("export", help="Export a blind packet and a separate private key.")
+    agent_counterevidence_export.add_argument("source", help="Preservation evidence JSON or an agent revision run directory.")
+    agent_counterevidence_export.add_argument("--benchmark", help="Benchmark output JSON; required for evidence JSON sources.")
+    agent_counterevidence_export.add_argument("--fixtures", help="Benchmark fixture JSON; required for evidence JSON sources.")
+    agent_counterevidence_export.add_argument("--out", required=True, help="Blind annotation packet output JSON.")
+    agent_counterevidence_export.add_argument("--key-out", required=True, help="Private identity/control key output JSON.")
+    agent_counterevidence_score = agent_counterevidence_subparsers.add_parser("score", help="Validate completed annotations and score the blind review.")
+    agent_counterevidence_score.add_argument("packet", help="Completed blind annotation packet JSON.")
+    agent_counterevidence_score.add_argument("--key", required=True, help="Private key created during export.")
+    agent_counterevidence_score.add_argument("--out", help="Optional evaluation report output path.")
+    agent_counterevidence_score.add_argument("--format", choices=["markdown", "json"], default="markdown")
+
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
     agent_failure_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
@@ -4076,6 +4090,39 @@ def handle_agent(args: argparse.Namespace) -> int:
             return 1
         print(rendered, end="")
         return 0
+    if args.agent_action == "counterevidence":
+        try:
+            if args.counterevidence_action == "export":
+                source = Path(args.source).expanduser().resolve()
+                if source.is_dir():
+                    packet, key = build_counterevidence_from_run(source)
+                else:
+                    if not args.benchmark or not args.fixtures:
+                        raise ValueError("--benchmark and --fixtures are required for evidence JSON sources")
+                    packet, key = build_counterevidence_from_evidence(
+                        source,
+                        benchmark_file=Path(args.benchmark).expanduser().resolve(),
+                        fixtures_file=Path(args.fixtures).expanduser().resolve(),
+                    )
+                output = Path(args.out).expanduser().resolve()
+                key_output = Path(args.key_out).expanduser().resolve()
+                output.parent.mkdir(parents=True, exist_ok=True)
+                key_output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+                key_output.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+                print(json.dumps({"packet": str(output), "key": str(key_output), "sample_count": packet["sample_count"]}, ensure_ascii=False, indent=2))
+                return 0
+            report = evaluate_counterevidence(Path(args.packet), Path(args.key))
+            rendered = render_counterevidence_evaluation(report, args.format)
+            if args.out:
+                output = Path(args.out).expanduser().resolve()
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(rendered, encoding="utf-8", newline="\n")
+            print(rendered, end="")
+            return 0
+        except (OSError, RuntimeError, ValueError) as exc:
+            print(f"fictionops: agent counterevidence failed: {exc}", file=sys.stderr)
+            return 1
     if args.agent_action == "failure-lab":
         try:
             report = run_failure_lab()
