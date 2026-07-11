@@ -475,6 +475,8 @@ def run_escalated_reverification(
         "schema": ESCALATED_REVERIFICATION_SCHEMA,
         "escalation": str(escalation_file.resolve()),
         "packet": str(packet_file.resolve()),
+        "escalation_sha256": hashlib.sha256(escalation_file.read_bytes()).hexdigest(),
+        "packet_sha256": hashlib.sha256(packet_file.read_bytes()).hexdigest(),
         "ready_request_count": len(ready),
         "model_call_count": call_count,
         "verdict_counts": verdict_counts,

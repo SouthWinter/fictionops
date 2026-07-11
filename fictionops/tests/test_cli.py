@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import importlib.util
 import os
 import shutil
@@ -6820,6 +6821,158 @@ class FictionOpsCliTests(unittest.TestCase):
             )
             self.assertEqual(ungrounded["verdict"], "still_insufficient")
             self.assertTrue(ungrounded["grounding_override"])
+
+    def test_counterevidence_application_updates_machine_states_without_overwriting_prose(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "ledger-project"
+            (project / "00_management").mkdir(parents=True)
+            chapter = project / "chapter.md"
+            chapter_text = "# Chapter\n\nThe door stayed closed.\n"
+            chapter.write_text(chapter_text, encoding="utf-8")
+            source_hash = hashlib.sha256(chapter.read_bytes()).hexdigest()
+            run_dir = project / "agent_runs" / "run-001"
+            run_dir.mkdir(parents=True)
+            (run_dir / "source_manifest.json").write_text(
+                json.dumps({"schema": "fictionops.revision_source_manifest.v1", "source_file": str(chapter), "source_sha256": source_hash}),
+                encoding="utf-8",
+            )
+            (run_dir / "session.json").write_text(
+                json.dumps({"schema": "fictionops.agent_session.v1", "session_id": "session-001", "source_file": str(chapter)}),
+                encoding="utf-8",
+            )
+            (run_dir / "issues.before.json").write_text(
+                json.dumps({"schema": "fictionops.revision_issues.v1", "issues": []}),
+                encoding="utf-8",
+            )
+            findings = [
+                ("chapter_function", "uphold", True),
+                ("character", "withdraw", True),
+                ("information_boundaries", "still_insufficient", False),
+                ("prose_and_reader_experience", "uphold", True),
+            ]
+            samples = []
+            results = []
+            for index, (category, verdict, grounded) in enumerate(findings, start=1):
+                sample_id = f"application-{index}"
+                sample = {
+                        "sample_id": sample_id,
+                        "source_scope": "full_chapter",
+                        "chapter_excerpt": "The door stayed closed.",
+                        "authoritative_context": "Controlled ledger application test.",
+                        "active_author_guards": {},
+                        "reviewer_finding": {
+                            "category": category,
+                            "severity": "P2",
+                            "confidence": "high",
+                            "evidence": ["The door stayed closed."],
+                            "problem": f"Controlled problem {index}",
+                            "suggested_action": f"Controlled action {index}",
+                        },
+                        "verifier_assessment": {},
+                        "annotation": {"decision": "insufficient"},
+                    }
+                if index == 4:
+                    sample["issue_id"] = "iss-author-protected"
+                samples.append(sample)
+                results.append(
+                    {
+                        "request_id": f"request-{index}",
+                        "sample_ids": [sample_id],
+                        "verdict": verdict,
+                        "model_verdict": verdict,
+                        "evidence": ["The door stayed closed."] if grounded else [],
+                        "evidence_grounded": grounded,
+                        "grounded_evidence": ["The door stayed closed."] if grounded else [],
+                        "reason": f"Controlled result {index}",
+                    }
+                )
+            packet = {"schema": "fictionops.counterevidence_blind_packet.v1", "sample_count": 4, "samples": samples}
+            packet_file = run_dir / "counterevidence.packet.json"
+            packet_file.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            report = {
+                "schema": "fictionops.escalated_reverification.v1",
+                "packet_sha256": hashlib.sha256(packet_file.read_bytes()).hexdigest(),
+                "results": results,
+            }
+            escalation = {
+                "schema": "fictionops.counterevidence_escalation.v1",
+                "requests": [
+                    {
+                        "request_id": f"request-{index}",
+                        "sample_ids": [f"application-{index}"],
+                        "status": "ready_for_reverification",
+                        "route": {"scope": "full_chapter"},
+                        "evidence_items": [{"content": "The door stayed closed."}],
+                    }
+                    for index in range(1, 5)
+                ],
+            }
+            escalation_file = run_dir / "counterevidence.escalation.json"
+            escalation_file.write_text(json.dumps(escalation, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            report["escalation_sha256"] = hashlib.sha256(escalation_file.read_bytes()).hexdigest()
+            report_file = run_dir / "counterevidence.reverification.json"
+            report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            (project / ".fictionops").mkdir()
+            (project / ".fictionops" / "issues.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "fictionops.issue_ledger.v1",
+                        "project_root": str(project),
+                        "issues": [
+                            {
+                                "issue_id": "iss-author-protected",
+                                "chapter_file": str(chapter),
+                                "status": "waived",
+                                "category": "semantic.prose_and_reader_experience",
+                                "decisions": [{"actor": "author", "to_status": "waived", "reason": "intentional prose"}],
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            dry_run = self.run_cli(
+                "agent", "counterevidence", "apply", str(report_file), "--packet", str(packet_file), "--escalation", str(escalation_file), "--run-dir", str(run_dir), "--dry-run", "--format", "json"
+            )
+            self.assertEqual(dry_run.returncode, 0, dry_run.stderr)
+            self.assertFalse((run_dir / "counterevidence_application.json").exists())
+            applied = self.run_cli(
+                "agent", "counterevidence", "apply", str(report_file), "--packet", str(packet_file), "--escalation", str(escalation_file), "--run-dir", str(run_dir), "--format", "json"
+            )
+            self.assertEqual(applied.returncode, 0, applied.stderr)
+            applied_payload = json.loads(applied.stdout)
+            self.assertFalse(applied_payload["manuscript_edited"])
+            self.assertEqual(chapter.read_text(encoding="utf-8"), chapter_text)
+            ledger = load_issue_ledger(project)
+            self.assertEqual({item["status"] for item in ledger["issues"]}, {"open", "model_withdrawn", "evidence_blocked", "waived"})
+            protected = next(item for item in ledger["issues"] if item["issue_id"] == "iss-author-protected")
+            self.assertEqual(protected["status"], "waived")
+            self.assertEqual(applied_payload["actions"][3]["action"], "preserved_author_authority")
+            compact = compact_issue_ledger(run_dir)
+            self.assertEqual(compact["issue_count"], 1)
+            self.assertEqual(compact["excluded_issue_count"], 3)
+            queue = json.loads((run_dir / "counterevidence_reviser_queue.json").read_text(encoding="utf-8"))
+            self.assertEqual(queue["issue_count"], 1)
+            duplicate = self.run_cli(
+                "agent", "counterevidence", "apply", str(report_file), "--packet", str(packet_file), "--escalation", str(escalation_file), "--run-dir", str(run_dir), "--format", "json", check=False
+            )
+            self.assertNotEqual(duplicate.returncode, 0)
+            self.assertIn("already exists", duplicate.stderr)
+
+            stale_run = project / "agent_runs" / "run-stale"
+            stale_run.mkdir()
+            shutil.copy2(run_dir / "source_manifest.json", stale_run / "source_manifest.json")
+            shutil.copy2(run_dir / "session.json", stale_run / "session.json")
+            chapter.write_text(chapter_text + "Changed after review.\n", encoding="utf-8")
+            stale = self.run_cli(
+                "agent", "counterevidence", "apply", str(report_file), "--packet", str(packet_file), "--escalation", str(escalation_file), "--run-dir", str(stale_run), "--format", "json", check=False
+            )
+            self.assertNotEqual(stale.returncode, 0)
+            self.assertIn("source chapter is stale", stale.stderr)
 
     def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
         review = {

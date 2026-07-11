@@ -487,6 +487,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 - 对 `needs_counterevidence` 导出匿名人工标注包，把身份与 control 标签隔离到私钥；完成标注后记录人工耗时、误修风险，以及与原 case-level control 的一致或标签挑战。Case 标签不能伪装成动态 finding 的 issue-level 真值，未标注队列也不得表述为已完成人评。
 - 人工判为 `insufficient` 后不立即再次打扰作者：controller 先折叠完全重复 finding，再根据 problem 的实际断言范围请求全章、相邻段、人物知识来源、人物记忆或 author guard。只有取得匹配尺度的材料才进入 reverification；缺源必须显式停止。
 - Escalated re-verifier 对补证后的每个去重请求独立重判，并保存 model verdict 与 effective verdict。任何 `uphold/withdraw` 都必须有逐字落地的新证据，否则 controller 自动降回 `still_insufficient`；模型不能凭置信度跨越作者权限。
+- Grounded effective verdict 通过显式 apply 写入持久 ledger：`open` 可重新进入 reviser，`model_withdrawn` 与 `evidence_blocked` 保留历史但从 actionable view 排除。Apply 同时检查 packet/source hash、拒绝重复应用，并且永不覆盖作者已有决定。
 - 对照 raw chat、单次 RAG 和 FictionOps closed loop；
 - 报告采纳率、不变量错误、返工、成本与作者时间。
 

@@ -2,6 +2,8 @@
     "schema":  "fictionops.escalated_reverification.v1",
     "escalation":  "controlled fixture escalation",
     "packet":  "tests/fixtures/escalated_reverification_control_packet.json",
+    "escalation_sha256":  "a6d905e2a45ae2fe7f4237b2bd98771b10c786f5f7bc5ffad9ec90ea8fcadcc5",
+    "packet_sha256":  "ef1be52a490f9c94b61c5e6932fff997c1d2ad4090d1186d3b73ccbb35ac06b5",
     "ready_request_count":  1,
     "model_call_count":  1,
     "verdict_counts":  {
@@ -14,8 +16,8 @@
     "resolution_rate":  1.0,
     "usage":  {
                   "input_tokens":  1104,
-                  "output_tokens":  168,
-                  "total_tokens":  1272,
+                  "output_tokens":  179,
+                  "total_tokens":  1283,
                   "cached_input_tokens":  1024
               },
     "results":  [
@@ -26,7 +28,7 @@
                         "evidence":  [
                                          "Then the bell rang from inside the locked room. The captain released the younger man\u0027s wrist. A line of red water appeared under the door, and every name on the magistrate\u0027s list became a death sentence."
                                      ],
-                        "reason":  "The full chapter shows the paragraph is not filler. It functions as a deliberate pause before the climactic event (the bell, the red water, the death sentences). The stillness and sensory absence create tension that is immediately paid off, so the paragraph advances the chapter structurally and thematically.",
+                        "reason":  "The full chapter shows the disputed paragraph is not filler. It builds tension before the climactic event (the bell, red water, death sentences) and functions as a structural pause that heightens the impact of the subsequent action. The paragraph advances the chapter by establishing an eerie stillness that is immediately broken, making it integral to the narrative rhythm.",
                         "remaining_gap":  "",
                         "confidence":  "high",
                         "model_verdict":  "withdraw",
@@ -48,11 +50,11 @@
                                           "schema":  "fictionops.runner_receipt.v1",
                                           "provider":  "deepseek",
                                           "model":  "deepseek-v4-flash",
-                                          "request_id":  "c4273035-666e-4467-831c-75958fe0bc09",
+                                          "request_id":  "a5515185-5d09-4d39-86f7-a0d2e468c903",
                                           "usage":  {
                                                         "input_tokens":  1104,
-                                                        "output_tokens":  168,
-                                                        "total_tokens":  1272,
+                                                        "output_tokens":  179,
+                                                        "total_tokens":  1283,
                                                         "cached_input_tokens":  1024
                                                     }
                                       },

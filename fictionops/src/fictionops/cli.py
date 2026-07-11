@@ -185,6 +185,13 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_reverify.add_argument("--out", help="Optional re-verification report output path.")
     agent_counterevidence_reverify.add_argument("--format", choices=["markdown", "json"], default="markdown")
     agent_counterevidence_reverify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
+    agent_counterevidence_apply = agent_counterevidence_subparsers.add_parser("apply", help="Apply grounded re-verification states to the persistent issue ledger, never to prose.")
+    agent_counterevidence_apply.add_argument("reverification", help="Escalated re-verification report JSON.")
+    agent_counterevidence_apply.add_argument("--packet", required=True, help="Source counterevidence packet JSON.")
+    agent_counterevidence_apply.add_argument("--escalation", required=True, help="Evidence escalation report JSON used by re-verification.")
+    agent_counterevidence_apply.add_argument("--run-dir", required=True, help="Original revision run directory.")
+    agent_counterevidence_apply.add_argument("--dry-run", action="store_true")
+    agent_counterevidence_apply.add_argument("--format", choices=["markdown", "json"], default="markdown")
 
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
@@ -4156,6 +4163,16 @@ def handle_agent(args: argparse.Namespace) -> int:
                     output.parent.mkdir(parents=True, exist_ok=True)
                     output.write_text(rendered, encoding="utf-8", newline="\n")
                 print(rendered, end="")
+                return 0
+            if args.counterevidence_action == "apply":
+                report = apply_counterevidence_reverification(
+                    Path(args.reverification),
+                    Path(args.packet),
+                    Path(args.escalation),
+                    Path(args.run_dir),
+                    dry_run=args.dry_run,
+                )
+                print(render_counterevidence_application(report, args.format), end="")
                 return 0
             report = evaluate_counterevidence(Path(args.packet), Path(args.key))
             rendered = render_counterevidence_evaluation(report, args.format)

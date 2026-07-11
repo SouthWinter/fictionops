@@ -37,11 +37,11 @@ fictionops agent counterevidence reverify evidence-escalation.json `
 - 1 个 ready request，1 次模型调用；
 - verdict：`withdraw`；
 - resolution rate：100%；
-- 1104 input、168 output、1272 total tokens，其中 1024 cached input；
+- 1104 input、179 output、1283 total tokens，其中 1024 cached input；
 - 精确引文 grounding 通过；
 - 无 schema repair；
 - 未修改任何正文。
 
 逐次结果见 [`deepseek-escalated-reverification-v1.json`](evidence/deepseek-escalated-reverification-v1.json)，可复现 fixture 见 [`escalated_reverification_control_packet.json`](../tests/fixtures/escalated_reverification_control_packet.json) 与 [`escalated_reverification_control_chapter.md`](../tests/fixtures/escalated_reverification_control_chapter.md)。
 
-这是 controlled evidence，证明补证、重判与 grounding 链路可运行。它不代表《江山》作者盲评留下的 6 条 `insufficient` 已被解决；匿名 benchmark 没有对应原章，仍应停在 `needs_source`。
+这是 controlled evidence，证明补证、重判与 grounding 链路可运行。Grounded verdict 到持久 issue ledger 的状态闭环见 [`counterevidence-ledger-application.zh-CN.md`](counterevidence-ledger-application.zh-CN.md)。它不代表《江山》作者盲评留下的 6 条 `insufficient` 已被解决；匿名 benchmark 没有对应原章，仍应停在 `needs_source`。

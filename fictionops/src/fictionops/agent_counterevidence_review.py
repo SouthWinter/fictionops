@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .agent_research_baseline import load_cases, normalize_category
+from .agent_issue_ledger import stable_issue_id
 
 
 COUNTEREVIDENCE_PACKET_SCHEMA = "fictionops.counterevidence_blind_packet.v1"
@@ -141,6 +142,10 @@ def build_counterevidence_from_run(run_dir: Path) -> tuple[dict[str, Any], dict[
         for item in guards_payload.get("guards") or []
         if isinstance(item, dict) and item.get("status") == "active"
     }
+    session_file = run_dir / "session.json"
+    session = _read_json(session_file) if session_file.is_file() else {}
+    chapter_file_value = str(review.get("chapter_file") or session.get("source_file") or "").strip()
+    chapter_file = Path(chapter_file_value).expanduser().resolve() if chapter_file_value else None
     samples: list[dict[str, Any]] = []
     keys: list[dict[str, Any]] = []
     for decision in verification.get("decisions") or []:
@@ -150,9 +155,12 @@ def build_counterevidence_from_run(run_dir: Path) -> tuple[dict[str, Any], dict[
         if issue_index < 0 or issue_index >= len(issues):
             raise ValueError(f"invalid issue_index {issue_index} in revision run")
         sample_id = _sample_id(f"{run_dir}|{issue_index}")
+        semantic_issue = {**issues[issue_index], "category": f"semantic.{issues[issue_index].get('category')}"}
+        issue_id = stable_issue_id(chapter_file, semantic_issue, prefix="iss_sem") if chapter_file else ""
         samples.append(
             {
                 "sample_id": sample_id,
+                "issue_id": issue_id,
                 "source_scope": "full_chapter",
                 "chapter_excerpt": chapter,
                 "authoritative_context": context,
@@ -172,6 +180,7 @@ def build_counterevidence_from_run(run_dir: Path) -> tuple[dict[str, Any], dict[
                 "sample_id": sample_id,
                 "source_group": "revision_run",
                 "issue_index": issue_index,
+                "issue_id": issue_id,
                 "control_class": "unevaluable",
                 "run_dir": str(run_dir),
             }

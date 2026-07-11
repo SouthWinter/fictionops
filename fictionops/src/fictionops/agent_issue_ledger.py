@@ -20,18 +20,22 @@ ISSUE_STATUSES = {
     "rejected",
     "waived",
     "reopened",
+    "model_withdrawn",
+    "evidence_blocked",
 }
 AUTHOR_DECISION_STATUSES = {"rejected", "waived", "reopened"}
 RESOLVED_STATUSES = {"addressed", "verified", "accepted"}
 ALLOWED_TRANSITIONS = {
-    "open": {"planned", "addressed", "rejected", "waived"},
+    "open": {"planned", "addressed", "rejected", "waived", "model_withdrawn", "evidence_blocked"},
     "planned": {"open", "addressed", "rejected", "waived"},
     "addressed": {"open", "verified", "reopened", "rejected", "waived"},
     "verified": {"accepted", "reopened", "rejected", "waived"},
     "accepted": {"reopened"},
     "rejected": {"reopened"},
     "waived": {"reopened"},
-    "reopened": {"planned", "addressed", "verified", "rejected", "waived"},
+    "reopened": {"planned", "addressed", "verified", "rejected", "waived", "model_withdrawn", "evidence_blocked"},
+    "model_withdrawn": {"open", "reopened", "evidence_blocked", "rejected", "waived"},
+    "evidence_blocked": {"open", "reopened", "model_withdrawn", "rejected", "waived"},
 }
 
 

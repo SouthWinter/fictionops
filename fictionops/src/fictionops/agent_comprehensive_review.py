@@ -49,8 +49,12 @@ def compact_issue_ledger(run_dir: Path) -> dict[str, object]:
                 "preserve_constraints": issue.get("preserve_constraints") or [],
                 "status": issue.get("status") or "open",
             }
-        if str(issue.get("status")) in {"waived", "rejected"}:
+        status = str(issue.get("status") or "open")
+        if status in {"waived", "rejected"}:
             item["resolution"] = issue.get("resolution")
+            excluded.append(item)
+        elif status in {"model_withdrawn", "evidence_blocked"}:
+            item["counterevidence"] = issue.get("counterevidence")
             excluded.append(item)
         else:
             compact.append(item)
