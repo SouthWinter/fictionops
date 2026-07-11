@@ -71,6 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent_revise_parser.add_argument("--max-review-chars", type=int, default=50000)
     agent_revise_parser.add_argument("--max-retries", type=int, default=1)
     agent_revise_parser.add_argument("--no-semantic-verify", action="store_true")
+    agent_revise_parser.add_argument("--no-preservation-verify", action="store_true")
     agent_revise_parser.add_argument("--review-scope", choices=["style", "comprehensive"], default="comprehensive")
     agent_revise_parser.add_argument("--context-file", action="append", default=[])
     agent_revise_parser.add_argument("--max-context-files", type=int, default=24)
@@ -1588,6 +1589,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-semantic-verify",
         action="store_true",
         help="Skip the model-backed source/candidate invariant comparison after static verification.",
+    )
+    agent_revise_workflow_parser.add_argument(
+        "--no-preservation-verify",
+        action="store_true",
+        help="Skip the independent preservation verifier after comprehensive review.",
     )
     agent_revise_workflow_parser.add_argument(
         "--review-scope",
@@ -3877,6 +3883,7 @@ def handle_agent_revise_workflow(args: argparse.Namespace) -> int:
             max_review_chars=args.max_review_chars,
             max_retries=args.max_retries,
             semantic_verify=not args.no_semantic_verify,
+            preservation_verify=not args.no_preservation_verify,
             review_scope=args.review_scope,
             context_files=[Path(item) for item in args.context_file],
             max_context_files=args.max_context_files,

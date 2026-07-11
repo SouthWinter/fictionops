@@ -1,5 +1,17 @@
 # FictionOps Agent 系统设计
 
+## Preservation-Aware Verifier
+
+综合 reviewer 的输出不是直接修订指令。旧章修订链路在 reviewer 与 reviser 之间增加独立 preservation verifier，并保存三层证据：原始 `reviewer_issues`、逐条 `preservation_verification`、最终 `effective issues`。
+
+每条 finding 只能进入以下状态之一：
+
+- `uphold`：问题有章节或权威上下文证据，且修订不会破坏保留约束；
+- `withdraw`：finding 自己承认无需修改，或把有意功能误判为缺陷；
+- `needs_counterevidence`：可能成立，但证据不足，不能交给 reviser 擅自处理。
+
+确定性规则优先于模型裁决，例如 `No change needed`、`无需修改`、`建议保留` 出现在 issue 内时必须撤回。独立模型不能取得作者权限；它只能缩小自动修订集合，不能接受稿件、改写 canon 或删除原始审计记录。
+
 当前要求级完成度见 [Agent Runtime 完成度审计](agent-runtime-completion-audit.zh-CN.md)。
 
 > 状态：实现中。Memory-first Agent 已落地类型化记忆、显式作者偏好、因果模拟、故事事实账本、逐场景状态契约、独立反证、确定性门禁、选择性场景复修、执行预算和采纳后事件；主要未完成项已转向统一产品入口与项目级 controller。

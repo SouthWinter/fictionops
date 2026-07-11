@@ -804,7 +804,7 @@
 子命令：
 
 - `agent write`：复用 `agent-write-workflow` 的因果模拟、规划、写作、复修、验证、预算和暂存采纳契约；
-- `agent revise`：复用 `agent-revise-workflow` 的综合审读、修订、语义复核、预算与暂存契约；
+- `agent revise`：复用 `agent-revise-workflow` 的综合审读、preservation verifier、修订、语义复核、预算与暂存契约；
 - `agent accept`：复用 `agent-accept-revision` 的源稿/候选哈希校验和显式采纳契约；
 - `agent continue`：扫描项目内 session、`model_budget.json`、采纳状态和 memory stale 状态，选择下一项安全动作。
 - `agent issues`：读取 `.fictionops/issues.json`，按状态或章节筛选跨 session 问题；

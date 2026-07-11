@@ -14,7 +14,7 @@
 
 | 里程碑 | 状态 | 当前证据 | 剩余证据 |
 | --- | --- | --- | --- |
-| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、当前回归套件共 159 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
+| 0.1.0 Pre-Alpha MVP | 本地已完成 | `docs/completion-audit-0.1.0.zh-CN.md`、`docs/release-notes-0.1.0.zh-CN.md`、当前回归套件共 160 个测试、wheel/sdist 构建、源码安装和 built-wheel 安装烟测。 | 如果决定发布，还需要外部发布记录。 |
 | 0.2.0 Migration Dogfood | 本地已完成 | 真实项目 dogfood 记录、`adopt --copy-to`、`adopt-review`、`adopt-plan`、`import-plan`、迁移豁免、导入队列清理路径、分组修复文件，以及 0.2 收口复跑中的 `ready: true`、`import_queue_files: 0`、`blocking_issue_count: 0`、无 blocking repair groups。 | 后续正史归一属于常规项目维护，不再是迁移里程碑阻塞。 |
 | 0.3.0 Agent Controller | 本地已完成 | `examples/agent_controller_loop.py`、`agent-next`、`agent-exec`、`agent-inbox`、`docs/agent-connector-contract.zh-CN.md`、JSONL controller log，以及覆盖安全执行、复核边界、占位命令、迁移状态、重复建议和发布阶段命令的测试。 | 对 0.3 来说真实模型不是阻塞，但 0.6+ 已把真实模型 API 设为默认产品路径。 |
 | 0.4.0 Release Trial | 已由外部证据完成 | GitHub Actions publish run `28849146871`、TestPyPI 包 `fictionops==0.1.1`、`docs/release-trial-evidence.md`、分发包哈希、干净环境 TestPyPI 安装烟测，以及 `audit-release-evidence` 返回 `ready=true`。 | 发布演练里程碑无剩余项。 |

@@ -16,6 +16,12 @@ from .agent_comprehensive_review import (
     prepare_comprehensive_review_repair_bundle,
 )
 from .agent_project_context import compile_project_context, render_project_context
+from .agent_preservation_verifier import (
+    apply_preservation_verification,
+    parse_preservation_verification,
+    prepare_preservation_verifier_bundle,
+    prepare_preservation_verifier_repair_bundle,
+)
 from .agent_session_control import validate_checkpoint_for_resume, write_agent_checkpoint
 from .agent_trajectory import append_trajectory, context_attribution
 from .agent_revision_runtime import (
@@ -104,6 +110,9 @@ class AgentReviseWorkflowReport:
     context_file_count: int
     memory_record_count: int
     comprehensive_review: dict[str, object] | None
+    preservation_verification_enabled: bool
+    preservation_call_count: int
+    preservation_verification: dict[str, object] | None
     semantic_verification_enabled: bool
     semantic_call_count: int
     max_model_calls: int
@@ -117,6 +126,7 @@ class AgentReviseWorkflowReport:
     next_actions: list[str]
     agent_exec: AgentExecReport | None
     reviewer_exec: AgentExecReport | None
+    preservation_exec: AgentExecReport | None
     semantic_exec: AgentExecReport | None
     inbox: AgentInboxReport | None
     verification: dict[str, object] | None
@@ -436,6 +446,7 @@ def build_agent_revise_workflow(
     max_review_chars: int = 50000,
     max_retries: int = 1,
     semantic_verify: bool = True,
+    preservation_verify: bool = True,
     review_scope: str = "comprehensive",
     context_files: list[Path] | None = None,
     max_context_files: int = 24,
@@ -474,6 +485,7 @@ def build_agent_revise_workflow(
     executed = False
     agent_exec = None
     reviewer_exec = None
+    preservation_exec = None
     semantic_exec = None
     inbox = None
     before_report = None
@@ -481,9 +493,11 @@ def build_agent_revise_workflow(
     staged_outputs: list[dict[str, object]] = []
     retry_count = 0
     semantic_call_count = 0
+    preservation_call_count = 0
     context_file_count = 0
     memory_record_count = 0
     comprehensive_review: dict[str, object] | None = None
+    preservation_verification: dict[str, object] | None = None
     stop_reason = "agent_run_ready_for_runner"
     budget: ModelExecutionBudget | None = None
     checkpoint: dict[str, object] | None = None
@@ -533,6 +547,7 @@ def build_agent_revise_workflow(
             "max_review_chars": max_review_chars,
             "max_retries": max_retries,
             "semantic_verify": semantic_verify,
+            "preservation_verify": preservation_verify,
             "review_scope": review_scope,
             "max_context_files": max_context_files,
             "max_project_context_chars": max_project_context_chars,
@@ -579,6 +594,9 @@ def build_agent_revise_workflow(
             )
             if reuse_review:
                 comprehensive_review = json.loads((run_dir / "comprehensive_review.json").read_text(encoding="utf-8"))
+                preservation_file = run_dir / "preservation_verification.json"
+                if preservation_file.is_file():
+                    preservation_verification = json.loads(preservation_file.read_text(encoding="utf-8"))
             elif review_scope == "comprehensive":
                 memory_budget = min(30000, max(2000, max_project_context_chars // 3)) if use_memory else 0
                 project_context = compile_project_context(
@@ -699,6 +717,72 @@ def build_agent_revise_workflow(
                             written=True,
                         )
                     )
+                model_preservation: dict[str, object] | None = None
+                if preservation_verify and comprehensive_review.get("issues"):
+                    verifier_dir = prepare_preservation_verifier_bundle(
+                        run_dir,
+                        chapter_file=chapter_file,
+                        chapter_text=chapter_text,
+                        project_context=project_context_file.read_text(encoding="utf-8"),
+                        review=comprehensive_review,
+                        provider=selected_provider,
+                        model=selected_review_model,
+                        force=force or resume,
+                    )
+                    preservation_exec = execute_model_bundle(
+                        budget,
+                        verifier_dir,
+                        role="preservation-verifier",
+                        command=runner,
+                        output_name="output.md",
+                        timeout_seconds=timeout_seconds,
+                        force=force_output or force or resume,
+                        dry_run=False,
+                    )
+                    preservation_call_count += 1
+                    try:
+                        model_preservation = parse_preservation_verification(
+                            Path(preservation_exec.output_file).read_text(encoding="utf-8"),
+                            issue_count=len(comprehensive_review.get("issues") or []),
+                        )
+                    except (json.JSONDecodeError, ValueError) as exc:
+                        repair_dir = prepare_preservation_verifier_repair_bundle(
+                            run_dir,
+                            invalid_output=Path(preservation_exec.output_file).read_text(encoding="utf-8"),
+                            parse_error=str(exc),
+                            issue_count=len(comprehensive_review.get("issues") or []),
+                            provider=selected_provider,
+                            model=selected_review_model,
+                            force=force or resume,
+                        )
+                        preservation_exec = execute_model_bundle(
+                            budget,
+                            repair_dir,
+                            role="preservation-verifier-repair",
+                            command=runner,
+                            output_name="output.md",
+                            timeout_seconds=timeout_seconds,
+                            force=force_output or force or resume,
+                            dry_run=False,
+                        )
+                        preservation_call_count += 1
+                        try:
+                            model_preservation = parse_preservation_verification(
+                                Path(preservation_exec.output_file).read_text(encoding="utf-8"),
+                                issue_count=len(comprehensive_review.get("issues") or []),
+                            )
+                        except (json.JSONDecodeError, ValueError):
+                            model_preservation = None
+                comprehensive_review, preservation_verification = apply_preservation_verification(
+                    comprehensive_review,
+                    model_preservation,
+                )
+                preservation_file = run_dir / "preservation_verification.json"
+                preservation_file.write_text(
+                    json.dumps(preservation_verification, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
                 merge_comprehensive_review(
                     run_dir,
                     chapter_file=chapter_file,
@@ -709,13 +793,14 @@ def build_agent_revise_workflow(
                     [
                         AgentReviseWorkflowFile(kind="comprehensive_review", path=str(run_dir / "comprehensive_review.json"), written=True),
                         AgentReviseWorkflowFile(kind="comprehensive_reviewer_output", path=initial_reviewer_output_file, written=True),
+                        AgentReviseWorkflowFile(kind="preservation_verification", path=str(preservation_file), written=True),
                     ]
                 )
                 write_agent_checkpoint(
                     run_dir,
                     phase="review_ready",
                     next_action="run_chapter_reviser",
-                    artifacts=[run_dir / "comprehensive_review.json", run_dir / "issues.before.json", project_context_file],
+                    artifacts=[run_dir / "comprehensive_review.json", run_dir / "issues.before.json", preservation_file, project_context_file],
                 )
             reuse_candidate = bool(
                 resume
@@ -879,6 +964,9 @@ def build_agent_revise_workflow(
         context_file_count=context_file_count,
         memory_record_count=memory_record_count,
         comprehensive_review=comprehensive_review,
+        preservation_verification_enabled=preservation_verify,
+        preservation_call_count=preservation_call_count,
+        preservation_verification=preservation_verification,
         semantic_verification_enabled=semantic_verify,
         semantic_call_count=semantic_call_count,
         max_model_calls=max_model_calls,
@@ -892,6 +980,7 @@ def build_agent_revise_workflow(
         next_actions=[],
         agent_exec=agent_exec,
         reviewer_exec=reviewer_exec,
+        preservation_exec=preservation_exec,
         semantic_exec=semantic_exec,
         inbox=inbox,
         verification=verification,
@@ -930,6 +1019,7 @@ def format_agent_revise_workflow(report: AgentReviseWorkflowReport) -> str:
         f"- Review scope: `{report.review_scope}`",
         f"- Project context files: {report.context_file_count}",
         f"- Retrieved memory records: {report.memory_record_count}",
+        f"- Preservation verifier calls: {report.preservation_call_count if report.preservation_verification_enabled else 'disabled'}",
         f"- Semantic verifier calls: {report.semantic_call_count if report.semantic_verification_enabled else 'disabled'}",
         f"- Model-call budget: {report.model_calls_used}/{report.max_model_calls} calls; runtime limit {report.max_runtime_seconds}s",
         f"- Stop reason: `{report.stop_reason}`",

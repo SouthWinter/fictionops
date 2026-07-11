@@ -56,4 +56,4 @@
 
 ## 下一步结论
 
-下一项高价值实现不是增加 reviewer prompt，而是增加 **preservation-aware verifier**：当模型的 suggested action 为 `No change needed`，或问题与 preservation guard 冲突时，controller 应要求模型撤回 issue 或给出反证；随后以 blind packet 做人工评分，测量 issue-level precision 和 accepted-fix rate。
+Preservation-aware verifier 已实现并完成真实 dogfood，结果见 [`deepseek-preservation-verifier-v1.zh-CN.md`](deepseek-preservation-verifier-v1.zh-CN.md)。它将自动修订集合的 FPR 从 75% 降到 0%，但 actionable recall 从 100% 降到 83.3%；被挡下的真实问题进入 counterevidence 人工队列后，总保留 recall 仍为 100%。下一步应为作者保留约束建立稳定 guard id，并盲评 counterevidence 队列。

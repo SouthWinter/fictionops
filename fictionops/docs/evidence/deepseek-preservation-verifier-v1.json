@@ -1,0 +1,486 @@
+{
+  "schema": "fictionops.preservation_verifier_dogfood.v1",
+  "source": "deepseek-benchmark-v2/full-negative-controls",
+  "provider": "deepseek",
+  "requested_model": "deepseek-chat",
+  "cases": [
+    {
+      "prompt_id": "B07",
+      "original_issue_count": 0,
+      "effective_issue_count": 0,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 0,
+      "decisions": [],
+      "model_call": false
+    },
+    {
+      "prompt_id": "B08",
+      "original_issue_count": 3,
+      "effective_issue_count": 0,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 3,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+            "Preservation guard: 少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+            "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 2,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "她十二岁，是粮商女儿；聪明、爱抢话",
+            "Preservation guard: 少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        }
+      ],
+      "model_call": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "f3e3b7eb-6e28-42fe-89b6-50822b1eeb0f",
+        "usage": {
+          "input_tokens": 1267,
+          "output_tokens": 742,
+          "total_tokens": 2009,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B09",
+      "original_issue_count": 1,
+      "effective_issue_count": 0,
+      "withdrawn_count": 1,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "withdraw",
+          "reason": "self_abstaining_issue",
+          "evidence": [
+            "\\bno (?:change|action|revision|edit)s? (?:is |are )?needed\\b"
+          ],
+          "guard_ids": [],
+          "authority": "deterministic"
+        }
+      ],
+      "model_call": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "de0350d8-d5f2-493d-809b-b67666bbbe40",
+        "usage": {
+          "input_tokens": 893,
+          "output_tokens": 240,
+          "total_tokens": 1133,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B10",
+      "original_issue_count": 1,
+      "effective_issue_count": 0,
+      "withdrawn_count": 1,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "withdraw",
+          "reason": "self_abstaining_issue",
+          "evidence": [
+            "\\bno (?:change|action|revision|edit)s? (?:is |are )?needed\\b"
+          ],
+          "guard_ids": [],
+          "authority": "deterministic"
+        }
+      ],
+      "model_call": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "3b7561eb-7a79-4b0e-90be-c8387c2f6f56",
+        "usage": {
+          "input_tokens": 965,
+          "output_tokens": 309,
+          "total_tokens": 1274,
+          "cached_input_tokens": 0
+        }
+      }
+    }
+  ],
+  "original_false_positive_cases": 3,
+  "remaining_false_positive_cases": 0,
+  "original_issue_count": 5,
+  "remaining_issue_count": 0,
+  "withdrawn_issue_count": 2,
+  "needs_counterevidence_count": 3,
+  "positive_cases": [
+    {
+      "prompt_id": "B01",
+      "original_issue_count": 1,
+      "effective_issue_count": 1,
+      "target_issue_remaining": true,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "鹿煜抬起左手，将绳结在掌心绕了两圈，随后攀上湿滑的城墙。",
+            "人物状态表：鹿煜在前一卷失去左手，伤口已经愈合；此后所有攀爬和持械动作都由右手、牙齿或同伴配合完成。"
+          ],
+          "guard_ids": [],
+          "reason": "The chapter text explicitly uses '左手' (left hand) for rope handling and climbing, which directly contradicts the authoritative project context stating the character lost their left hand and must use the right hand, teeth, or a companion for such actions. This is a material character continuity defect. The preservation guard does not apply because the issue is not about difficulty but a clear physical impossibility.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "1a5f0ffc-7083-4091-b594-b0c9f77db195",
+        "usage": {
+          "input_tokens": 882,
+          "output_tokens": 240,
+          "total_tokens": 1122,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B02",
+      "original_issue_count": 1,
+      "effective_issue_count": 1,
+      "target_issue_remaining": true,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "他知道少年只要伸手，三步外那柄剑就会自行飞进掌中。"
+          ],
+          "guard_ids": [],
+          "reason": "The chapter text states the guard 'knows' (知道) the sword will fly into the boy's hand, which is a factual certainty. The project context explicitly states this scene occurs before the first remote sword-drawing, that no one (including the guard, the boy, or the reader) has verified this ability, and that the guard cannot have certain knowledge of an unverified capability. The issue correctly identifies a material defect: the guard's knowledge violates the preservation constraint that he cannot know an unproven ability. The suggested action to change '知道' to a speculative or cautious phrasing aligns with the context.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "0063c423-7765-44a3-8cf2-d7ab098a4748",
+        "usage": {
+          "input_tokens": 880,
+          "output_tokens": 253,
+          "total_tokens": 1133,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B03",
+      "original_issue_count": 4,
+      "effective_issue_count": 4,
+      "target_issue_remaining": true,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。"
+          ],
+          "guard_ids": [
+            "preservation_guard: 可以表现向往和感激，但当前阶段不应出现正式师生名分或衣钵承诺。"
+          ],
+          "reason": "The issue correctly identifies that the formal disciple's salute and address '老师' establish a formal teacher-student relationship and commitment, which directly violates the preservation guard that prohibits formal teacher-student title or mantle promise at this stage. The context confirms the relationship progresses from rescued to useful to trusted, with transmission only near the endgame.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "uphold",
+          "evidence": [
+            "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。"
+          ],
+          "guard_ids": [],
+          "reason": "The dialogue '我会照你教的去做' implies that teaching has already occurred, which contradicts the project context that at this stage Ning Lan is only a rescuer and Yin Yun is only a rescued person, with no teaching or transmission having taken place yet.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 2,
+          "verdict": "uphold",
+          "evidence": [
+            "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。"
+          ],
+          "guard_ids": [
+            "preservation_guard: 可以表现向往和感激，但当前阶段不应出现正式师生名分或衣钵承诺。"
+          ],
+          "reason": "The formal disciple ritual and promise to follow teachings prematurely foreshadow the endgame transmission of the mantle, collapsing the narrative distance between the early rescue stage and late-stage inheritance, which violates the preservation guard and the slow-burn relationship progression described in the context.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 3,
+          "verdict": "uphold",
+          "evidence": [
+            "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。"
+          ],
+          "guard_ids": [
+            "preservation_guard: 可以表现向往和感激，但当前阶段不应出现正式师生名分或衣钵承诺。"
+          ],
+          "reason": "The formal language creates a reader expectation of an immediate master-disciple dynamic that will be contradicted by the slow relationship progression through stages, potentially confusing readers or making later development feel inconsistent. This is a material defect supported by the preservation guard and project context.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "b6052ad0-cee6-499c-a136-2adb3b2dbc97",
+        "usage": {
+          "input_tokens": 1471,
+          "output_tokens": 646,
+          "total_tokens": 2117,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B04",
+      "original_issue_count": 1,
+      "effective_issue_count": 1,
+      "target_issue_remaining": true,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 0,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "守门人展开通缉榜，朝人群喊道：简峤，你的本名和旧籍都在这里。"
+          ],
+          "guard_ids": [],
+          "reason": "The chapter text explicitly states that the gatekeeper announces the character's real name and original place of registration. The project context and author constraints clearly establish that the alias must be preserved until the end of Book 3, and this scene is in the middle of Book 2, where only the alias and a vague portrait are permitted. The issue correctly identifies a material defect: the sentence prematurely reveals information that violates the long-term commitment. The suggested action appropriately removes the forbidden details.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "173d3c0d-eec1-486e-baa8-e24327611832",
+        "usage": {
+          "input_tokens": 922,
+          "output_tokens": 235,
+          "total_tokens": 1157,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B05",
+      "original_issue_count": 2,
+      "effective_issue_count": 1,
+      "target_issue_remaining": true,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 1,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。"
+          ],
+          "guard_ids": [],
+          "reason": "The passage explicitly states both of the father's intentions as factual through the narrator, which directly violates the preservation guard that '旁白不应把两个动机都认证为事实' and the project constraint that '不由旁白完整结算父亲的双重意图'. The issue correctly identifies this as a material defect.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        }
+      ],
+      "repair_used": false,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "4d77a84a-d1a1-4cc0-9668-ecab22d097a6",
+        "usage": {
+          "input_tokens": 1018,
+          "output_tokens": 314,
+          "total_tokens": 1332,
+          "cached_input_tokens": 0
+        }
+      }
+    },
+    {
+      "prompt_id": "B06",
+      "original_issue_count": 6,
+      "effective_issue_count": 0,
+      "target_issue_remaining": false,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 6,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+            "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+            "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 2,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 3,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "窗像一块冻住的水"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 4,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        },
+        {
+          "issue_index": 5,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "Preservation guard: 保留最有功能的一组重复，不做机械同义词替换。"
+          ],
+          "guard_ids": [],
+          "reason": "model_withdrawal_lacks_authorized_guard",
+          "authority": "model",
+          "original_model_verdict": "withdraw"
+        }
+      ],
+      "repair_used": true,
+      "target_issue_retained_or_disputed": true,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "a7f2c13c-bc78-456f-b30f-61a415f56506",
+        "usage": {
+          "input_tokens": 1724,
+          "output_tokens": 1200,
+          "total_tokens": 2924,
+          "cached_input_tokens": 0
+        }
+      }
+    }
+  ],
+  "positive_case_count": 6,
+  "positive_target_retained": 5,
+  "post_verifier_recall": 0.8333333333333334,
+  "repair_calls": 1,
+  "positive_target_retained_or_disputed": 6,
+  "post_verifier_actionable_recall": 0.8333333333333334,
+  "post_verifier_human_queue_recall": 1.0,
+  "repair_telemetry": {
+    "schema": "fictionops.runner_receipt.v1",
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
+    "request_id": "fd5e8391-0f7d-41e2-81e7-a48440b71bdd",
+    "usage": {
+      "input_tokens": 1823,
+      "output_tokens": 1077,
+      "total_tokens": 2900,
+      "cached_input_tokens": 0
+    }
+  },
+  "model_call_count": 10,
+  "usage": {
+    "input_tokens": 11845,
+    "output_tokens": 5256,
+    "total_tokens": 17101,
+    "cached_input_tokens": 0
+  },
+  "actual_models": [
+    "deepseek-v4-flash"
+  ]
+}

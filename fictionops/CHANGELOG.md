@@ -19,6 +19,7 @@
 - Added a unified attributed `trajectory.jsonl`, an explicit pure controller policy, repeated raw/RAG/full/ablation experiments, and a seven-scenario failure-injection lab with protected-hash checks.
 - Added an interview-ready research case, architecture, reproducible evidence, and 3-minute/10-minute technical scripts grounded in real DeepSeek failures.
 - Added Benchmark v2 with opaque prompt ids, memory-only positives, preservation negatives, confusion-matrix metrics, replayable DeepSeek evidence, and condition-isolated blind-review packets.
+- Added an independent preservation verifier for comprehensive old-chapter revision, with deterministic self-abstention withdrawal, model-backed uphold/withdraw/counterevidence decisions, and separate original/effective issue artifacts.
 - Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
 
 All notable changes to FictionOps will be documented in this file.

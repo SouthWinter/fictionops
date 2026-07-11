@@ -159,6 +159,12 @@ from fictionops.agent_research_baseline import (  # noqa: E402
     score_review,
 )
 from fictionops.agent_policy import select_agent_policy  # noqa: E402
+from fictionops.agent_preservation_verifier import (  # noqa: E402
+    PRESERVATION_VERIFICATION_SCHEMA,
+    apply_preservation_verification,
+    deterministic_preservation_decisions,
+    parse_preservation_verification,
+)
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -5341,6 +5347,19 @@ class FictionOpsCliTests(unittest.TestCase):
                 "new_issues": [],
                 "summary": "The review finding is addressed without changing the event.",
             }
+            preservation = {
+                "schema": "fictionops.preservation_verification.v1",
+                "decisions": [
+                    {
+                        "issue_index": 0,
+                        "verdict": "uphold",
+                        "evidence": ["宏大宣言"],
+                        "guard_ids": [],
+                        "reason": "The finding is material and does not conflict with a preservation constraint.",
+                    }
+                ],
+                "summary": "The issue should remain actionable.",
+            }
             candidate = (
                 "# 第26章 冰中四人\n\n"
                 "耶儿避开仁孜的目光，胸口那点寒意沿着肋骨往上爬。\n"
@@ -5352,9 +5371,14 @@ class FictionOpsCliTests(unittest.TestCase):
                 "payload = sys.stdin.buffer.read().decode('utf-8')\n"
                 f"review = {review!r}\n"
                 f"semantic = {semantic!r}\n"
+                f"preservation = {preservation!r}\n"
                 f"candidate = {candidate!r}\n"
                 "if 'semantic-verifier' in payload:\n"
                 "    sys.stdout.write(json.dumps(semantic, ensure_ascii=False))\n"
+                "elif 'Preservation Verifier Output Repair' in payload:\n"
+                "    sys.stdout.write(json.dumps(preservation, ensure_ascii=False))\n"
+                "elif 'preservation-verifier' in payload:\n"
+                "    sys.stdout.write('{\"schema\": \"fictionops.preservation_verification.v1\", \"decisions\": [')\n"
                 "elif 'Comprehensive Review Output Repair' in payload:\n"
                 "    sys.stdout.write(json.dumps(review, ensure_ascii=False))\n"
                 "elif 'comprehensive-reviewer' in payload:\n"
@@ -5383,6 +5407,10 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertGreater(data["context_file_count"], 0)
             self.assertGreater(data["memory_record_count"], 0)
             self.assertEqual(data["comprehensive_review"]["overall_risk"], "high")
+            self.assertEqual(data["preservation_call_count"], 2)
+            self.assertEqual(data["preservation_verification"]["upheld_count"], 1)
+            self.assertTrue((run_dir / "preservation_verification.json").exists())
+            self.assertTrue((run_dir / "preservation_verifier_retry_1" / "output.md").exists())
             self.assertTrue((run_dir / "comprehensive_reviewer_retry_1" / "output.md").exists())
             reviewer_outputs = {item["kind"]: item["path"] for item in data["files"]}
             self.assertEqual(Path(reviewer_outputs["comprehensive_reviewer_output"]).parent.name, "comprehensive_reviewer")
@@ -5437,6 +5465,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 "--format",
                 "json",
                 "--no-semantic-verify",
+                "--no-preservation-verify",
                 "--max-model-calls",
                 "1",
                 "--runner",
@@ -6605,6 +6634,83 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertTrue(blind_path.exists())
             self.assertTrue(key_path.exists())
             self.assertEqual(len(json.loads(blind_path.read_text(encoding="utf-8"))["samples"]), 20)
+
+    def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
+        review = {
+            "issues": [
+                {
+                    "category": "prose_and_reader_experience",
+                    "evidence": ["归土。"],
+                    "problem": "The repetition is intentional.",
+                    "suggested_action": "No change needed; preserve it as is.",
+                },
+                {
+                    "category": "character",
+                    "evidence": [],
+                    "problem": "The child may sound too clever.",
+                    "suggested_action": "Simplify the line.",
+                },
+                {
+                    "category": "continuity",
+                    "evidence": ["鹿煜抬起左手"],
+                    "problem": "The established left-hand loss is contradicted.",
+                    "suggested_action": "Use the right hand.",
+                },
+            ],
+            "revision_priorities": ["old untrusted priority"],
+        }
+        deterministic = deterministic_preservation_decisions(review)
+        self.assertEqual([item["verdict"] for item in deterministic], ["withdraw", "needs_counterevidence", "uphold"])
+        model_text = json.dumps(
+            {
+                "schema": PRESERVATION_VERIFICATION_SCHEMA,
+                "decisions": [
+                    {"issue_index": 0, "verdict": "uphold", "evidence": ["归土。"], "guard_ids": [], "reason": "model disagrees"},
+                    {"issue_index": 1, "verdict": "needs_counterevidence", "evidence": [], "guard_ids": [], "reason": "no quote"},
+                    {"issue_index": 2, "verdict": "uphold", "evidence": ["鹿煜抬起左手"], "guard_ids": [], "reason": "canon contradiction"},
+                ],
+                "summary": "one issue survives",
+            },
+            ensure_ascii=False,
+        )
+        model = parse_preservation_verification(model_text, issue_count=3)
+        filtered, verification = apply_preservation_verification(review, model)
+        self.assertEqual(verification["withdrawn_count"], 1)
+        self.assertEqual(verification["needs_counterevidence_count"], 1)
+        self.assertEqual(verification["upheld_count"], 1)
+        self.assertEqual(len(filtered["reviewer_issues"]), 3)
+        self.assertEqual(len(filtered["issues"]), 1)
+        self.assertEqual(len(filtered["withdrawn_issues"]), 1)
+        self.assertEqual(len(filtered["needs_counterevidence_issues"]), 1)
+        self.assertEqual(filtered["revision_priorities"], ["Use the right hand."])
+
+        unguarded_review = {
+            "issues": [
+                {
+                    "category": "prose_and_reader_experience",
+                    "evidence": ["不是雨，不是风，不是脚步"],
+                    "problem": "Three template families repeat.",
+                    "suggested_action": "Keep one and vary the rest.",
+                    "preserve_constraints": [],
+                }
+            ]
+        }
+        unguarded_model = {
+            "decisions": [
+                {
+                    "issue_index": 0,
+                    "verdict": "withdraw",
+                    "evidence": ["The pressure is intentional."],
+                    "guard_ids": [],
+                    "reason": "preserve the rhythm",
+                    "authority": "model",
+                }
+            ]
+        }
+        unguarded_filtered, unguarded_verification = apply_preservation_verification(unguarded_review, unguarded_model)
+        self.assertEqual(unguarded_verification["withdrawn_count"], 0)
+        self.assertEqual(unguarded_verification["needs_counterevidence_count"], 1)
+        self.assertEqual(len(unguarded_filtered["needs_counterevidence_issues"]), 1)
 
     def test_semantic_pass_cannot_override_missing_required_metric_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
