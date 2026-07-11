@@ -171,7 +171,11 @@ from fictionops.agent_counterevidence_review import (  # noqa: E402
     build_counterevidence_from_run,
     evaluate_counterevidence,
 )
-from fictionops.agent_evidence_escalation import build_evidence_escalation, classify_evidence_scope  # noqa: E402
+from fictionops.agent_evidence_escalation import (  # noqa: E402
+    apply_reverification_grounding,
+    build_evidence_escalation,
+    classify_evidence_scope,
+)
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -6767,7 +6771,55 @@ class FictionOpsCliTests(unittest.TestCase):
                 "json",
             )
             self.assertEqual(escalated.returncode, 0, escalated.stderr)
-            self.assertEqual(json.loads(escalated_path.read_text(encoding="utf-8"))["request_count"], 1)
+            escalation_payload = json.loads(escalated_path.read_text(encoding="utf-8"))
+            self.assertEqual(escalation_payload["request_count"], 1)
+
+            reverify_runner = run_dir / "reverify_runner.py"
+            reverify_runner.write_text(
+                "import json, sys\n"
+                "_ = sys.stdin.read()\n"
+                f"request_id = {escalation_payload['requests'][0]['request_id']!r}\n"
+                "print(json.dumps({'schema':'fictionops.escalated_reverification.v1','request_id':request_id,'verdict':'uphold','evidence':['Original text.'],'reason':'The full chapter supports the finding.','remaining_gap':'','confidence':'high'}))\n"
+                "receipt={'schema':'fictionops.runner_receipt.v1','provider':'fixture','model':'reverifier','usage':{'input_tokens':20,'output_tokens':10,'total_tokens':30,'cached_input_tokens':0}}\n"
+                "print('FICTIONOPS_RUNNER_RECEIPT:'+json.dumps(receipt), file=sys.stderr)\n",
+                encoding="utf-8",
+            )
+            reverification_path = run_dir / "reverification.json"
+            reverification = self.run_cli(
+                "agent",
+                "counterevidence",
+                "reverify",
+                str(escalated_path),
+                "--packet",
+                str(run_packet_file),
+                "--out",
+                str(reverification_path),
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(reverify_runner),
+            )
+            self.assertEqual(reverification.returncode, 0, reverification.stderr)
+            reverification_payload = json.loads(reverification_path.read_text(encoding="utf-8"))
+            self.assertEqual(reverification_payload["verdict_counts"]["uphold"], 1)
+            self.assertEqual(reverification_payload["usage"]["total_tokens"], 30)
+            self.assertFalse(reverification_payload["safety"]["edits_manuscript"])
+            ungrounded = apply_reverification_grounding(
+                {
+                    "schema": "fictionops.escalated_reverification.v1",
+                    "request_id": "x",
+                    "verdict": "withdraw",
+                    "evidence": ["A quotation that is nowhere in the supplied evidence."],
+                    "reason": "unsupported",
+                    "remaining_gap": "",
+                    "confidence": "high",
+                },
+                escalation_payload["requests"][0],
+                run_packet["samples"][0],
+            )
+            self.assertEqual(ungrounded["verdict"], "still_insufficient")
+            self.assertTrue(ungrounded["grounding_override"])
 
     def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
         review = {

@@ -26,6 +26,7 @@
 - Counterevidence JSON readers accept the UTF-8 BOM emitted by Windows PowerShell annotation workflows.
 - Counterevidence scoring reports disagreements with inherited case controls as label challenges rather than falsely treating dynamic issue samples as issue-level ground truth.
 - Added deterministic counterevidence escalation routing for chapter, adjacent-paragraph, knowledge-source, character-memory, and author-intent evidence, with exact duplicate collapse and explicit missing-source stops.
+- Added budgeted model-backed escalated re-verification with strict verdict schemas, one bounded repair, runner telemetry, exact-quotation grounding, deterministic downgrade of unsupported resolutions, and controlled DeepSeek evidence.
 - Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
 
 All notable changes to FictionOps will be documented in this file.

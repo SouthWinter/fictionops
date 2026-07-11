@@ -3,14 +3,18 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
+from .agent_exec import parse_runner_receipt, runner_environment
 from .agent_project_context import compile_project_context
 from .agent_counterevidence_review import COUNTEREVIDENCE_PACKET_SCHEMA
 
 
 EVIDENCE_ESCALATION_SCHEMA = "fictionops.counterevidence_escalation.v1"
+ESCALATED_REVERIFICATION_SCHEMA = "fictionops.escalated_reverification.v1"
+ESCALATED_REVERIFICATION_VERDICTS = {"uphold", "withdraw", "still_insufficient"}
 EVIDENCE_SCOPES = {
     "full_chapter",
     "adjacent_paragraphs",
@@ -269,3 +273,235 @@ def render_evidence_escalation(payload: dict[str, Any], output_format: str) -> s
             f"| `{item['request_id']}` | `{item['route']['scope']}` | {len(item['sample_ids'])} | `{item['status']}` | `{item['next_action']}` |"
         )
     return "\n".join(lines).rstrip() + "\n"
+
+
+def escalated_reverification_prompt(request: dict[str, Any], sample: dict[str, Any]) -> str:
+    request_id = str(request.get("request_id") or "")
+    payload = {
+        "schema": "fictionops.escalated_reverification_request.v1",
+        "role": "independent-counterevidence-reverifier",
+        "task": "rejudge-one-disputed-finding-after-evidence-escalation",
+        "request_id": request_id,
+    }
+    contract = {
+        "schema": ESCALATED_REVERIFICATION_SCHEMA,
+        "request_id": request_id,
+        "verdict": "uphold|withdraw|still_insufficient",
+        "evidence": ["exact quotation from supplied material"],
+        "reason": "why the escalated evidence changes or preserves the verdict",
+        "remaining_gap": "required when verdict is still_insufficient; otherwise empty",
+        "confidence": "low|medium|high",
+    }
+    return "\n\n".join(
+        [
+            "# FictionOps Escalated Re-verification",
+            "## Request\n```json\n" + json.dumps(payload, ensure_ascii=False, indent=2) + "\n```",
+            (
+                "## Decision Rules\n"
+                "Rejudge the original finding only. Use uphold when the escalated evidence materially supports the defect. "
+                "Use withdraw when the evidence or an active author guard disproves the defect or shows the proposed repair would violate intent. "
+                "Use still_insufficient when the requested evidence remains absent, indirect, or too narrow. "
+                "Do not rewrite prose. Do not infer missing facts. Model confidence is not author authority."
+            ),
+            "## Original Chapter Material\n" + str(sample.get("chapter_excerpt") or ""),
+            "## Authoritative Context\n" + str(sample.get("authoritative_context") or ""),
+            "## Active Author Guards\n```json\n" + json.dumps(sample.get("active_author_guards") or {}, ensure_ascii=False, indent=2) + "\n```",
+            "## Original Reviewer Finding\n```json\n" + json.dumps(sample.get("reviewer_finding") or {}, ensure_ascii=False, indent=2) + "\n```",
+            "## Original Verifier Assessment\n```json\n" + json.dumps(sample.get("verifier_assessment") or {}, ensure_ascii=False, indent=2) + "\n```",
+            "## Escalation Route\n```json\n" + json.dumps(request.get("route") or {}, ensure_ascii=False, indent=2) + "\n```",
+            "## Newly Retrieved Evidence\n```json\n" + json.dumps(request.get("evidence_items") or [], ensure_ascii=False, indent=2) + "\n```",
+            "## Output Contract\nReturn exactly one JSON object and no Markdown fence:\n" + json.dumps(contract, ensure_ascii=False, indent=2),
+        ]
+    ).rstrip() + "\n"
+
+
+def _parse_reverification(text: str, request_id: str) -> dict[str, Any]:
+    cleaned = text.strip()
+    start, end = cleaned.find("{"), cleaned.rfind("}")
+    if start < 0 or end < start:
+        raise ValueError("re-verifier did not return a JSON object")
+    payload = json.loads(cleaned[start : end + 1])
+    if not isinstance(payload, dict) or payload.get("schema") != ESCALATED_REVERIFICATION_SCHEMA:
+        raise ValueError(f"re-verifier must declare schema {ESCALATED_REVERIFICATION_SCHEMA}")
+    if str(payload.get("request_id") or "") != request_id:
+        raise ValueError("re-verifier request_id does not match")
+    verdict = str(payload.get("verdict") or "")
+    if verdict not in ESCALATED_REVERIFICATION_VERDICTS:
+        raise ValueError("re-verifier verdict is invalid")
+    evidence = payload.get("evidence")
+    if not isinstance(evidence, list) or not all(isinstance(item, str) for item in evidence):
+        raise ValueError("re-verifier evidence must be a string array")
+    confidence = str(payload.get("confidence") or "")
+    if confidence not in {"low", "medium", "high"}:
+        raise ValueError("re-verifier confidence is invalid")
+    remaining_gap = str(payload.get("remaining_gap") or "").strip()
+    if verdict == "still_insufficient" and not remaining_gap:
+        raise ValueError("still_insufficient requires remaining_gap")
+    return {
+        "schema": ESCALATED_REVERIFICATION_SCHEMA,
+        "request_id": request_id,
+        "verdict": verdict,
+        "evidence": evidence,
+        "reason": str(payload.get("reason") or "").strip(),
+        "remaining_gap": remaining_gap,
+        "confidence": confidence,
+    }
+
+
+def _run_reverification_call(prompt: str, runner: list[str], timeout_seconds: int) -> tuple[str, dict[str, Any] | None]:
+    completed = subprocess.run(
+        runner,
+        input=prompt,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        timeout=timeout_seconds,
+        env=runner_environment(),
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"escalated re-verifier runner failed with {completed.returncode}: {(completed.stderr or completed.stdout)[:600]}")
+    if not completed.stdout.strip():
+        raise ValueError("escalated re-verifier runner produced empty stdout")
+    return completed.stdout, parse_runner_receipt(completed.stderr)
+
+
+def _repair_prompt(invalid_output: str, request_id: str, error: str) -> str:
+    return "\n\n".join(
+        [
+            "# FictionOps Escalated Re-verification Schema Repair",
+            "Repair formatting only. Preserve the intended verdict and reasoning. Return one JSON object and no Markdown fence.",
+            f"REQUEST_ID: {request_id}",
+            f"PARSE_ERROR: {error}",
+            "ALLOWED_VERDICTS: uphold, withdraw, still_insufficient",
+            "REQUIRED_SCHEMA: " + ESCALATED_REVERIFICATION_SCHEMA,
+            "INVALID_OUTPUT:\n" + invalid_output,
+        ]
+    ) + "\n"
+
+
+def apply_reverification_grounding(
+    decision: dict[str, Any], request: dict[str, Any], sample: dict[str, Any]
+) -> dict[str, Any]:
+    sources = [
+        str(sample.get("chapter_excerpt") or ""),
+        str(sample.get("authoritative_context") or ""),
+        json.dumps(sample.get("active_author_guards") or {}, ensure_ascii=False),
+    ]
+    sources.extend(str(item.get("content") or "") for item in request.get("evidence_items") or [] if isinstance(item, dict))
+    evidence = [str(item).strip() for item in decision.get("evidence") or [] if str(item).strip()]
+    grounded = [quote for quote in evidence if any(quote in source for source in sources)]
+    ungrounded = [quote for quote in evidence if quote not in grounded]
+    result = {
+        **decision,
+        "model_verdict": decision["verdict"],
+        "evidence_grounded": bool(grounded),
+        "grounded_evidence": grounded,
+        "ungrounded_evidence": ungrounded,
+        "grounding_override": False,
+    }
+    if decision["verdict"] in {"uphold", "withdraw"} and not grounded:
+        result["verdict"] = "still_insufficient"
+        result["remaining_gap"] = "The model resolved the finding without an exact quotation grounded in supplied evidence."
+        result["grounding_override"] = True
+    return result
+
+
+def run_escalated_reverification(
+    escalation_file: Path,
+    packet_file: Path,
+    *,
+    runner: list[str],
+    timeout_seconds: int = 300,
+    max_model_calls: int = 12,
+) -> dict[str, Any]:
+    if not runner:
+        raise ValueError("escalated re-verification requires a runner command")
+    if timeout_seconds <= 0:
+        raise ValueError("timeout_seconds must be positive")
+    if max_model_calls < 1:
+        raise ValueError("max_model_calls must be positive")
+    escalation = _read_json(escalation_file)
+    packet = _read_json(packet_file)
+    if escalation.get("schema") != EVIDENCE_ESCALATION_SCHEMA:
+        raise ValueError(f"escalation must declare schema {EVIDENCE_ESCALATION_SCHEMA}")
+    if packet.get("schema") != COUNTEREVIDENCE_PACKET_SCHEMA:
+        raise ValueError(f"packet must declare schema {COUNTEREVIDENCE_PACKET_SCHEMA}")
+    samples = {str(item.get("sample_id") or ""): item for item in packet.get("samples") or [] if isinstance(item, dict)}
+    ready = [item for item in escalation.get("requests") or [] if isinstance(item, dict) and item.get("status") == "ready_for_reverification"]
+    if len(ready) > max_model_calls:
+        raise ValueError("ready request count exceeds max_model_calls before execution")
+    results: list[dict[str, Any]] = []
+    call_count = 0
+    for request in ready:
+        request_id = str(request.get("request_id") or "")
+        sample_ids = [str(item) for item in request.get("sample_ids") or []]
+        if not sample_ids or sample_ids[0] not in samples:
+            raise ValueError(f"cannot resolve representative sample for {request_id}")
+        prompt = escalated_reverification_prompt(request, samples[sample_ids[0]])
+        output, telemetry = _run_reverification_call(prompt, runner, timeout_seconds)
+        call_count += 1
+        repair_used = False
+        repair_telemetry = None
+        try:
+            decision = _parse_reverification(output, request_id)
+        except (json.JSONDecodeError, ValueError) as exc:
+            if call_count >= max_model_calls:
+                raise ValueError(f"re-verifier output invalid and repair budget exhausted for {request_id}: {exc}") from exc
+            repaired, repair_telemetry = _run_reverification_call(_repair_prompt(output, request_id, str(exc)), runner, timeout_seconds)
+            call_count += 1
+            repair_used = True
+            decision = _parse_reverification(repaired, request_id)
+        decision = apply_reverification_grounding(decision, request, samples[sample_ids[0]])
+        results.append(
+            {
+                **decision,
+                "sample_ids": sample_ids,
+                "scope": str((request.get("route") or {}).get("scope") or ""),
+                "repair_used": repair_used,
+                "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+                "telemetry": telemetry,
+                "repair_telemetry": repair_telemetry,
+            }
+        )
+    verdict_counts = {verdict: sum(item["verdict"] == verdict for item in results) for verdict in sorted(ESCALATED_REVERIFICATION_VERDICTS)}
+    usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "cached_input_tokens": 0}
+    for result in results:
+        for receipt in (result.get("telemetry"), result.get("repair_telemetry")):
+            receipt_usage = (receipt or {}).get("usage") or {}
+            for key in usage:
+                usage[key] += int(receipt_usage.get(key) or 0)
+    return {
+        "schema": ESCALATED_REVERIFICATION_SCHEMA,
+        "escalation": str(escalation_file.resolve()),
+        "packet": str(packet_file.resolve()),
+        "ready_request_count": len(ready),
+        "model_call_count": call_count,
+        "verdict_counts": verdict_counts,
+        "resolved_after_escalation_count": verdict_counts["uphold"] + verdict_counts["withdraw"],
+        "still_insufficient_count": verdict_counts["still_insufficient"],
+        "resolution_rate": (verdict_counts["uphold"] + verdict_counts["withdraw"]) / len(ready) if ready else 0.0,
+        "usage": usage,
+        "results": results,
+        "safety": {"edits_manuscript": False, "author_approval_required": True},
+    }
+
+
+def render_escalated_reverification(payload: dict[str, Any], output_format: str) -> str:
+    if output_format == "json":
+        return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    if output_format != "markdown":
+        raise ValueError(f"unsupported re-verification output format: {output_format}")
+    counts = payload["verdict_counts"]
+    return "\n".join(
+        [
+            "# FictionOps Escalated Re-verification",
+            "",
+            f"- Ready requests: {payload['ready_request_count']}",
+            f"- Model calls: {payload['model_call_count']}",
+            f"- Verdicts: uphold {counts['uphold']}, withdraw {counts['withdraw']}, still insufficient {counts['still_insufficient']}",
+            f"- Resolution rate: {payload['resolution_rate']:.3f}",
+            f"- Token usage: {payload['usage']['total_tokens']}",
+            "- Manuscript edited: no",
+        ]
+    ) + "\n"

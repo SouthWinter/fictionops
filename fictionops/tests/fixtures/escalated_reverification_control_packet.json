@@ -1,0 +1,37 @@
+{
+  "schema": "fictionops.counterevidence_blind_packet.v1",
+  "instructions": {
+    "decision": "Controlled evidence-escalation fixture."
+  },
+  "sample_count": 1,
+  "samples": [
+    {
+      "sample_id": "controlled-chapter-function-01",
+      "source_scope": "benchmark_excerpt",
+      "chapter_excerpt": "It was not rain, not wind, not footsteps. No one opened the door, raised a head, or spoke. The lamp watched like an eye; the table sank like a well; the window held the color of frozen water.",
+      "authoritative_context": "The excerpt was initially reviewed without the surrounding chapter. Its function must be judged only after retrieving the full chapter.",
+      "supplied_preservation_context": "Do not preserve atmospheric prose automatically; verify whether it has a concrete structural role.",
+      "active_author_guards": {},
+      "reviewer_finding": {
+        "category": "chapter function",
+        "evidence": "The paragraph adds atmosphere but no new event.",
+        "problem": "The paragraph may be filler because it does not advance the chapter.",
+        "suggested_action": "Add a new event or remove the paragraph."
+      },
+      "verifier_assessment": {
+        "evidence": [
+          "The excerpt was supplied without the paragraphs before and after it."
+        ],
+        "reason": "The paragraph's structural role cannot be judged from the isolated excerpt.",
+        "guard_ids": []
+      },
+      "annotation": {
+        "decision": "insufficient",
+        "evidence_grounded": false,
+        "repair_harm_risk": "medium",
+        "effort_minutes": 1,
+        "notes": "Retrieve the full chapter before deciding."
+      }
+    }
+  ]
+}

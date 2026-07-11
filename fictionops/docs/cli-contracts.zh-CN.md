@@ -826,6 +826,8 @@
 
 `agent counterevidence escalate` 对人工标为 `insufficient` 的 finding 做确定性精确去重，并按断言尺度路由到全章、相邻段、知识来源、人物记忆或作者意图证据；未标注 packet 则预路由全部 finding。提供 `--chapter` 时可检索有界正文与项目上下文，缺源时停在 `needs_source`，不会伪造证据或修改正文。
 
+`agent counterevidence reverify` 对 evidence-ready 的去重请求逐条调用独立模型，输出 `uphold/withdraw/still_insufficient`。调用前执行硬预算检查，每条畸形输出最多一次有界 schema repair，并记录 runner receipt 与 token；resolved verdict 若没有逐字存在于所供材料的引文，会被确定性降回 `still_insufficient`。命令不修改正文，也不把模型输出升级为作者权限。
+
 ### `fictionops agent-memory`
 
 契约：

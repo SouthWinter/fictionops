@@ -177,6 +177,14 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_escalate.add_argument("--max-chars-per-item", type=int, default=20000)
     agent_counterevidence_escalate.add_argument("--out", help="Optional escalation report output path.")
     agent_counterevidence_escalate.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_reverify = agent_counterevidence_subparsers.add_parser("reverify", help="Run an independent model over evidence-ready escalation requests.")
+    agent_counterevidence_reverify.add_argument("escalation", help="Evidence escalation report JSON.")
+    agent_counterevidence_reverify.add_argument("--packet", required=True, help="Source counterevidence packet JSON.")
+    agent_counterevidence_reverify.add_argument("--timeout-seconds", type=int, default=300)
+    agent_counterevidence_reverify.add_argument("--max-model-calls", type=int, default=12)
+    agent_counterevidence_reverify.add_argument("--out", help="Optional re-verification report output path.")
+    agent_counterevidence_reverify.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_reverify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
 
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
@@ -4125,6 +4133,24 @@ def handle_agent(args: argparse.Namespace) -> int:
                     max_chars_per_item=args.max_chars_per_item,
                 )
                 rendered = render_evidence_escalation(report, args.format)
+                if args.out:
+                    output = Path(args.out).expanduser().resolve()
+                    output.parent.mkdir(parents=True, exist_ok=True)
+                    output.write_text(rendered, encoding="utf-8", newline="\n")
+                print(rendered, end="")
+                return 0
+            if args.counterevidence_action == "reverify":
+                runner = list(args.runner or [])
+                if runner and runner[0] == "--":
+                    runner = runner[1:]
+                report = run_escalated_reverification(
+                    Path(args.escalation),
+                    Path(args.packet),
+                    runner=runner,
+                    timeout_seconds=args.timeout_seconds,
+                    max_model_calls=args.max_model_calls,
+                )
+                rendered = render_escalated_reverification(report, args.format)
                 if args.out:
                     output = Path(args.out).expanduser().resolve()
                     output.parent.mkdir(parents=True, exist_ok=True)

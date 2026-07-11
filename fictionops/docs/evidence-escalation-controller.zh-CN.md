@@ -45,4 +45,4 @@ Controller 对 reviewer finding 的 category、evidence、problem 和 suggested 
 - 因 benchmark 只有匿名片段且未提供原章，4 个请求全部正确停在 `needs_source`；
 - 第一轮曾被模型 category 误导，把“全章推进”错路由为知识来源；调整为 problem 语义优先后修正。
 
-公开结果见 [`deepseek-counterevidence-v1.escalation.json`](evidence/deepseek-counterevidence-v1.escalation.json)。这证明的是去重、路由与缺源停止，不证明补证后的模型重判已经完成。
+公开结果见 [`deepseek-counterevidence-v1.escalation.json`](evidence/deepseek-counterevidence-v1.escalation.json)。这证明的是去重、路由与缺源停止；补证后的独立模型重判已在受控 fixture 上完成，见 [`escalated-reverification.zh-CN.md`](escalated-reverification.zh-CN.md)，但尚未解决匿名 benchmark 缺少真实原章的问题。
