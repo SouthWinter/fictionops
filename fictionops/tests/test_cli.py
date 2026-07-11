@@ -145,6 +145,8 @@ from fictionops.core import (  # noqa: E402
     plan_chapter,
 )
 from fictionops.agent_session import session_status  # noqa: E402
+from fictionops.agent_exec import build_runner_input, load_agent_exec_request  # noqa: E402
+from fictionops.agent_inbox import inspect_agent_run_dir  # noqa: E402
 from fictionops.agent_comprehensive_review import compact_issue_ledger, parse_comprehensive_review  # noqa: E402
 from fictionops.agent_issue_ledger import (  # noqa: E402
     load_issue_ledger,
@@ -6964,8 +6966,43 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(continued_open["selected_action"], "prepare_counterevidence_revision")
             self.assertEqual(continued_open["counterevidence"]["open_count"], 1)
             self.assertFalse(continued_open["requires_human"])
+            self.assertIn("counterevidence prepare-revision", continued_open["suggested_command"])
+            prepared = self.run_cli(
+                "agent", "counterevidence", "prepare-revision", str(run_dir), "--provider", "deepseek", "--model", "deepseek-chat", "--format", "json"
+            )
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            prepared_payload = json.loads(prepared.stdout)
+            self.assertEqual(prepared_payload["issue_count"], 1)
+            self.assertFalse(prepared_payload["reran_full_review"])
+            self.assertFalse(prepared_payload["manuscript_edited"])
+            bundle_dir = Path(prepared_payload["output_dir"])
+            request = json.loads((bundle_dir / "request.json").read_text(encoding="utf-8"))
+            contract = json.loads((bundle_dir / "issue_contract.json").read_text(encoding="utf-8"))
+            context_pack = (bundle_dir / "context_pack.md").read_text(encoding="utf-8")
+            self.assertEqual(request["schema"], "fictionops.agent_run_request.v1")
+            self.assertEqual(request["execution_mode"], "prepare_only")
+            self.assertEqual(request["provider"], "deepseek")
+            loaded_request = load_agent_exec_request(bundle_dir)
+            runner_input = build_runner_input(bundle_dir, loaded_request)
+            self.assertIn("# FictionOps Agent Runner Input", runner_input)
+            self.assertIn("Controlled problem 1", runner_input)
+            inbox = inspect_agent_run_dir(bundle_dir, output_name=None)
+            self.assertEqual(inbox.state, "awaiting_output")
+            self.assertEqual([item.code for item in inbox.issues], ["missing_output"])
+            self.assertEqual(contract["issue_count"], 1)
+            self.assertEqual(contract["issues"][0]["problem"], "Controlled problem 1")
+            self.assertIn("Controlled problem 1", context_pack)
+            self.assertNotIn("Controlled problem 2", context_pack)
+            self.assertNotIn("Controlled problem 3", context_pack)
+            self.assertNotIn("Controlled problem 4", context_pack)
+            self.assertEqual(chapter.read_text(encoding="utf-8"), chapter_text)
             open_issue = next(item for item in ledger["issues"] if item["status"] == "open")
             transition_issue(project, issue_id=open_issue["issue_id"], to_status="model_withdrawn", reason="controlled state routing", actor="controller")
+            drifted_queue = self.run_cli(
+                "agent", "counterevidence", "prepare-revision", str(run_dir), "--force", "--format", "json", check=False
+            )
+            self.assertNotEqual(drifted_queue.returncode, 0)
+            self.assertIn("no longer a grounded open uphold", drifted_queue.stderr)
             continued_blocked = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
             self.assertEqual(continued_blocked["selected_action"], "retrieve_counterevidence")
             blocked_issue = next(item for item in load_issue_ledger(project)["issues"] if item["status"] == "evidence_blocked")

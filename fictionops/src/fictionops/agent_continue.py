@@ -121,14 +121,28 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
     executable = False
     suggested_command: str | None = None
     evidence: list[str] = []
+    latest_queue_file: Path | None = None
     if counterevidence_issues:
         evidence.append(str(issue_ledger_path(root).resolve()))
         application_files = sorted(root.rglob("counterevidence_application.json"), key=lambda item: item.stat().st_mtime_ns, reverse=True)
         queue_files = sorted(root.rglob("counterevidence_reviser_queue.json"), key=lambda item: item.stat().st_mtime_ns, reverse=True)
-        if application_files:
+        open_ids = set(counterevidence["open_issue_ids"])
+        for queue_file in queue_files:
+            try:
+                queue_payload = json.loads(queue_file.read_text(encoding="utf-8-sig"))
+                queue_ids = {str(item) for item in queue_payload.get("issue_ids") or []} if isinstance(queue_payload, dict) else set()
+            except (OSError, json.JSONDecodeError):
+                continue
+            if queue_ids and queue_ids.issubset(open_ids):
+                latest_queue_file = queue_file.resolve()
+                source_application = Path(str(queue_payload.get("source_application") or "")).expanduser().resolve()
+                if source_application.is_file():
+                    evidence.append(str(source_application))
+                break
+        if latest_queue_file is not None:
+            evidence.append(str(latest_queue_file))
+        elif application_files:
             evidence.append(str(application_files[0].resolve()))
-        if queue_files:
-            evidence.append(str(queue_files[0].resolve()))
 
     state = None
     ready_for_approval = False
@@ -171,7 +185,10 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
         suggested_command = f'fictionops agent-memory build "{root}"'
         evidence.append(str(memory.get("index_file") or ""))
     elif action == "prepare_counterevidence_revision":
-        suggested_command = f'fictionops agent issues "{root}" --status open --format json'
+        if latest_queue_file is not None:
+            suggested_command = f'fictionops agent counterevidence prepare-revision "{latest_queue_file.parent}"'
+        else:
+            suggested_command = f'fictionops agent issues "{root}" --status open --format json'
     elif action == "retrieve_counterevidence":
         suggested_command = f'fictionops agent issues "{root}" --status evidence_blocked --format json'
     elif action == "review_model_withdrawals":

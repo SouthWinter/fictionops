@@ -830,6 +830,8 @@
 
 `agent counterevidence apply` 核对 packet、escalation 与 revision source 哈希，并用 packet 加 retrieved evidence 重新计算 grounding 后，把 effective verdict 写入持久 issue ledger：`uphold -> open`、`withdraw -> model_withdrawn`、`still_insufficient -> evidence_blocked`。只有 open issue 进入生成的 reviser queue；作者已有的 accepted/rejected/waived 和既有 addressed/verified 结果不被覆盖。命令支持 dry-run、单 run 幂等、完整审计，且不修改正文。
 
+`agent counterevidence prepare-revision RUN_DIR` 会重新核对 application 与 queue 的对应关系、原章哈希及 ledger 当前状态，再生成兼容既有 `agent-exec` 的最小修订包。包中只含 grounded `open` uphold、精确修订证据、active author guards 和未改原章；withdrawn、blocked、已解决及作者保护 issue 均被排除，也不会重跑全章综合审读。
+
 `agent continue` 读取带 counterevidence provenance 的持久状态：grounded open 选择 `prepare_counterevidence_revision`，evidence-blocked 选择 `retrieve_counterevidence`，仅剩 model-withdrawn 时选择作者权限的 `review_model_withdrawals`。既有候选、预算、失败、取消、canon-sync 与 stale-memory 优先级不变；`--execute` 不会自动执行这些 R1-R3 动作。
 
 ### `fictionops agent-memory`

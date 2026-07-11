@@ -489,6 +489,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 - Escalated re-verifier 对补证后的每个去重请求独立重判，并保存 model verdict 与 effective verdict。任何 `uphold/withdraw` 都必须有逐字落地的新证据，否则 controller 自动降回 `still_insufficient`；模型不能凭置信度跨越作者权限。
 - Grounded effective verdict 通过显式 apply 写入持久 ledger：`open` 可重新进入 reviser，`model_withdrawn` 与 `evidence_blocked` 保留历史但从 actionable view 排除。Apply 同时检查 packet/source hash、拒绝重复应用，并且永不覆盖作者已有决定。
 - `agent continue` 消费这些持久机器态：优先选择 grounded open reviser queue，其次 evidence retrieval，最后把 model withdrawals 聚合到作者边界；纯 policy 层保持可测试，`--execute` 不越过 R0。
+- `agent counterevidence prepare-revision` 将 grounded open queue 编译为兼容 `agent-exec` 的最小任务包，只暴露已核实 issue、精确证据、active author guards 与未改原章；它拒绝 stale source 和状态漂移，不重新触发 comprehensive reviewer。
 - 对照 raw chat、单次 RAG 和 FictionOps closed loop；
 - 报告采纳率、不变量错误、返工、成本与作者时间。
 
