@@ -19,6 +19,7 @@
 
 | 命令 | 类型 | 写文件 | JSON | 默认覆盖 |
 | --- | --- | --- | --- | --- |
+| `agent` | 统一有状态 Agent 入口 | 可选 | 是 | 否 |
 | `adopt` | 旧项目接入诊断 | 可选 | 是 | 否 |
 | `init` | 项目脚手架 | 是 | 否 | 否 |
 | `new-book` | 书级脚手架 | 是 | 否 | 否 |
@@ -49,6 +50,8 @@
 | `agent-exec` | Agent 外部执行桥 | 否 | 是 | 是 |
 | `agent-inbox` | Agent 输出收件箱 | 否 | 是 | 不适用 |
 | `agent-revise-workflow` | Agent 审读驱动修订 workflow | 可选 | 是 | 否 |
+| `agent-write-workflow` | 新章规划、写作、验证闭环 | 可选 | 是 | 否 |
+| `agent-accept-revision` | 已验证候选显式采纳 | 是 | 是 | 否 |
 | `write-chapter` | AI-first 章节写作编排 | 可选 | 是 | 否 |
 | `revise-chapter` | AI-first 章节修订编排 | 可选 | 是 | 否 |
 | `audit-chapter` | AI-first 章节审计编排 | 可选 | 是 | 否 |
@@ -796,6 +799,38 @@
 - 输入 `path` 不存在或不是目录。
 - `request.json` 无法读取时应进入问题列表；除非底层文件系统异常，命令本身不应因为单个坏 run 中断整个收件箱审计。
 
+### `fictionops agent`
+
+子命令：
+
+- `agent write`：复用 `agent-write-workflow` 的因果模拟、规划、写作、复修、验证、预算和暂存采纳契约；
+- `agent revise`：复用 `agent-revise-workflow` 的综合审读、修订、语义复核、预算与暂存契约；
+- `agent accept`：复用 `agent-accept-revision` 的源稿/候选哈希校验和显式采纳契约；
+- `agent continue`：扫描项目内 session、`model_budget.json`、采纳状态和 memory stale 状态，选择下一项安全动作。
+- `agent issues`：读取 `.fictionops/issues.json`，按状态或章节筛选跨 session 问题；
+- `agent issue`：由作者显式把单个稳定 issue 标为 `waived`、`rejected` 或 `reopened`，必须填写理由。
+- `agent cancel`：把未应用的 session 显式转为 `cancelled`，写出 `cancellation.json` 与不可恢复 checkpoint；必须填写理由，重复取消和取消已应用 session 均拒绝。
+
+`agent continue --execute` 只自动执行 R0 动作，目前包括重建 stale 的派生记忆索引。候选待采纳、失败候选、预算耗尽和正史同步建议分别停在 R1-R4 人工边界；不能因为传入 `--execute` 而自动接受正文、扩大预算或修改正史。JSON 输出包含所选动作、风险、停止原因、证据文件和建议命令。
+
+项目 issue ledger 使用稳定 ID，记录 `open/planned/addressed/verified/accepted/rejected/waived/reopened` 生命周期、每次观察、session、证据指纹和决定。相同问题改写措辞、增加引文或调整 reviewer 排序时，应按类别、metric key、证据重叠和描述相似度复用 ID。`waived/rejected` 不得重新进入活动修订队列；已解决问题在后续 session 再次观察到时自动 `reopened`。
+
+写章与修订 session 在 `context_ready/causal_ready/plan_ready/review_ready/draft_ready/verification_ready/ready_for_approval/needs_revision_attention/applied/cancelled` 等阶段写 `checkpoint.json`。checkpoint 必须包含源哈希、关键产物路径/大小/SHA-256、下一动作和 `resumable` 标记。`agent resume RUN_DIR --runner ...` 会先校验 session、源文件、章节发动机和 checkpoint 产物，再开启新的预算分段；写章支持从 `context_ready/causal_ready/plan_ready/draft_ready` 恢复，修订支持从 `context_ready/review_ready/verification_ready` 恢复，已完成的模型阶段不会重跑。`agent status` 只读汇总全项目 session、issue、作者待决策项、token 与费用。`--runner` 会接收其后的全部参数，因此必须放在命令最后。尚未支持的中间态、已取消会话、源文件变化或产物哈希变化都会被拒绝。
+
+`agent continue` 的下一动作由纯函数 controller policy 根据 state、evidence、budget 与 authority 选择；输出包含 action、risk、authority 和 executable，模型不能自行取得作者权限。写章与修订 run 同时追加 `trajectory.jsonl`，统一记录上下文来源/权威/选择理由、模型调用与 telemetry、证据、状态迁移和作者/controller 权限。
+
+`agent benchmark` 可在同一 runner 上重复运行 `raw/rag/full/no_memory/no_guard/no_contract`，fixture 标准答案不会进入 prompt；`agent failure-lab` 在临时工作区注入源文件、checkpoint 产物、预算、receipt、reviewer 证据和故事契约故障，并报告发现点、恢复率与受保护哈希。
+
+### `fictionops agent-memory`
+
+契约：
+
+- `build` 从 Markdown 正史、人物、大纲、正文和写作指引重建 `.fictionops/memory/index.json`；索引是可重建缓存，不是新正史。
+- `query` 根据任务、人物和章节检索分层记忆，返回来源、哈希、权威、行号、分数与裁剪内容。
+- `add-preference` 只记录作者明确偏好，必须提供 `--rule` 和 `--evidence`；偏好不能由模型自动升级。
+- `status` 报告索引、显式偏好、采纳事件与 stale 状态。
+- 命令不调用模型，不改正文，不自动应用正史同步建议。
+
 ### `fictionops agent-revise-workflow`
 
 输入：
@@ -806,15 +841,23 @@
 - `--role`：写入 `request.json` 的 Agent 角色，默认 `style-auditor`。
 - `--provider` / `--model`：写入 `request.json` 的供应商和模型标签；未传时使用可发现的 model config。
 - `--runner ...`：可选外部 runner；未传时只准备 bundle。
+- `--max-retries`：静态或语义验证失败后的定向重修上限，范围 0-2，默认 1。
+- `--max-model-calls` 默认 12，`--max-runtime-seconds` 默认 1800；覆盖综合审读、修订、语义复核和重试的全部模型调用，耗尽时在下一次调用前停止并写出 `model_budget.json`。
+- runner 可在 stderr 输出一行 `FICTIONOPS_RUNNER_RECEIPT:` JSON（schema 为 `fictionops.runner_receipt.v1`），回传 provider/model/request id、token usage 和显式价格计算的费用；元数据进入 `execution.json` 与 `model_budget.json`，不会混入候选正文。`--max-total-tokens`、`--max-cost`、`--cost-currency` 会依据已回传的累计消耗，在下一次调用前停止。
+- `--no-semantic-verify`：跳过模型驱动的源稿/候选语义不变量比较；默认会执行语义验证。
+- `--review-scope style|comprehensive`：默认 `comprehensive`，写前先审连续性、人物、信息边界、伏笔、章节功能和行文/读者体验；`style` 只保留较窄的行文模式路径。
+- `--context-file`：显式补入项目记忆文件，可重复；综合模式还会自动检索相邻章、同书材料、人物弧线和正史文件。
+- 综合模式默认同时检索类型化记忆和作者显式偏好，并写出 `memory_query.json` / `memory_context.md`；`--no-memory` 只用于兼容或诊断。
 - `--output-name`、`--timeout-seconds`、`--force`、`--force-output`、`--dry-run`、`--format markdown|json` 遵循 Agent 执行类命令契约。
 
 输出：
 
-- 写出自包含 bundle：`request.json`、`prompt.md`、`context_pack.md`、`source_chapter.md`、`review_workflow.md`、`revision_contract.md` 和 `README.md`。
+- 写出自包含 bundle，并建立 `session.json`、`events.jsonl`、`source_manifest.json`、`issues.before.json` 和 `audits.before.json`。
 - `revision_contract.md` 要求 runner 只输出修订后的章节全文，不输出解释、总结或诊断。
-- 传入 `--runner` 时，命令通过 `agent-exec` 执行外部 runner，把 stdout 保存为暂存输出，再用 `agent-inbox` 汇总 ready 状态。
-- JSON 输出必须包含 `command`、`chapter_file`、`review_file`、`run_dir`、`prepared`、`executed`、`stop_reason`、`ready_count`、`files` 和 `staged_outputs`。
-- 命令不得自动覆盖源章节；接受 staged revision 必须由人类人工完成。
+- 传入 `--runner` 时，命令生成 `candidate.md`、`changes.diff`、`audits.after.json`、`issues.after.json` 和 `verification.json`；失败时可把阻塞证据编入一次定向重修。
+- 静态验证检查输出完整性、标题/结构、长度区间和风格指标退化；通过后默认再次调用 runner，比较事件、视角、时间、人物意图、信息边界与留白是否保持。
+- JSON 输出必须包含 `command`、`chapter_file`、`run_dir`、`session_id`、`source_sha256`、`verification_status`、`ready_for_approval`、`retry_count`、`semantic_call_count`、`max_model_calls`、`model_calls_used`、`files` 和 `staged_outputs`。
+- 命令不得自动覆盖源章节；只有 `ready_for_approval` 候选才能交给 `agent-accept-revision`。
 
 失败：
 
@@ -822,6 +865,60 @@
 - bundle 文件已存在且未传 `--force`。
 - runner 输出或执行回执已存在且未传 `--force-output` 或 `--force`。
 - runner 返回非零、超时或 stdout 为空。
+
+### `fictionops agent-accept-revision`
+
+输入：
+
+- `run_dir`：包含 `session.json`、`candidate.md` 和 `verification.json` 的 revision run 目录。
+- `--dry-run`：只验证状态和哈希，不修改源章节。
+- `--format markdown|json` 遵循通用契约。
+
+输出与写入：
+
+- 只有 `verification.json` 为 `ready_for_approval` 时才允许继续。
+- 同时核对源章节当前 SHA-256 与会话起始哈希，以及候选当前 SHA-256 与验证时哈希。
+- 正式接受时原子替换源章节，写出 `acceptance.json`，把 `session.json` 状态更新为 `applied`，并追加 `events.jsonl`。
+- 正式接受后追加 `.fictionops/memory/acceptance_events.jsonl` 并将记忆索引标为 stale；正史同步建议仍保持建议状态，显式作者偏好必须另行确认。
+- `source_chapter.md` 始终保留会话开始时的源稿快照。
+
+失败：
+
+- 候选未通过验证；
+- 源章节在会话开始后发生变化；
+- 候选在验证后发生变化；
+- `acceptance.json` 已存在，说明该会话已经应用过。
+- 命令故意不提供 stale-source 强制覆盖选项；遇到新稿应重新开始修订会话。
+
+### `fictionops agent-write-workflow`
+
+输入：
+
+- `chapter`：新章目标 Markdown 路径；可以尚不存在，也可以只有 FictionOps 生成占位，若已有实质正文则拒绝并要求使用 `agent-revise-workflow`。
+- `--engine`：必需的章节发动机 Markdown。
+- `--outline`：可选书纲/卷纲文件。
+- `--context-file`：额外人物、正史或写作记忆，可重复。
+- `--min-chars`：候选正文最低非空白字符数；默认取发动机目标体量减 200，未填目标时为 200。
+- `--max-retries`：验证失败后的完整定向重写上限，范围 0-2，默认 1。
+- 默认先检索类型化项目记忆，再调用 `causal-simulator` 生成利益相关者、代价转移、视角白名单、知识限制和禁止结论；`--no-memory`、`--no-causal-simulation` 仅用于兼容或诊断。
+- 默认在 draft evaluator 之前独立调用 `adversarial-reviewer`；`--no-adversarial-review` 会降低验收强度，只应用于受控调试。
+- `--scene-by-scene` 会把每个计划场景交给独立 `scene-writer` 调用，传递入口/出口状态与上一场末尾，再组装成完整候选；默认仍为一次整章写作调用。
+- `--max-model-calls` 默认 32，`--max-runtime-seconds` 默认 3600；两者是 controller 硬预算。每次模型调用前检查，预算耗尽时停止并写出 `model_budget.json`，不会继续调用 runner。
+- `--max-total-tokens` 与 `--max-cost` 是可选的 receipt-backed 累计阈值；恢复后的预算分段仍继承旧段 token/费用总数。单次正在进行的调用可能越过阈值，但下一次调用会被阻止。
+- `--runner`、供应商、模型、上下文预算、覆盖、dry-run 和 JSON 参数遵循 Agent workflow 通用契约。
+
+输出与状态：
+
+- 写出项目感知 `project_context.md`，记录每份上下文的路径、哈希、权威、入选理由和截断状态。
+- `chapter-planner` 先把大纲/发动机编译成 `chapter_plan.json`；缺少关键决定时必须阻塞，不能补造正史。
+- 写出 `memory_query.json`、`causal_simulation.json`、`chapter_contract.json`、`story_fact_ledger.json` 和 `scene_state_contract.json`，每个场景必须声明稳定 ID、视角、入口状态和出口状态。
+- 结构化数量、时间窗和物件转移在正文生成前校验；逐场景模式另外生成 `scene_execution.json`，保存每场目标/实际体量、状态、输出哈希和组装哈希。失败后优先按 reviewer 原文证据和失败 `scene_id` 只复修命中的场景，无法定位才回退为全场复修。
+- `draft-writer` 生成完整候选，静态检查标题、体量、占位和输出纯度。
+- `draft-evaluator` 检查章节发动机、场景推进、人物声音、信息边界、连续性、伏笔、行文新鲜感和结尾变化八个维度。
+- `adversarial-reviewer` 只看候选、章节契约和检索记忆，逐条寻找反证；确定性门禁另外检查禁止结论、可疑禁用视角场景、受限奏疏/梦境/回忆长度和段落节奏证据。
+- 验证失败时，问题证据进入下一轮完整重写；旧候选、验证、评估和执行回执按版本保留。
+- 通过后写出 `candidate.md`、`changes.diff`、`verification.json`、`draft_evaluation.json`、`retrospective.draft.md` 和 `canon_sync_suggestions.json`，状态为 `ready_for_approval`。
+- 命令不直接创建或覆盖目标正文；使用 `agent-accept-revision` 显式采纳。若目标原本不存在但会话期间被其他人创建，采纳必须拒绝。
 
 ### `fictionops write-chapter`
 

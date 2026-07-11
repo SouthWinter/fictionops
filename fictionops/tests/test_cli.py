@@ -12,6 +12,7 @@ import textwrap
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +21,7 @@ CLI = SRC / "fictionops" / "cli.py"
 sys.path.insert(0, str(SRC))
 
 CLI_COMMANDS = [
+    "agent",
     "adopt",
     "adopt-review",
     "adopt-plan",
@@ -52,7 +54,10 @@ CLI_COMMANDS = [
     "agent-run",
     "agent-exec",
     "agent-inbox",
+    "agent-memory",
     "agent-revise-workflow",
+    "agent-accept-revision",
+    "agent-write-workflow",
     "write-chapter",
     "revise-chapter",
     "audit-chapter",
@@ -139,6 +144,25 @@ from fictionops.core import (  # noqa: E402
     plan_chapter,
 )
 from fictionops.agent_session import session_status  # noqa: E402
+from fictionops.agent_comprehensive_review import compact_issue_ledger, parse_comprehensive_review  # noqa: E402
+from fictionops.agent_issue_ledger import (  # noqa: E402
+    load_issue_ledger,
+    merge_issue_observations,
+    stable_issue_id,
+    transition_issue,
+)
+from fictionops.agent_revision_runtime import merge_semantic_verification  # noqa: E402
+from fictionops.agent_research_baseline import baseline_prompt, run_baselines  # noqa: E402
+from fictionops.agent_policy import select_agent_policy  # noqa: E402
+from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
+from fictionops.agent_story_reasoning import (  # noqa: E402
+    build_story_fact_ledger,
+    deterministic_story_audit,
+    parse_causal_simulation,
+    review_evidence_grounding_issues,
+    sanitize_theme_answers,
+    validate_plan_against_causal,
+)
 from fictionops.dogfood_cycle import RECOGNIZED_FICTIONOPS_COMMANDS  # noqa: E402
 from fictionops.models import AgentSessionStep  # noqa: E402
 
@@ -1081,6 +1105,9 @@ class FictionOpsCliTests(unittest.TestCase):
             "docs/migration.md",
             "docs/end-to-end-migration-publish.md",
             "docs/testing.md",
+            "docs/interview-agent-research-case.zh-CN.md",
+            "docs/interview-agent-script.zh-CN.md",
+            "docs/evidence/failure-lab-current.json",
             "docs/release.md",
             "docs/release-trial-evidence.md",
             "docs/release-trial-evidence.zh-CN.md",
@@ -1481,8 +1508,10 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertIn("release trial evidence draft artifact", completion_audit)
         self.assertIn("稳定核心审计", release_notes)
         self.assertIn("stable-core-audit", completion_audit)
-        self.assertIn(f"{test_count} tests OK", release_notes)
-        self.assertIn(f"{test_count} tests OK", completion_audit)
+        # Versioned release evidence is immutable; current-suite counts are checked
+        # in README/testing/milestone documents above.
+        self.assertIn("152 tests OK", release_notes)
+        self.assertIn("152 tests OK", completion_audit)
         self.assertIn("audit-release-evidence", release_notes)
         self.assertIn("audit-release-evidence", completion_audit)
         self.assertIn("audit-dogfood-cycle", release_notes)
@@ -1886,15 +1915,32 @@ class FictionOpsCliTests(unittest.TestCase):
             "src/fictionops/cli.py",
             "src/fictionops/agent_connect.py",
             "src/fictionops/agent_evaluation.py",
+            "src/fictionops/agent_budget.py",
             "src/fictionops/agent_exec.py",
+            "src/fictionops/agent_failure_lab.py",
             "src/fictionops/agent_revise_workflow.py",
+            "src/fictionops/agent_revision_runtime.py",
+            "src/fictionops/agent_revision_accept.py",
+            "src/fictionops/agent_project_context.py",
+            "src/fictionops/agent_policy.py",
+            "src/fictionops/agent_comprehensive_review.py",
+            "src/fictionops/agent_continue.py",
+            "src/fictionops/agent_write_workflow.py",
             "src/fictionops/agent_run.py",
             "src/fictionops/agent_session.py",
+            "src/fictionops/agent_session_control.py",
             "src/fictionops/agent_inbox.py",
+            "src/fictionops/agent_issue_ledger.py",
+            "src/fictionops/agent_memory.py",
+            "src/fictionops/agent_story_reasoning.py",
             "src/fictionops/writing_agent.py",
             "src/fictionops/agent_next.py",
             "src/fictionops/agent_smoke.py",
             "src/fictionops/agent_workflow_audit.py",
+            "src/fictionops/api.py",
+            "src/fictionops/agent_research_baseline.py",
+            "src/fictionops/agent_status.py",
+            "src/fictionops/agent_trajectory.py",
             "src/fictionops/setup_ai.py",
             "src/fictionops/stable_core.py",
             "src/fictionops/doctor.py",
@@ -1910,6 +1956,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "docs/cli.md",
             "docs/cli-contracts.md",
             "docs/agent-protocol.md",
+            "docs/agent-system-design.zh-CN.md",
             "docs/agent-connector-contract.md",
             "docs/agent-connector-contract.zh-CN.md",
             "docs/agent-integration.md",
@@ -1957,6 +2004,7 @@ class FictionOpsCliTests(unittest.TestCase):
             "integrations/README.md",
             "integrations/codex-skill/README.md",
             "integrations/codex-skill/fictionops-writing-agent/SKILL.md",
+            "integrations/codex-skill/fictionops-writing-agent/agents/openai.yaml",
             "integrations/codex-skill/fictionops-writing-agent/references/workflow.md",
             "integrations/codex-skill/fictionops-writing-agent/references/chapter-writing.md",
             "integrations/codex-skill/fictionops-writing-agent/references/audit.md",
@@ -4850,7 +4898,11 @@ class FictionOpsCliTests(unittest.TestCase):
                 "不是怪物的黑，也不是死人的黑。\n"
                 "他不是想帮这些人。他只是看见那条布。\n"
                 "没有声音。没有嘲笑。没有人动。\n"
-                "白影像雪粒一样过去，剑光像针尖一样亮。\n"
+                "白影像雪粒一样过去。\n"
+                "风声好似旧纸擦过石面。\n"
+                "远处仿佛落下一小片盐。\n"
+                "那点余光宛如无声的灰。\n"
+                "冰屑是贴着袖口游走的薄盐。\n"
                 "可它不是灾厄。它有名字。\n",
                 encoding="utf-8",
             )
@@ -4861,6 +4913,14 @@ class FictionOpsCliTests(unittest.TestCase):
             families = {issue.family for issue in file_report.issues}
             self.assertIn("exclusionary_narration", families)
             self.assertIn("absence_filter", families)
+            simile_metric = next(item for item in file_report.metrics if item.key == "simile")
+            self.assertEqual(simile_metric.count, 4)
+            self.assertEqual(
+                simile_metric.details["marker_counts"],
+                {"像": 1, "好似": 1, "仿佛": 1, "宛如": 1},
+            )
+            self.assertIn("implicit_metaphor", simile_metric.details["semantic_review_required_for"])
+            self.assertTrue({"像", "好似", "仿佛", "宛如"} <= {item.term for item in file_report.evidence_lines})
             self.assertTrue(any(task["role"] == "style-auditor" for task in file_report.agent_tasks))
             self.assertTrue(any("不是A，也不是B" in item or "不是A" in item for item in file_report.revision_queue))
 
@@ -4906,6 +4966,11 @@ class FictionOpsCliTests(unittest.TestCase):
             request = json.loads((run_dir / "request.json").read_text(encoding="utf-8"))
             self.assertEqual(request["schema"], "fictionops.agent_run_request.v1")
             self.assertEqual(request["source_chapter_file"], str(chapter.resolve()))
+            self.assertTrue(request["source_chapter_sha256"])
+            self.assertTrue((run_dir / "session.json").exists())
+            self.assertTrue((run_dir / "events.jsonl").exists())
+            self.assertTrue((run_dir / "issues.before.json").exists())
+            self.assertTrue((run_dir / "audits.before.json").exists())
 
             runner = ROOT / "examples" / "agent_runner_echo.py"
             cli = self.run_cli(
@@ -4917,6 +4982,8 @@ class FictionOpsCliTests(unittest.TestCase):
                 "00_总纲与管理/agent_runs/revise_026_cli",
                 "--format",
                 "json",
+                "--review-scope",
+                "style",
                 "--runner",
                 sys.executable,
                 str(runner),
@@ -4925,12 +4992,1588 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(data["command"], "agent-revise-workflow")
             self.assertTrue(data["prepared"])
             self.assertTrue(data["executed"])
-            self.assertEqual(data["stop_reason"], "staged_output_ready_for_review")
+            self.assertEqual(data["stop_reason"], "needs_revision_attention")
             self.assertEqual(data["ready_count"], 1)
+            self.assertFalse(data["ready_for_approval"])
+            self.assertEqual(data["retry_count"], 1)
             output = Path(data["staged_outputs"][0]["output_file"])
             self.assertTrue(output.exists())
             self.assertIn("Echo Agent Staging Output", output.read_text(encoding="utf-8"))
+            cli_run_dir = Path(data["run_dir"])
+            self.assertTrue((cli_run_dir / "candidate.md").exists())
+            self.assertTrue((cli_run_dir / "changes.diff").exists())
+            self.assertTrue((cli_run_dir / "candidate.v1.md").exists())
+            self.assertTrue((cli_run_dir / "verification.v1.json").exists())
+            verification = json.loads((cli_run_dir / "verification.json").read_text(encoding="utf-8"))
+            self.assertEqual(verification["status"], "needs_revision_attention")
+            self.assertIn("title_preserved", verification["blocking_failures"])
             self.assertIn("不是风", chapter.read_text(encoding="utf-8"))
+
+    def test_agent_revision_closes_verification_and_acceptance_loop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            management = target / "00_总纲与管理"
+            chapter_dir = target / "卷一" / "第一本"
+            management.mkdir()
+            chapter_dir.mkdir(parents=True)
+            chapter = chapter_dir / "ch_026.md"
+            source = (
+                "# Chapter 26\n\n"
+                "不是风，也不是雪。没有声音，没有人动。\n"
+                "白影像雪一样过去，剑光像针一样亮。\n"
+            )
+            first_candidate = (
+                "# Chapter 26\n\n"
+                "风雪贴着窗纸游走。他决定背弃众人，目光落在门边。\n"
+                "白影掠过檐下，剑光一闪便沉进夜色。\n"
+            )
+            candidate = (
+                "# Chapter 26\n\n"
+                "风雪贴着窗纸游走。屋里静着，众人的目光都落在门边。\n"
+                "白影掠过檐下，剑光一闪便沉进夜色。\n"
+            )
+            semantic_pass = {
+                "schema": "fictionops.semantic_revision_verification.v1",
+                "verdict": "pass",
+                "invariants": [
+                    {"name": name, "status": "pass", "evidence": "preserved"}
+                    for name in (
+                        "plot_events",
+                        "point_of_view",
+                        "chronology",
+                        "character_intentions",
+                        "information_boundaries",
+                        "ambiguity_and_withholding",
+                        "review_findings_addressed",
+                    )
+                ],
+                "new_issues": [],
+                "summary": "All required invariants are preserved.",
+            }
+            semantic_fail = {
+                "schema": "fictionops.semantic_revision_verification.v1",
+                "verdict": "fail",
+                "invariants": [
+                    {
+                        "name": name,
+                        "status": "fail" if name == "character_intentions" else "pass",
+                        "evidence": "The first candidate invents a decision to betray the group." if name == "character_intentions" else "preserved",
+                    }
+                    for name in (
+                        "plot_events",
+                        "point_of_view",
+                        "chronology",
+                        "character_intentions",
+                        "information_boundaries",
+                        "ambiguity_and_withholding",
+                        "review_findings_addressed",
+                    )
+                ],
+                "new_issues": ["invented_character_intention"],
+                "summary": "The candidate invents a new character intention.",
+            }
+            chapter.write_text(source, encoding="utf-8")
+            runner = target / "valid_revision_runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"semantic_pass = {semantic_pass!r}\n"
+                f"semantic_fail = {semantic_fail!r}\n"
+                f"first_candidate = {first_candidate!r}\n"
+                f"candidate = {candidate!r}\n"
+                "if 'semantic-verifier' in payload:\n"
+                "    result = semantic_fail if '背弃众人' in payload else semantic_pass\n"
+                "    sys.stdout.write(json.dumps(result, ensure_ascii=False))\n"
+                "elif 'Targeted Retry' in payload:\n"
+                "    sys.stdout.write(candidate)\n"
+                "else:\n"
+                "    sys.stdout.write(first_candidate)\n",
+                encoding="utf-8",
+            )
+            run_dir = management / "agent_runs" / "revise_026"
+            result = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--out-dir",
+                str(run_dir),
+                "--format",
+                "json",
+                "--review-scope",
+                "style",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            data = json.loads(result.stdout)
+            self.assertEqual(data["stop_reason"], "ready_for_approval")
+            self.assertTrue(data["ready_for_approval"], data)
+            self.assertEqual(data["retry_count"], 1)
+            self.assertEqual(data["semantic_call_count"], 2)
+            self.assertEqual(data["model_calls_used"], 4)
+            self.assertEqual(data["max_model_calls"], 12)
+            model_budget = json.loads((run_dir / "model_budget.json").read_text(encoding="utf-8"))
+            self.assertEqual(model_budget["status"], "completed")
+            self.assertEqual(model_budget["used_calls"], 4)
+            self.assertEqual(
+                [item["role"] for item in model_budget["calls"]],
+                ["chapter-reviser", "semantic-verifier", "chapter-reviser-retry", "semantic-verifier"],
+            )
+            self.assertTrue((run_dir / "verification.v1.json").exists())
+            run_issues = json.loads((run_dir / "issues.before.json").read_text(encoding="utf-8"))
+            self.assertTrue(any(item["status"] == "verified" for item in run_issues["issues"]))
+            self.assertTrue((target / ".fictionops" / "issues.json").exists())
+            first_verification = json.loads((run_dir / "verification.v1.json").read_text(encoding="utf-8"))
+            self.assertIn("semantic_invariants_preserved", first_verification["blocking_failures"])
+            self.assertEqual(chapter.read_text(encoding="utf-8"), source)
+            self.assertTrue((run_dir / "changes.diff").read_text(encoding="utf-8"))
+            self.assertTrue((run_dir / "audits.after.json").exists())
+            self.assertTrue((run_dir / "issues.after.json").exists())
+
+            verification_resume_runner = target / "verification_resume_runner.py"
+            verification_resume_runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"semantic = {semantic_pass!r}\n"
+                "if 'semantic-verifier' not in payload:\n"
+                "    raise SystemExit('resume unexpectedly reran chapter revision: ' + payload[:500].replace('\\n', ' '))\n"
+                "print(json.dumps(semantic, ensure_ascii=False))\n",
+                encoding="utf-8",
+            )
+            interrupted_dir = management / "agent_runs" / "resume_verification_026"
+            interrupted = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--out-dir",
+                str(interrupted_dir),
+                "--format",
+                "json",
+                "--review-scope",
+                "style",
+                "--max-model-calls",
+                "1",
+                "--runner",
+                sys.executable,
+                str(runner),
+                check=False,
+            )
+            self.assertNotEqual(interrupted.returncode, 0)
+            self.assertEqual(json.loads((interrupted_dir / "checkpoint.json").read_text(encoding="utf-8"))["phase"], "verification_ready")
+            resumed = self.run_cli(
+                "agent",
+                "resume",
+                str(interrupted_dir),
+                "--max-model-calls",
+                "1",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(verification_resume_runner),
+                check=False,
+            )
+            self.assertEqual(resumed.returncode, 0, resumed.stderr)
+            resumed_payload = json.loads(resumed.stdout)
+            self.assertEqual(resumed_payload["resumed_from_phase"], "verification_ready")
+            self.assertEqual(resumed_payload["final_phase"], "ready_for_approval")
+            self.assertEqual(
+                [item["role"] for item in json.loads((interrupted_dir / "model_budget.json").read_text(encoding="utf-8"))["calls"]],
+                ["semantic-verifier"],
+            )
+
+            preflight = self.run_cli("agent-accept-revision", str(run_dir), "--dry-run", "--format", "json")
+            preflight_data = json.loads(preflight.stdout)
+            self.assertFalse(preflight_data["applied"])
+            self.assertEqual(preflight_data["stop_reason"], "acceptance_preflight_passed")
+            self.assertEqual(chapter.read_text(encoding="utf-8"), source)
+
+            accepted = self.run_cli("agent-accept-revision", str(run_dir), "--format", "json")
+            accepted_data = json.loads(accepted.stdout)
+            self.assertTrue(accepted_data["applied"])
+            self.assertEqual(accepted_data["stop_reason"], "revision_applied")
+            self.assertEqual(chapter.read_text(encoding="utf-8"), candidate)
+            acceptance = json.loads((run_dir / "acceptance.json").read_text(encoding="utf-8"))
+            self.assertTrue(acceptance["applied"])
+            session = json.loads((run_dir / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(session["state"], "applied")
+            project_issues = load_issue_ledger(target)
+            self.assertTrue(any(item["status"] == "accepted" for item in project_issues["issues"]))
+            trajectory = [json.loads(line) for line in (run_dir / "trajectory.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertTrue(all(item["schema"] == "fictionops.agent_trajectory_step.v1" for item in trajectory))
+            self.assertEqual(
+                len([item for item in trajectory if item["kind"] == "model_call_started"]),
+                len([item for item in trajectory if item["kind"] == "model_call_finished"]),
+            )
+            self.assertTrue(any(item["authority"] == "author" and item["phase"] == "applied" for item in trajectory))
+
+    def test_agent_revision_accept_refuses_stale_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_总纲与管理").mkdir()
+            chapter = target / "ch_026.md"
+            source = "# Chapter 26\n\n不是风。屋里没有人动，剑光像雪。\n"
+            candidate = "# Chapter 26\n\n风贴着窗纸。屋里静着，剑光掠过墙面。\n"
+            semantic = {
+                "schema": "fictionops.semantic_revision_verification.v1",
+                "verdict": "pass",
+                "invariants": [
+                    {"name": name, "status": "pass", "evidence": "preserved"}
+                    for name in (
+                        "plot_events",
+                        "point_of_view",
+                        "chronology",
+                        "character_intentions",
+                        "information_boundaries",
+                        "ambiguity_and_withholding",
+                        "review_findings_addressed",
+                    )
+                ],
+                "new_issues": [],
+                "summary": "All required invariants are preserved.",
+            }
+            chapter.write_text(source, encoding="utf-8")
+            runner = target / "runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"semantic = {semantic!r}\n"
+                f"candidate = {candidate!r}\n"
+                "sys.stdout.write(json.dumps(semantic, ensure_ascii=False) if 'semantic-verifier' in payload else candidate)\n",
+                encoding="utf-8",
+            )
+            run_dir = target / "00_总纲与管理" / "agent_runs" / "stale"
+            result = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--out-dir",
+                str(run_dir),
+                "--format",
+                "json",
+                "--review-scope",
+                "style",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            self.assertTrue(json.loads(result.stdout)["ready_for_approval"])
+            chapter.write_text(source + "\n作者刚补的一句。\n", encoding="utf-8")
+            refused = self.run_cli("agent-accept-revision", str(run_dir), "--format", "json", check=False)
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("source chapter changed", refused.stderr)
+            self.assertIn("作者刚补的一句", chapter.read_text(encoding="utf-8"))
+
+    def test_agent_revise_workflow_uses_project_aware_comprehensive_review(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_总纲与管理").mkdir()
+            character_dir = target / "01_人物弧线"
+            chapter_dir = target / "卷一" / "第一本"
+            character_dir.mkdir()
+            chapter_dir.mkdir(parents=True)
+            chapter = chapter_dir / "第26章_冰中四人.md"
+            chapter.write_text(
+                "# 第26章 冰中四人\n\n"
+                "耶儿并不害怕，也不是犹豫。他没有看仁孜，只觉得胸口很冷。\n"
+                "他忽然抬剑，像早已想明白了一切。\n",
+                encoding="utf-8",
+            )
+            (character_dir / "耶儿_人物弧线.md").write_text(
+                "# 耶儿\n\n他会迅速行动，但此时仍不擅长辨认自己的恐惧，不应由旁白替他总结。\n",
+                encoding="utf-8",
+            )
+            (target / "style.md").write_text(
+                "# Style\n\nRepeated negation must be classified in context rather than deleted mechanically.\n",
+                encoding="utf-8",
+            )
+            review = {
+                "schema": "fictionops.comprehensive_chapter_review.v1",
+                "overall_risk": "high",
+                "dimensions": [
+                    {
+                        "name": name,
+                        "status": "issues" if name in {"character", "prose_and_reader_experience"} else "pass",
+                        "summary": "The narrator over-explains the character." if name == "character" else "checked",
+                    }
+                    for name in (
+                        "continuity",
+                        "character",
+                        "information_boundaries",
+                        "foreshadowing",
+                        "chapter_function",
+                        "prose_and_reader_experience",
+                    )
+                ],
+                "issues": [
+                    {
+                        "category": "character",
+                        "severity": "P2",
+                        "confidence": 0.94,
+                        "metric_keys": [],
+                        "evidence": ["像早已想明白了一切"],
+                        "problem": "Narration gives the character a settled self-explanation.",
+                        "why_it_matters": "It skips the character's uncertainty.",
+                        "preserve_constraints": ["Keep the sword raise and Renzi's presence."],
+                        "suggested_action": "Replace the conclusion with bodily action and incomplete perception.",
+                    }
+                ],
+                "revision_priorities": ["Restore character uncertainty before reducing repeated negation."],
+                "summary": "One character-level issue should drive revision.",
+            }
+            semantic = {
+                "schema": "fictionops.semantic_revision_verification.v1",
+                "verdict": "pass",
+                "invariants": [
+                    {"name": name, "status": "pass", "evidence": "preserved"}
+                    for name in (
+                        "plot_events",
+                        "point_of_view",
+                        "chronology",
+                        "character_intentions",
+                        "information_boundaries",
+                        "ambiguity_and_withholding",
+                        "review_findings_addressed",
+                    )
+                ],
+                "new_issues": [],
+                "summary": "The review finding is addressed without changing the event.",
+            }
+            candidate = (
+                "# 第26章 冰中四人\n\n"
+                "耶儿避开仁孜的目光，胸口那点寒意沿着肋骨往上爬。\n"
+                "剑抬起来时，他的手腕先顿了一下，随即压住了那点颤。\n"
+            )
+            runner = target / "comprehensive_runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"review = {review!r}\n"
+                f"semantic = {semantic!r}\n"
+                f"candidate = {candidate!r}\n"
+                "if 'semantic-verifier' in payload:\n"
+                "    sys.stdout.write(json.dumps(semantic, ensure_ascii=False))\n"
+                "elif 'Comprehensive Review Output Repair' in payload:\n"
+                "    sys.stdout.write(json.dumps(review, ensure_ascii=False))\n"
+                "elif 'comprehensive-reviewer' in payload:\n"
+                "    sys.stdout.write('{\"schema\": \"fictionops.comprehensive_chapter_review.v1\", \"dimensions\": [')\n"
+                "else:\n"
+                "    sys.stdout.write(candidate)\n",
+                encoding="utf-8",
+            )
+            run_dir = target / "00_总纲与管理" / "agent_runs" / "comprehensive_026"
+            result = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--out-dir",
+                str(run_dir),
+                "--format",
+                "json",
+                "--max-project-context-chars",
+                "160",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            data = json.loads(result.stdout)
+            self.assertTrue(data["ready_for_approval"])
+            self.assertEqual(data["review_scope"], "comprehensive")
+            self.assertGreater(data["context_file_count"], 0)
+            self.assertGreater(data["memory_record_count"], 0)
+            self.assertEqual(data["comprehensive_review"]["overall_risk"], "high")
+            self.assertTrue((run_dir / "comprehensive_reviewer_retry_1" / "output.md").exists())
+            reviewer_outputs = {item["kind"]: item["path"] for item in data["files"]}
+            self.assertEqual(Path(reviewer_outputs["comprehensive_reviewer_output"]).parent.name, "comprehensive_reviewer")
+            self.assertEqual(Path(reviewer_outputs["comprehensive_reviewer_retry_output"]).parent.name, "comprehensive_reviewer_retry_1")
+            self.assertTrue((run_dir / "project_context.md").exists())
+            self.assertTrue((run_dir / "memory_query.json").exists())
+            self.assertTrue((run_dir / "memory_context.md").exists())
+            self.assertIn("耶儿_人物弧线.md", (run_dir / "project_context.md").read_text(encoding="utf-8"))
+            self.assertIn("style.md", (run_dir / "project_context.md").read_text(encoding="utf-8"))
+            ledger = json.loads((run_dir / "issues.before.json").read_text(encoding="utf-8"))
+            self.assertTrue(any(item["category"] == "semantic.character" for item in ledger["issues"]))
+            self.assertIn("review_findings_addressed", [item["name"] for item in data["verification"]["semantic_verification"]["invariants"]])
+            trajectory = [json.loads(line) for line in (run_dir / "trajectory.jsonl").read_text(encoding="utf-8").splitlines()]
+            context_steps = [item for item in trajectory if item["kind"] == "context_selected"]
+            self.assertEqual(len(context_steps), 1)
+            self.assertTrue(any(item.get("source") and item.get("reason") for item in context_steps[0]["context"]))
+            reviewer_context = (run_dir / "comprehensive_reviewer" / "context_pack.md").read_text(encoding="utf-8")
+            self.assertIn("## Static Prose Issue Ledger", reviewer_context)
+            self.assertIn("prose.exclusionary_narration", reviewer_context)
+            verifier_context = (run_dir / "semantic_verifier" / "context_pack.md").read_text(encoding="utf-8")
+            self.assertIn("### Comprehensive Review", verifier_context)
+            self.assertIn("### Static Issue Ledger", verifier_context)
+
+            resume_runner = target / "resume_revision_runner.py"
+            resume_runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"review = {review!r}\n"
+                f"candidate = {candidate!r}\n"
+                "if 'comprehensive-reviewer' in payload:\n"
+                "    sys.stdout.write(json.dumps(review, ensure_ascii=False))\n"
+                "else:\n"
+                "    sys.stdout.write(candidate)\n",
+                encoding="utf-8",
+            )
+            resume_only_runner = target / "resume_only_revision_runner.py"
+            resume_only_runner.write_text(
+                "import sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"candidate = {candidate!r}\n"
+                "if 'comprehensive-reviewer' in payload:\n"
+                "    raise SystemExit('resume unexpectedly reran comprehensive review')\n"
+                "sys.stdout.write(candidate)\n",
+                encoding="utf-8",
+            )
+            resumable_dir = target / "agent_runs" / "resume_comprehensive_026"
+            interrupted = self.run_cli(
+                "agent-revise-workflow",
+                str(chapter),
+                "--out-dir",
+                str(resumable_dir),
+                "--format",
+                "json",
+                "--no-semantic-verify",
+                "--max-model-calls",
+                "1",
+                "--runner",
+                sys.executable,
+                str(resume_runner),
+                check=False,
+            )
+            self.assertNotEqual(interrupted.returncode, 0)
+            checkpoint = json.loads((resumable_dir / "checkpoint.json").read_text(encoding="utf-8"))
+            self.assertEqual(checkpoint["phase"], "review_ready")
+            resumed = self.run_cli(
+                "agent",
+                "resume",
+                str(resumable_dir),
+                "--max-model-calls",
+                "1",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(resume_only_runner),
+            )
+            resumed_payload = json.loads(resumed.stdout)
+            self.assertEqual(resumed_payload["resumed_from_phase"], "review_ready")
+            self.assertEqual(resumed_payload["final_phase"], "ready_for_approval")
+            self.assertTrue(resumed_payload["ready_for_approval"])
+            self.assertEqual(resumed_payload["model_calls_used"], 1)
+            self.assertEqual(resumed_payload["cumulative_model_calls"], 2)
+            resumed_budget = json.loads((resumable_dir / "model_budget.json").read_text(encoding="utf-8"))
+            self.assertEqual([item["role"] for item in resumed_budget["calls"]], ["chapter-reviser"])
+
+    def test_agent_write_workflow_drafts_rewrites_and_accepts_new_chapter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_总纲与管理").mkdir()
+            chapter_dir = target / "卷一" / "第三本"
+            character_dir = target / "01_人物弧线"
+            chapter_dir.mkdir(parents=True)
+            character_dir.mkdir()
+            chapter = chapter_dir / "第01章_新章.md"
+            engine = chapter_dir / "第01章_章节发动机.md"
+            outline = chapter_dir / "第三本_大纲.md"
+            engine.write_text(
+                "# 章节发动机\n\n"
+                "- 标题：新章\n"
+                "- 视角人物：殷允\n"
+                "- 建议体量：100\n\n"
+                "| Pressure 压力 | Desire 欲望 | Obstacle 阻碍 | Change 变化 | Remainder 余味 |\n"
+                "| --- | --- | --- | --- | --- |\n"
+                "| 商会将散 | 记下无席者姓名 | 众人互不信任 | 她留下第一册名录 | 空席仍在增加 |\n\n"
+                "- 哪些话不说完：她不谈弟弟。\n",
+                encoding="utf-8",
+            )
+            outline.write_text("# 第三本大纲\n\n殷允从被救助者走向记录者，本章只迈出留下名录的一步。\n", encoding="utf-8")
+            (character_dir / "殷允_人物弧线.md").write_text("# 殷允\n\n她先记具体姓名，不发表宏大宣言。\n", encoding="utf-8")
+            first_candidate = (
+                "# 第01章 新章\n\n"
+                "殷允站起来发表了一番宏大宣言，众人同声答应。她当场建立了完整名册制度。\n"
+            )
+            final_candidate = (
+                "# 第01章 新章\n\n"
+                "殷允把纸压在膝上，先问了离她最近那人的姓名。那人迟疑许久，只报了一个乳名。\n"
+                "她照样写下。身后仍有人争吵，纸上却终于多出第一行。\n"
+            )
+            dimension_names = (
+                "chapter_engine",
+                "scene_progression",
+                "character_voice",
+                "information_boundaries",
+                "continuity",
+                "foreshadowing",
+                "prose_freshness",
+                "ending_change",
+            )
+            chapter_plan = {
+                "schema": "fictionops.chapter_execution_plan.v1",
+                "status": "ready",
+                "title": "新章",
+                "viewpoint": "殷允",
+                "kind": "情绪承重",
+                "target_chars": 100,
+                "engine": {
+                    "pressure": "商会将散",
+                    "desire": "记下无席者姓名",
+                    "obstacle": "众人互不信任",
+                    "change": "她留下第一册名录",
+                    "remainder": "空席仍在增加",
+                },
+                "scenes": [
+                    {
+                        "scene_id": "S1",
+                        "order": 1,
+                        "viewpoint": "殷允",
+                        "function": "concrete first action",
+                        "goal": "ask one name",
+                        "conflict": "the person hesitates",
+                        "information_boundary": "do not discuss her brother",
+                        "entry_state": {"facts": ["the ledger is empty"], "knowledge": [], "objects": ["blank paper"], "residue": []},
+                        "exit_state": {"facts": ["the first line exists"], "knowledge": [], "objects": ["ledger"], "residue": ["more names remain"]},
+                        "exit": "the first line exists",
+                    }
+                ],
+                "preserve_constraints": ["No grand declaration."],
+                "forbidden_reveals": ["Do not discuss her brother."],
+                "foreshadowing": ["The first ledger can later become a network."],
+                "missing_context": [],
+                "summary": "Begin with one concrete name rather than an institution.",
+            }
+            causal_simulation = {
+                "schema": "fictionops.causal_simulation.v1",
+                "status": "ready",
+                "stakeholders": [
+                    {"id": "殷允", "knows": ["one person vanished"], "wants": ["record one name"], "fears": ["public attention"], "leverage": ["paper"], "constraints": ["low trust"], "likely_error": "generalize too early"}
+                ],
+                "event_graph": [
+                    {"id": "E1", "preconditions": ["blank ledger"], "action": "ask one name", "immediate_effects": ["one line exists"], "cost_transfer": ["the speaker risks recognition"], "observable_evidence": ["written name"], "unresolved": ["more names remain"]}
+                ],
+                "hard_constraints": {
+                    "pov_whitelist": ["殷允"],
+                    "forbidden_pov": [],
+                    "knowledge_limits": ["Do not discuss her brother."],
+                    "theme_questions": ["What can one recorded name preserve?"],
+                    "forbidden_conclusions": [],
+                    "special_passage_limits": [],
+                    "quantitative_rules": [],
+                    "unit_conversions": {},
+                },
+                "missing_mechanics": [],
+                "summary": "One risky name creates the first durable state change.",
+            }
+            adversarial_fail = {
+                "schema": "fictionops.adversarial_draft_review.v1",
+                "verdict": "fail",
+                "profiles": [
+                    {"name": name, "status": "issues" if name == "character_and_knowledge" else "pass", "summary": "grand declaration" if name == "character_and_knowledge" else "checked"}
+                    for name in ("continuity", "character_and_knowledge", "prose_and_reader_experience")
+                ],
+                "constraint_checks": [
+                    {"id": "P1", "status": "fail", "evidence": "Candidate explicitly gives a grand public declaration."},
+                    {"id": "F1", "status": "pass", "evidence": "Her brother is not discussed."},
+                    {"id": "K1", "status": "pass", "evidence": "Her brother is not discussed."},
+                ],
+                "scene_state_checks": [{"scene_id": "S1", "status": "fail", "evidence": "A complete institution replaces the first-line exit state."}],
+                "issues": [{"category": "character_and_knowledge", "severity": "P2", "evidence": ["宏大宣言"], "problem": "The state change is too large.", "suggested_action": "Return to one name.", "constraint_ids": ["P1"]}],
+                "summary": "The draft violates the concrete scale.",
+            }
+            adversarial_pass = {
+                "schema": "fictionops.adversarial_draft_review.v1",
+                "verdict": "pass",
+                "profiles": [
+                    {"name": name, "status": "pass", "summary": "checked"}
+                    for name in ("continuity", "character_and_knowledge", "prose_and_reader_experience")
+                ],
+                "constraint_checks": [
+                    {"id": "P1", "status": "pass", "evidence": "The candidate begins with one name."},
+                    {"id": "F1", "status": "pass", "evidence": "Her brother is not discussed."},
+                    {"id": "K1", "status": "pass", "evidence": "Her brother is not discussed."},
+                ],
+                "scene_state_checks": [{"scene_id": "S1", "status": "pass", "evidence": "The first ledger line exists and more names remain."}],
+                "issues": [],
+                "summary": "No material counterexample remains.",
+            }
+            evaluation_fail = {
+                "schema": "fictionops.draft_evaluation.v1",
+                "verdict": "pass",
+                "dimensions": [{"name": name, "status": "pass", "evidence": "broad dimension passed"} for name in dimension_names],
+                "constraint_checks": [
+                    {"id": "P1", "status": "fail", "evidence": "Candidate explicitly gives a grand public declaration."},
+                    {"id": "F1", "status": "pass", "evidence": "Her brother is not discussed."},
+                ],
+                "issues": [{"category": "character_voice", "severity": "P2", "problem": "Grand declaration replaces concrete naming.", "evidence": ["宏大宣言"], "suggested_action": "Begin with one name.", "preserve_constraints": ["Keep the first ledger entry."]}],
+                "retrospective": {},
+                "canon_sync_suggestions": [],
+                "summary": "Rewrite from concrete action.",
+            }
+            evaluation_pass = {
+                "schema": "fictionops.draft_evaluation.v1",
+                "verdict": "pass",
+                "dimensions": [{"name": name, "status": "pass", "evidence": "fulfilled"} for name in dimension_names],
+                "constraint_checks": [
+                    {"id": "P1", "status": "pass", "evidence": "The candidate begins with one person's name, not a declaration."},
+                    {"id": "F1", "status": "pass", "evidence": "Her brother is not discussed."},
+                ],
+                "issues": [],
+                "retrospective": {
+                    "chapter_change": "殷允留下第一行名录。",
+                    "residue": "更多空席仍等待被记下。",
+                    "character_updates": ["殷允开始以具体姓名抵抗消失。"],
+                    "information_updates": [],
+                    "foreshadowing_updates": ["第一册名录成为后续网络的起点。"],
+                },
+                "canon_sync_suggestions": [{"area": "character", "suggestion": "记录殷允第一次主动记名。", "evidence": "名录第一行"}],
+                "summary": "The candidate fulfills the engine at the intended scale.",
+            }
+            runner = target / "write_runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"first_candidate = {first_candidate!r}\n"
+                f"final_candidate = {final_candidate!r}\n"
+                f"evaluation_fail = {evaluation_fail!r}\n"
+                f"evaluation_pass = {evaluation_pass!r}\n"
+                f"chapter_plan = {chapter_plan!r}\n"
+                f"causal_simulation = {causal_simulation!r}\n"
+                f"adversarial_fail = {adversarial_fail!r}\n"
+                f"adversarial_pass = {adversarial_pass!r}\n"
+                "if 'causal-simulator' in payload:\n"
+                "    sys.stdout.write(json.dumps(causal_simulation, ensure_ascii=False))\n"
+                "elif 'chapter-planner' in payload:\n"
+                "    sys.stdout.write(json.dumps(chapter_plan, ensure_ascii=False))\n"
+                "elif 'adversarial-reviewer' in payload:\n"
+                "    result = adversarial_fail if '完整名册制度' in payload else adversarial_pass\n"
+                "    sys.stdout.write(json.dumps(result, ensure_ascii=False) if 'JSON Contract Repair' in payload else '{invalid')\n"
+                "elif 'draft-evaluator' in payload:\n"
+                "    result = evaluation_fail if '完整名册制度' in payload else evaluation_pass\n"
+                "    sys.stdout.write(json.dumps(result, ensure_ascii=False) if 'JSON Contract Repair' in payload else '{invalid')\n"
+                "elif 'Targeted Rewrite' in payload:\n"
+                "    sys.stdout.write(final_candidate)\n"
+                "else:\n"
+                "    sys.stdout.write(first_candidate)\n",
+                encoding="utf-8",
+            )
+            run_dir = target / "00_总纲与管理" / "agent_runs" / "write_new_chapter"
+            result = self.run_cli(
+                "agent-write-workflow",
+                str(chapter),
+                "--engine",
+                str(engine),
+                "--outline",
+                str(outline),
+                "--out-dir",
+                str(run_dir),
+                "--min-chars",
+                "20",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            data = json.loads(result.stdout)
+            self.assertTrue(data["ready_for_approval"], data)
+            self.assertFalse(data["source_existed"])
+            self.assertEqual(data["retry_count"], 1)
+            self.assertEqual(data["evaluator_call_count"], 4)
+            self.assertEqual(data["planner_call_count"], 1)
+            self.assertEqual(data["causal_simulator_call_count"], 1)
+            self.assertEqual(data["adversarial_reviewer_call_count"], 4)
+            self.assertGreater(data["memory_record_count"], 0)
+            self.assertEqual(data["chapter_plan"]["status"], "ready")
+            first_verification = json.loads((run_dir / "verification.v1.json").read_text(encoding="utf-8"))
+            self.assertIn("draft_plan_constraints", first_verification["blocking_failures"])
+            self.assertFalse(chapter.exists())
+            self.assertIn("殷允_人物弧线.md", (run_dir / "project_context.md").read_text(encoding="utf-8"))
+            self.assertTrue((run_dir / "retrospective.draft.md").exists())
+            self.assertTrue((run_dir / "canon_sync_suggestions.json").exists())
+            trajectory = [json.loads(line) for line in (run_dir / "trajectory.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertTrue(any(item["kind"] == "context_selected" and item["context"] for item in trajectory))
+            model_steps = [item for item in trajectory if item["kind"].startswith("model_call_")]
+            self.assertEqual(len(model_steps), data["model_calls_used"] * 2)
+            self.assertTrue(any(item.get("state_transition") for item in trajectory))
+
+            preflight = self.run_cli("agent-accept-revision", str(run_dir), "--dry-run", "--format", "json")
+            self.assertEqual(json.loads(preflight.stdout)["stop_reason"], "acceptance_preflight_passed")
+            chapter.write_text("# 并发创建的新稿\n", encoding="utf-8")
+            refused = self.run_cli("agent-accept-revision", str(run_dir), "--format", "json", check=False)
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("target chapter was created", refused.stderr)
+            chapter.unlink()
+            accepted = self.run_cli("agent-accept-revision", str(run_dir), "--format", "json")
+            accepted_payload = json.loads(accepted.stdout)
+            self.assertTrue(accepted_payload["applied"])
+            self.assertTrue(accepted_payload["learning_recorded"])
+            self.assertEqual(chapter.read_text(encoding="utf-8"), final_candidate)
+
+    def test_agent_write_title_falls_back_to_engine_heading_before_filename(self) -> None:
+        engine = "# 第五章《开仓雨》章节发动机\n"
+        self.assertEqual(expected_title_from_engine(engine, Path("ch_05_target.md")), "开仓雨")
+        self.assertEqual(sum(scene_target_chars({"scenes": [{"target_chars": 6000}, {"target_chars": 3000}]}, 8200)), 8200)
+
+    def test_agent_memory_build_query_and_explicit_preference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            characters = target / "01_characters"
+            characters.mkdir()
+            (characters / "luyu.md").write_text(
+                "# 鹿煜\n\n鹿煜先从具体饥饿与物件理解百姓，不提前形成成熟理论。\n",
+                encoding="utf-8",
+            )
+            (characters / "legacy_utf16.md").write_text("# 旧人物资料\n\n旧文件仍应进入记忆索引。\n", encoding="utf-16")
+            archived = target / "归档_旧稿"
+            archived.mkdir()
+            (archived / "obsolete.md").write_text("# 旧版\n\n鹿煜已经形成成熟理论。\n", encoding="utf-8")
+            (target / "00_management" / "Codex接手日志.md").write_text("# 接手日志\n\n这不是正史或书纲。\n", encoding="utf-8")
+            built = self.run_cli("agent-memory", "build", str(target), "--format", "json")
+            built_payload = json.loads(built.stdout)
+            self.assertGreater(built_payload["record_count"], 1)
+            index_payload = json.loads((target / ".fictionops" / "memory" / "index.json").read_text(encoding="utf-8"))
+            indexed_sources = {item["source"] for item in index_payload["records"]}
+            self.assertFalse(any("归档_旧稿" in source for source in indexed_sources))
+            self.assertFalse(any("接手日志" in source for source in indexed_sources))
+            added = self.run_cli(
+                "agent-memory",
+                "add-preference",
+                str(target),
+                "--rule",
+                "旁白不要替人物完成成熟理论",
+                "--prefer",
+                "让具体物件承担认识变化",
+                "--avoid",
+                "人物直接总结主题",
+                "--scope",
+                "character_growth",
+                "--evidence",
+                "作者确认的《开仓雨》比较",
+                "--format",
+                "json",
+            )
+            self.assertEqual(json.loads(added.stdout)["authority"], "author_explicit")
+            queried = self.run_cli(
+                "agent-memory",
+                "query",
+                str(target),
+                "--query",
+                "鹿煜如何通过具体物件理解百姓",
+                "--format",
+                "json",
+            )
+            query_payload = json.loads(queried.stdout)
+            self.assertTrue(any(item["kind"] == "preference" for item in query_payload["results"]))
+            self.assertTrue(any("luyu.md" in item["source"] for item in query_payload["results"]))
+            status = json.loads(self.run_cli("agent-memory", "status", str(target), "--format", "json").stdout)
+            self.assertEqual(status["preference_count"], 1)
+            self.assertFalse(status["stale"])
+
+    def test_deterministic_story_audit_catches_dogfood_failure_shapes(self) -> None:
+        contract = {
+            "constraints": [{"id": "C1", "kind": "forbidden_conclusion", "text": "百姓不是一个整齐的称呼"}],
+            "forbidden_pov": ["承曦"],
+            "theme_questions": ["百姓是一个整齐称呼还是具体饥饿的集合？"],
+            "special_passage_limits": [{"label": "奏疏", "marker": "臣", "max_chars": 30}],
+        }
+        candidate = (
+            "# 第五章 开仓雨\n\n"
+            "百姓不是一个整齐的称呼。\n\n"
+            "承曦坐在御书房里，想起粟阳。他拿起笔，决定写下一行字。\n\n"
+            "承曦点了点头，觉得此事还不着急。\n\n"
+            "“臣谨奏：粟阳雨雪压仓，百姓饥馑，臣先开仓，再请朝廷治臣抗命之罪，伏惟圣鉴。”\n"
+        )
+        audit = deterministic_story_audit(candidate, contract)
+        self.assertEqual(audit["status"], "fail")
+        self.assertGreaterEqual(len(audit["blocking_failures"]), 4)
+
+    def test_causal_contract_rejects_disguised_forbidden_viewpoint_and_theme_answer(self) -> None:
+        causal = {
+            "hard_constraints": {
+                "pov_whitelist": ["辛照渠", "鹿煜"],
+                "forbidden_pov": ["承曦"],
+                "theme_questions": ["百姓是一个整齐称呼还是具体饥饿的集合？"],
+                "forbidden_conclusions": ["不能判定承曦的诏令邪恶"],
+            }
+        }
+        plan = {
+            "preserve_constraints": ["不能判定承曦的诏令邪恶"],
+            "scenes": [
+                {
+                    "scene_id": "S5",
+                    "viewpoint": "鹿煜",
+                    "entry_state": {},
+                    "exit_state": {"knowledge": ["鹿煜知道百姓不是一个整齐称呼"]},
+                },
+                {
+                    "scene_id": "S6",
+                    "viewpoint": "第三人称有限（不进入承曦内心）",
+                    "entry_state": {},
+                    "exit_state": {},
+                },
+            ]
+        }
+        issues = validate_plan_against_causal(plan, causal)
+        kinds = {item["kind"] for item in issues}
+        self.assertIn("viewpoint_not_whitelisted", kinds)
+        self.assertIn("forbidden_viewpoint", kinds)
+        self.assertIn("theme_question_answered_in_plan", kinds)
+        self.assertNotIn("forbidden_conclusion_in_plan", kinds)
+        sanitized = sanitize_theme_answers(
+            "鹿煜从具体物证理解‘百姓’不是一个整齐的称呼。",
+            causal,
+        )
+        self.assertNotIn("不是一个整齐", sanitized)
+        self.assertIn("THEME QUESTION", sanitized)
+
+    def test_story_fact_ledger_rejects_bad_arithmetic_and_object_handoff(self) -> None:
+        causal = {
+            "hard_constraints": {
+                "quantitative_rules": [
+                    {
+                        "id": "Q1",
+                        "description": "Two thousand people receive three sheng each.",
+                        "operation": "multiply",
+                        "operands": [2000, 3],
+                        "expected_value": 5000,
+                        "expected_unit": "sheng",
+                    }
+                ],
+                "timeline_rules": [
+                    {"id": "T1", "description": "message travel", "start": "sent", "end": "received", "min_elapsed": 3, "max_elapsed": 7, "unit": "day"}
+                ],
+                "object_state_rules": [
+                    {"id": "O1", "object": "key", "initial_state": "clerk", "transitions": [{"scene_id": "S1", "from": "clerk", "to": "Yin Yun"}], "forbidden_states": []}
+                ],
+                "unit_conversions": {},
+            }
+        }
+        plan = {
+            "fact_assertions": {"timeline": [{"rule_id": "T1", "elapsed": 9, "unit": "day"}]},
+            "scenes": [
+                {
+                    "scene_id": "S1",
+                    "entry_state": {"objects": [{"name": "key", "holder": "clerk"}]},
+                    "exit_state": {"objects": [{"name": "key", "holder": "Yin Yun"}]},
+                },
+                {
+                    "scene_id": "S2",
+                    "entry_state": {"objects": [{"name": "key", "holder": "clerk"}]},
+                    "exit_state": {"objects": [{"name": "key", "holder": "clerk"}]},
+                },
+            ]
+        }
+        ledger = build_story_fact_ledger(causal, plan)
+        kinds = {item["kind"] for item in ledger["issues"]}
+        self.assertEqual(ledger["status"], "fail")
+        self.assertIn("quantitative_rule_mismatch", kinds)
+        self.assertIn("timeline_assertion_out_of_range", kinds)
+        self.assertIn("object_handoff_mismatch", kinds)
+
+    def test_scene_targets_and_model_contract_normalization_are_deterministic(self) -> None:
+        explicit_plan = {
+            "scenes": [
+                {"target_chars": 1800},
+                {"target_chars": 2100},
+                {"target_chars": 1900},
+                {"target_chars": 1800},
+            ]
+        }
+        explicit_targets = scene_target_chars(explicit_plan, 8200)
+        self.assertEqual(sum(explicit_targets), 8200)
+        self.assertGreater(explicit_targets[1], explicit_targets[0])
+        weighted_targets = scene_target_chars(
+            {"scenes": [{"weight": 1}, {"weight": 3}, {"weight": 2}]},
+            8200,
+        )
+        self.assertEqual(sum(weighted_targets), 8200)
+        self.assertGreater(weighted_targets[1], weighted_targets[2])
+        self.assertGreater(weighted_targets[2], weighted_targets[0])
+
+        causal = {
+            "schema": "fictionops.causal_simulation.v1",
+            "status": "ready",
+            "stakeholders": [],
+            "event_graph": [{"id": "E1"}],
+            "hard_constraints": {
+                "pov_whitelist": [],
+                "forbidden_pov": [],
+                "knowledge_limits": [],
+                "theme_questions": [],
+                "forbidden_conclusions": ["不替读者总结本章主题", "仁孜已经懂得完整规则"],
+                "special_passage_limits": [{"label": "speech", "marker": "说", "max_chars": 0}],
+                "quantitative_rules": [
+                    {
+                        "id": "Q1",
+                        "description": "章节目标体量 8200 字符",
+                        "operation": "add",
+                        "operands": [8000, 200],
+                        "expected_value": 8200,
+                        "expected_unit": "characters",
+                    }
+                ],
+                "unit_conversions": [],
+                "timeline_rules": [],
+                "object_state_rules": [],
+            },
+            "missing_mechanics": [],
+            "summary": "ready",
+        }
+        normalized = parse_causal_simulation(json.dumps(causal, ensure_ascii=False))
+        hard = normalized["hard_constraints"]
+        self.assertEqual(hard["unit_conversions"], {})
+        self.assertEqual(hard["quantitative_rules"], [])
+        self.assertEqual(hard["special_passage_limits"], [])
+        self.assertEqual(hard["forbidden_conclusions"], ["仁孜已经懂得完整规则"])
+        self.assertIn("不替读者总结本章主题", hard["knowledge_limits"])
+
+        candidate = "仁孜的手停在裹布上方，没有落下。"
+        grounded = {
+            "issues": [
+                {"evidence": ["手停在裹布上方"], "problem": "动作重复"},
+            ]
+        }
+        hallucinated = {
+            "issues": [
+                {"evidence": ["仁孜已经明白自己守住了秩序"], "problem": "主题代答"},
+            ]
+        }
+        self.assertEqual(review_evidence_grounding_issues(grounded, candidate), [])
+        self.assertEqual(
+            review_evidence_grounding_issues(hallucinated, candidate)[0]["kind"],
+            "ungrounded_review_issue",
+        )
+
+    def test_agent_write_workflow_can_draft_and_assemble_scenes_separately(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            chapter_dir = target / "book_01"
+            chapter_dir.mkdir()
+            chapter = chapter_dir / "ch_01_rain.md"
+            engine = chapter_dir / "ch_01_engine.md"
+            engine.write_text(
+                "# Chapter Engine\n\n- Title: Rain Ledger\n- target chars: 40\n",
+                encoding="utf-8",
+            )
+            dimensions = [
+                "chapter_engine", "scene_progression", "character_voice", "information_boundaries",
+                "continuity", "foreshadowing", "prose_freshness", "ending_change",
+            ]
+            causal = {
+                "schema": "fictionops.causal_simulation.v1",
+                "status": "ready",
+                "stakeholders": [],
+                "event_graph": [
+                    {"id": "E1", "preconditions": [], "action": "open ledger", "immediate_effects": [], "cost_transfer": [], "observable_evidence": [], "unresolved": []},
+                    {"id": "E2", "preconditions": ["E1"], "action": "write first name", "immediate_effects": [], "cost_transfer": [], "observable_evidence": [], "unresolved": []},
+                ],
+                "hard_constraints": {
+                    "pov_whitelist": ["Yin Yun"], "forbidden_pov": [], "knowledge_limits": [],
+                    "theme_questions": [], "forbidden_conclusions": [], "special_passage_limits": [],
+                    "quantitative_rules": [], "unit_conversions": {}, "timeline_rules": [],
+                    "object_state_rules": [
+                        {"id": "O1", "object": "ledger", "initial_code": "CLOSED", "initial_state": "closed", "transitions": [{"transition_id": "O1T1", "order": 1, "event_id": "E1", "from_code": "CLOSED", "to_code": "OPEN", "from": "closed", "to": "open"}, {"transition_id": "O1T2", "order": 2, "event_id": "E2", "from_code": "OPEN", "to_code": "MARKED", "from": "open", "to": "first line written"}], "forbidden_states": []}
+                    ],
+                },
+                "missing_mechanics": [], "summary": "ready",
+            }
+            causal_invalid = json.loads(json.dumps(causal))
+            causal_invalid["hard_constraints"]["unit_conversions"] = []
+            causal_invalid["hard_constraints"]["timeline_rules"] = [
+                {"id": "T1", "description": "unsupported duration", "start": "sent", "end": "received", "min_elapsed": 0, "max_elapsed": 0, "unit": "day"}
+            ]
+            plan = {
+                "schema": "fictionops.chapter_execution_plan.v1",
+                "status": "ready", "title": "Rain Ledger", "viewpoint": "Yin Yun", "kind": "bridge", "target_chars": 40,
+                "engine": {"pressure": "rain", "desire": "record", "obstacle": "distrust", "change": "two names", "remainder": "more remain"},
+                "scenes": [
+                    {"scene_id": "S1", "event_ids": ["E1", "E2"], "order": 1, "viewpoint": "Yin Yun", "weight": 1, "function": "ask", "goal": "first name", "conflict": "silence", "information_boundary": "local", "entry_state": {"facts": [], "knowledge": [], "objects": [{"name": "ledger", "code": "CLOSED", "state": "closed on her knee"}], "residue": []}, "exit_state": {"facts": ["first name"], "knowledge": [], "objects": [{"name": "ledger", "code": "WRONG", "state": "open with one line"}], "residue": []}, "exit": "ink dries"},
+                    {"scene_id": "S2", "event_ids": [], "order": 2, "viewpoint": "Yin Yun", "weight": 1, "function": "continue", "goal": "second name", "conflict": "rain", "information_boundary": "local", "entry_state": {"facts": ["first name"], "knowledge": [], "objects": [{"name": "ledger", "code": "MARKED", "state": "open under rain"}], "residue": []}, "exit_state": {"facts": ["second name"], "knowledge": [], "objects": [{"name": "ledger", "code": "MARKED", "state": "still open"}], "residue": ["more remain"]}, "exit": "page stays open"},
+                ],
+                "fact_assertions": {"timeline": [], "object_transitions": [{"rule_id": "O1", "transition_id": "O1T1", "event_id": "E1", "scene_id": "S1", "from_code": "CLOSED", "to_code": "OPEN"}, {"rule_id": "O1", "transition_id": "O1T2", "event_id": "E2", "scene_id": "S1", "from_code": "OPEN", "to_code": "MARKED"}]},
+                "preserve_constraints": [], "forbidden_reveals": [], "foreshadowing": [], "missing_context": [], "summary": "two uneven contacts",
+            }
+            evaluation = {
+                "schema": "fictionops.draft_evaluation.v1", "verdict": "pass",
+                "dimensions": [{"name": name, "status": "pass", "evidence": "fulfilled"} for name in dimensions],
+                "constraint_checks": [], "issues": [], "retrospective": {}, "canon_sync_suggestions": [], "summary": "pass",
+            }
+            evaluation_fail = json.loads(json.dumps(evaluation))
+            evaluation_fail["verdict"] = "fail"
+            evaluation_fail["dimensions"][2] = {"name": "character_voice", "status": "fail", "evidence": "LEAK is explanatory"}
+            evaluation_fail["issues"] = [{"category": "character_voice", "severity": "P2", "problem": "Remove LEAK", "evidence": ["LEAK"], "suggested_action": "Keep action only", "preserve_constraints": []}]
+            evaluation_fail["summary"] = "rewrite scenes"
+            runner = target / "runner.py"
+            runner.write_text(
+                "import json, sys\nfrom pathlib import Path\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"causal = {causal!r}\n"
+                f"causal_invalid = {causal_invalid!r}\n"
+                f"plan = {plan!r}\n"
+                f"evaluation = {evaluation!r}\n"
+                f"evaluation_fail = {evaluation_fail!r}\n"
+                "if 'causal-simulator' in payload:\n"
+                "    print(json.dumps(causal if 'Causal Contract Repair' in payload else causal_invalid))\n"
+                "elif 'chapter-planner' in payload:\n"
+                "    print(json.dumps(plan))\n"
+                "elif 'draft-evaluator' in payload:\n"
+                "    print(json.dumps(evaluation_fail if 'LEAK' in payload else evaluation))\n"
+                "elif Path.cwd().name == 'S1':\n"
+                "    print('Rain pressed the paper flat while Yin Yun waited for the first name. Ink entered the empty line.' if 'scene-rewriter' in payload else 'Rain pressed the paper flat. LEAK explained the first name before ink entered the line.')\n"
+                "elif Path.cwd().name == 'S2':\n"
+                "    print('The second voice came after the eaves overflowed. She left the page open for those still silent.')\n"
+                "else:\n"
+                "    raise SystemExit(2)\n",
+                encoding="utf-8",
+            )
+            run_dir = target / "00_management" / "agent_runs" / "scene_write"
+            result = self.run_cli(
+                "agent-write-workflow", str(chapter), "--engine", str(engine), "--out-dir", str(run_dir),
+                "--min-chars", "20", "--max-retries", "1", "--no-memory", "--no-adversarial-review",
+                "--scene-by-scene", "--format", "json", "--runner", sys.executable, str(runner),
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            data = json.loads(result.stdout)
+            self.assertTrue(data["ready_for_approval"], data)
+            self.assertTrue(data["scene_by_scene"])
+            self.assertEqual(data["scene_writer_call_count"], 9)
+            self.assertEqual(data["causal_simulator_call_count"], 2)
+            self.assertEqual(data["retry_count"], 1)
+            self.assertTrue(data["chapter_plan"]["normalizations"])
+            candidate = (run_dir / "candidate.md").read_text(encoding="utf-8")
+            self.assertIn("# Rain Ledger", candidate)
+            self.assertLess(candidate.index("first name"), candidate.index("second voice"))
+            self.assertNotIn("LEAK", candidate)
+            execution = json.loads((run_dir / "scene_execution.json").read_text(encoding="utf-8"))
+            self.assertEqual([item["scene_id"] for item in execution["scenes"]], ["S1", "S2"])
+            self.assertTrue((run_dir / "scene_execution.retry1.json").exists())
+            retry_execution = json.loads((run_dir / "scene_execution.retry1.json").read_text(encoding="utf-8"))
+            self.assertEqual(retry_execution["selected_scene_ids"], ["S1"])
+            self.assertTrue(next(item for item in retry_execution["scenes"] if item["scene_id"] == "S1")["rewritten"])
+            self.assertFalse(next(item for item in retry_execution["scenes"] if item["scene_id"] == "S2")["rewritten"])
+
+    def test_agent_write_workflow_stops_on_observed_token_budget_and_resumes_with_cumulative_usage(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            chapter_dir = target / "book_01"
+            chapter_dir.mkdir()
+            chapter = chapter_dir / "ch_01_budget.md"
+            engine = chapter_dir / "ch_01_engine.md"
+            engine.write_text("# Budget Chapter\n\n- target chars: 200\n", encoding="utf-8")
+            plan = {
+                "schema": "fictionops.chapter_execution_plan.v1",
+                "status": "ready",
+                "title": "Budget Chapter",
+                "viewpoint": "Yin Yun",
+                "kind": "bridge",
+                "target_chars": 200,
+                "engine": {"pressure": "rain", "desire": "record", "obstacle": "silence", "change": "one name", "remainder": "more remain"},
+                "scenes": [
+                    {
+                        "scene_id": "S1",
+                        "order": 1,
+                        "viewpoint": "Yin Yun",
+                        "weight": 1,
+                        "function": "record",
+                        "goal": "one name",
+                        "conflict": "silence",
+                        "information_boundary": "local",
+                        "entry_state": {},
+                        "exit_state": {},
+                        "exit": "ink dries",
+                    }
+                ],
+                "preserve_constraints": [],
+                "forbidden_reveals": [],
+                "foreshadowing": [],
+                "missing_context": [],
+                "summary": "ready",
+            }
+            runner = target / "budget_runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"plan = {plan!r}\n"
+                "if 'chapter-planner' not in payload:\n"
+                "    raise SystemExit('unexpected second model call')\n"
+                "receipt = {'schema': 'fictionops.runner_receipt.v1', 'provider': 'test', 'model': 'planner', 'request_id': 'req-plan', 'usage': {'input_tokens': 100, 'output_tokens': 20, 'total_tokens': 120}, 'cost': {'currency': 'USD', 'total': 0.001}}\n"
+                "print('FICTIONOPS_RUNNER_RECEIPT:' + json.dumps(receipt), file=sys.stderr)\n"
+                "print(json.dumps(plan))\n",
+                encoding="utf-8",
+            )
+            run_dir = target / "00_management" / "agent_runs" / "budget_stop"
+            result = self.run_cli(
+                "agent-write-workflow",
+                str(chapter),
+                "--engine",
+                str(engine),
+                "--out-dir",
+                str(run_dir),
+                "--no-memory",
+                "--no-causal-simulation",
+                "--no-adversarial-review",
+                "--max-model-calls",
+                "5",
+                "--max-total-tokens",
+                "100",
+                "--runner",
+                sys.executable,
+                str(runner),
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("model_token_budget_exhausted", result.stderr)
+            budget = json.loads((run_dir / "model_budget.json").read_text(encoding="utf-8"))
+            self.assertEqual(budget["status"], "exhausted")
+            self.assertEqual(budget["used_calls"], 1)
+            self.assertEqual(budget["attempted_role"], "draft-writer")
+            self.assertEqual(budget["calls"][0]["role"], "chapter-planner")
+            self.assertEqual(budget["segment_usage"]["total_tokens"], 120)
+            self.assertEqual(budget["segment_cost_by_currency"]["USD"], 0.001)
+            self.assertEqual(json.loads((run_dir / "checkpoint.json").read_text(encoding="utf-8"))["phase"], "plan_ready")
+            self.assertFalse(chapter.exists())
+
+            dimensions = [
+                "chapter_engine",
+                "scene_progression",
+                "character_voice",
+                "information_boundaries",
+                "continuity",
+                "foreshadowing",
+                "prose_freshness",
+                "ending_change",
+            ]
+            evaluation = {
+                "schema": "fictionops.draft_evaluation.v1",
+                "verdict": "pass",
+                "dimensions": [{"name": name, "status": "pass", "evidence": "fulfilled"} for name in dimensions],
+                "constraint_checks": [],
+                "issues": [],
+                "retrospective": {"chapter_change": "one name entered", "residue": "more remain", "character_updates": [], "information_updates": [], "foreshadowing_updates": []},
+                "canon_sync_suggestions": [],
+                "summary": "pass",
+            }
+            candidate = "# Budget Chapter\n\n" + ("Rain pressed the ledger while Yin Yun waited for a name. " * 28) + "\n"
+            resume_runner = target / "resume_runner.py"
+            resume_runner.write_text(
+                "import json, sys\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                f"evaluation = {evaluation!r}\n"
+                f"candidate = {candidate!r}\n"
+                "if 'chapter-planner' in payload:\n"
+                "    raise SystemExit('planner must not be called again')\n"
+                "receipt = {'schema': 'fictionops.runner_receipt.v1', 'provider': 'test', 'model': 'writer', 'request_id': 'req-resume', 'usage': {'input_tokens': 200, 'output_tokens': 50, 'total_tokens': 250}, 'cost': {'currency': 'USD', 'total': 0.002}}\n"
+                "print('FICTIONOPS_RUNNER_RECEIPT:' + json.dumps(receipt), file=sys.stderr)\n"
+                "print(json.dumps(evaluation) if 'draft-evaluator' in payload else candidate)\n",
+                encoding="utf-8",
+            )
+            resumed = self.run_cli(
+                "agent",
+                "resume",
+                str(run_dir),
+                "--max-model-calls",
+                "2",
+                "--max-total-tokens",
+                "1000",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(resume_runner),
+                check=False,
+            )
+            self.assertEqual(resumed.returncode, 0, resumed.stderr)
+            resumed_payload = json.loads(resumed.stdout)
+            self.assertTrue(resumed_payload["resumed"])
+            self.assertEqual(resumed_payload["resumed_from_phase"], "plan_ready")
+            self.assertEqual(resumed_payload["final_phase"], "ready_for_approval", resumed_payload)
+            self.assertTrue(resumed_payload["ready_for_approval"])
+            self.assertEqual(resumed_payload["model_calls_used"], 2)
+            self.assertEqual(resumed_payload["cumulative_model_calls"], 3)
+            self.assertTrue((run_dir / "model_budget.segment1.json").exists())
+            resumed_budget = json.loads((run_dir / "model_budget.json").read_text(encoding="utf-8"))
+            self.assertEqual([item["role"] for item in resumed_budget["calls"]], ["draft-writer", "draft-evaluator"])
+            self.assertEqual(resumed_budget["segment_usage"]["total_tokens"], 500)
+            self.assertEqual(resumed_budget["cumulative_usage"]["total_tokens"], 620)
+            self.assertEqual(resumed_budget["segment_cost_by_currency"]["USD"], 0.004)
+            self.assertEqual(resumed_budget["cumulative_cost_by_currency"]["USD"], 0.005)
+            self.assertEqual(json.loads((run_dir / "session.json").read_text(encoding="utf-8"))["resume_count"], 1)
+            self.assertFalse(chapter.exists())
+
+    def test_unified_agent_entry_and_continue_respect_authority_boundaries(self) -> None:
+        policy_cases = [
+            ({"state": "ready_for_approval"}, "review_candidate", "author"),
+            ({"state": "drafting", "budget_status": "exhausted"}, "replan_budget", "author"),
+            ({"state": "needs_revision_attention"}, "inspect_failed_candidate", "author"),
+            ({"state": "cancelled"}, "start_new_session_after_cancellation", "author"),
+            ({"state": "applied", "canon_sync_pending": True}, "review_canon_sync", "author"),
+            ({"state": None, "memory_stale": True}, "rebuild_memory", "controller"),
+            ({"state": None}, "inspect_project", "controller"),
+        ]
+        for inputs, expected_action, expected_authority in policy_cases:
+            decision = select_agent_policy(**inputs)
+            self.assertEqual(decision.action, expected_action)
+            self.assertEqual(decision.authority, expected_authority)
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            chapter_dir = target / "book_01"
+            chapter_dir.mkdir()
+            chapter = chapter_dir / "ch_01_unified.md"
+            engine = chapter_dir / "ch_01_engine.md"
+            engine.write_text("# Unified Chapter\n\n- target chars: 200\n", encoding="utf-8")
+
+            prepared = self.run_cli(
+                "agent",
+                "write",
+                str(chapter),
+                "--engine",
+                str(engine),
+                "--no-memory",
+                "--dry-run",
+                "--format",
+                "json",
+            )
+            prepared_payload = json.loads(prepared.stdout)
+            self.assertEqual(prepared_payload["command"], "agent-write-workflow")
+            self.assertFalse(prepared_payload["executed"])
+
+            memory_dir = target / ".fictionops" / "memory"
+            memory_dir.mkdir(parents=True)
+            (memory_dir / "stale.json").write_text('{"reason":"accepted"}\n', encoding="utf-8")
+            continued = self.run_cli("agent", "continue", str(target), "--execute", "--format", "json")
+            continued_payload = json.loads(continued.stdout)
+            self.assertEqual(continued_payload["selected_action"], "rebuild_memory")
+            self.assertTrue(continued_payload["executed"])
+            self.assertFalse(continued_payload["memory"]["stale"])
+
+            run_dir = target / "00_management" / "agent_runs" / "ready"
+            run_dir.mkdir(parents=True)
+            (run_dir / "session.json").write_text(
+                json.dumps(
+                    {
+                        "session_id": "ready-session",
+                        "state": "ready_for_approval",
+                        "ready_for_approval": True,
+                        "source_file": str(chapter),
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            stopped = self.run_cli("agent", "continue", str(target), "--execute", "--format", "json")
+            stopped_payload = json.loads(stopped.stdout)
+            self.assertEqual(stopped_payload["selected_action"], "review_candidate")
+            self.assertTrue(stopped_payload["requires_human"])
+            self.assertFalse(stopped_payload["executed"])
+            self.assertEqual(stopped_payload["stop_reason"], "human_authority_required")
+            self.assertIn("agent accept", stopped_payload["suggested_command"])
+
+            status = json.loads(self.run_cli("agent", "status", str(target), "--format", "json").stdout)
+            self.assertEqual(status["schema"], "fictionops.agent_project_status.v1")
+            self.assertGreaterEqual(status["session_count"], 1)
+            self.assertEqual(status["author_actions"]["ready_for_approval"], 1)
+            self.assertEqual(status["author_actions"]["resumable"], 0)
+
+    def test_agent_checkpoint_and_cancel_are_persistent_authority_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            chapter_dir = target / "book_01"
+            chapter_dir.mkdir()
+            chapter = chapter_dir / "ch_02_cancelled.md"
+            engine = chapter_dir / "ch_02_engine.md"
+            engine.write_text("# Cancelled Chapter\n\n- target chars: 200\n", encoding="utf-8")
+            run_dir = target / "00_management" / "agent_runs" / "cancel_me"
+            prepared = self.run_cli(
+                "agent",
+                "write",
+                str(chapter),
+                "--engine",
+                str(engine),
+                "--out-dir",
+                str(run_dir),
+                "--no-memory",
+                "--format",
+                "json",
+            )
+            self.assertTrue(json.loads(prepared.stdout)["prepared"])
+            checkpoint = json.loads((run_dir / "checkpoint.json").read_text(encoding="utf-8"))
+            self.assertEqual(checkpoint["phase"], "context_ready")
+            self.assertTrue(checkpoint["resumable"])
+            self.assertTrue(all(item["exists"] and item["sha256"] for item in checkpoint["artifacts"]))
+
+            cancelled = self.run_cli(
+                "agent",
+                "cancel",
+                str(run_dir),
+                "--reason",
+                "author changed the chapter premise",
+                "--format",
+                "json",
+            )
+            cancelled_payload = json.loads(cancelled.stdout)
+            self.assertTrue(cancelled_payload["cancelled"])
+            self.assertEqual(json.loads((run_dir / "session.json").read_text(encoding="utf-8"))["state"], "cancelled")
+            cancelled_checkpoint = json.loads((run_dir / "checkpoint.json").read_text(encoding="utf-8"))
+            self.assertEqual(cancelled_checkpoint["phase"], "cancelled")
+            self.assertFalse(cancelled_checkpoint["resumable"])
+            self.assertTrue((run_dir / "cancellation.json").exists())
+
+            continued = self.run_cli("agent", "continue", str(target), "--execute", "--format", "json")
+            continued_payload = json.loads(continued.stdout)
+            self.assertEqual(continued_payload["selected_action"], "start_new_session_after_cancellation")
+            self.assertTrue(continued_payload["requires_human"])
+            self.assertFalse(continued_payload["executed"])
+            refused = self.run_cli(
+                "agent",
+                "cancel",
+                str(run_dir),
+                "--reason",
+                "duplicate",
+                "--format",
+                "json",
+                check=False,
+            )
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertFalse(chapter.exists())
+            trajectory = [json.loads(line) for line in (run_dir / "trajectory.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertTrue(any(item["authority"] == "author" and item["phase"] == "cancelled" for item in trajectory))
+
+            lab = json.loads(self.run_cli("agent", "failure-lab", "--format", "json").stdout)
+            self.assertEqual(lab["schema"], "fictionops.agent_failure_lab.v1")
+            self.assertEqual(lab["scenario_count"], 7)
+            self.assertEqual(lab["detection_rate"], 1.0)
+            self.assertEqual(lab["protected_hash_success_rate"], 1.0)
+            self.assertEqual(lab["recovery_success_rate"], 1.0)
+
+    def test_persistent_issue_identity_survives_rewording_and_author_decisions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            (target / "00_management").mkdir()
+            chapter = target / "chapter.md"
+            chapter.write_text("# Chapter\n\n他抬剑时没有看仁孜。\n", encoding="utf-8")
+            run1 = target / "00_management" / "agent_runs" / "run1"
+            run2 = target / "00_management" / "agent_runs" / "run2"
+            run3 = target / "00_management" / "agent_runs" / "run3"
+            run4 = target / "00_management" / "agent_runs" / "run4"
+            for run_dir in (run1, run2, run3, run4):
+                run_dir.mkdir(parents=True)
+            issue_a = {
+                "category": "semantic.character",
+                "severity": "P2",
+                "confidence": 0.9,
+                "metric_keys": [],
+                "evidence": ["他抬剑时没有看仁孜"],
+                "problem": "旁白替人物完成了确定判断",
+                "status": "open",
+            }
+            issue_b = {
+                "category": "semantic.character",
+                "severity": "P2",
+                "confidence": 0.88,
+                "metric_keys": [],
+                "evidence": ["他抬剑时没有看仁孜", "剑锋停在半寸外"],
+                "problem": "叙述提前给出了人物尚未形成的结论",
+                "status": "open",
+            }
+            first, _ = merge_issue_observations(
+                chapter,
+                session_id="session-1",
+                run_dir=run1,
+                issues=[issue_a],
+            )
+            issue_id = str(first[0]["issue_id"])
+            self.assertEqual(issue_id, stable_issue_id(chapter, issue_a))
+
+            waived = self.run_cli(
+                "agent",
+                "issue",
+                str(target),
+                "--id",
+                issue_id,
+                "--status",
+                "waived",
+                "--reason",
+                "此处保留为人物自我遮蔽",
+                "--format",
+                "json",
+            )
+            self.assertEqual(json.loads(waived.stdout)["issues"][0]["status"], "waived")
+            second, _ = merge_issue_observations(
+                chapter,
+                session_id="session-2",
+                run_dir=run2,
+                issues=[issue_b, dict(issue_b)],
+            )
+            self.assertEqual(len(second), 1)
+            self.assertEqual(second[0]["issue_id"], issue_id)
+            self.assertEqual(second[0]["status"], "waived")
+            self.assertEqual(len(second[0]["evidence"]), 2)
+            (run2 / "issues.before.json").write_text(
+                json.dumps({"schema": "fictionops.revision_issues.v1", "issues": second}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            compact = compact_issue_ledger(run2)
+            self.assertEqual(compact["issue_count"], 0)
+            self.assertEqual(compact["excluded_issue_count"], 1)
+            self.assertEqual(compact["excluded_issues"][0]["issue_id"], issue_id)
+
+            reopened = self.run_cli(
+                "agent",
+                "issue",
+                str(target),
+                "--id",
+                issue_id,
+                "--status",
+                "reopened",
+                "--reason",
+                "新上下文表明此处不再承担遮蔽功能",
+                "--format",
+                "json",
+            )
+            self.assertEqual(json.loads(reopened.stdout)["issues"][0]["status"], "reopened")
+            transition_issue(target, issue_id=issue_id, to_status="addressed", reason="candidate removed the conclusion", actor="controller")
+            transition_issue(target, issue_id=issue_id, to_status="verified", reason="semantic verifier passed", actor="controller")
+            transition_issue(target, issue_id=issue_id, to_status="accepted", reason="author accepted candidate", actor="controller")
+            fourth, _ = merge_issue_observations(
+                chapter,
+                session_id="session-4",
+                run_dir=run4,
+                issues=[issue_b],
+            )
+            self.assertEqual(fourth[0]["issue_id"], issue_id)
+            self.assertEqual(fourth[0]["status"], "reopened")
+            ledger = load_issue_ledger(target)
+            stored = next(item for item in ledger["issues"] if item["issue_id"] == issue_id)
+            self.assertEqual(len(stored["observations"]), 3)
+            self.assertTrue(any(item["to_status"] == "waived" for item in stored["decisions"]))
+            self.assertTrue(any(item["to_status"] == "reopened" for item in stored["decisions"]))
+
+    def test_high_risk_review_fixture_covers_three_semantic_profiles(self) -> None:
+        fixture = json.loads(
+            (ROOT / "tests" / "fixtures" / "agent_high_risk_review_cases.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(fixture["schema"], "fictionops.agent_high_risk_review_cases.v1")
+        cases = fixture["cases"]
+        self.assertEqual(
+            {item["risk"] for item in cases},
+            {"information_boundaries", "character", "prose_and_reader_experience"},
+        )
+        issue_ids: set[str] = set()
+        for case in cases:
+            review = parse_comprehensive_review(json.dumps(case["review"], ensure_ascii=False))
+            self.assertEqual(len(review["dimensions"]), 6)
+            self.assertEqual(review["issues"][0]["category"], case["expected_category"])
+            self.assertTrue(case["false_positive_guard"])
+            chapter = Path(f"fixture/{case['case_id']}.md")
+            issue = {**review["issues"][0], "category": f"semantic.{review['issues'][0]['category']}"}
+            issue_id = stable_issue_id(chapter, issue)
+            reworded = {**issue, "problem": "A differently worded diagnosis of the same quoted evidence."}
+            self.assertEqual(stable_issue_id(chapter, reworded), issue_id)
+            issue_ids.add(issue_id)
+            raw_prompt = baseline_prompt(case, "raw")
+            self.assertIn("fictionops.agent_research_baseline_request.v1", raw_prompt)
+            self.assertNotIn("## Retrieved Project Context", raw_prompt)
+            self.assertNotIn("## False-Positive Guard", raw_prompt)
+            self.assertNotIn("## Workflow Contract", raw_prompt)
+            self.assertNotIn(case["project_context"], raw_prompt)
+        self.assertEqual(len(issue_ids), 3)
+        with tempfile.TemporaryDirectory() as tmp:
+            runner = Path(tmp) / "baseline_runner.py"
+            expected = {case["case_id"]: case["review"] for case in cases}
+            runner.write_text(
+                "import json, re, sys\n"
+                f"expected = {expected!r}\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                "case_id = re.search(r'^CASE_ID: (.+)$', payload, re.MULTILINE).group(1).strip()\n"
+                "print(json.dumps(expected[case_id], ensure_ascii=False))\n",
+                encoding="utf-8",
+            )
+            baseline = run_baselines(
+                ROOT / "tests" / "fixtures" / "agent_high_risk_review_cases.json",
+                runner=[sys.executable, str(runner)],
+            )
+            self.assertEqual(baseline["schema"], "fictionops.agent_review_baseline.v1")
+            self.assertEqual(len(baseline["rows"]), 9)
+            self.assertEqual(baseline["rows"][0]["review"], cases[0]["review"])
+            self.assertEqual(len(baseline["rows"][0]["prompt_sha256"]), 64)
+            for mode in ("raw", "rag", "workflow"):
+                self.assertEqual(baseline["aggregate"][mode]["detection_rate"], 1.0)
+                self.assertEqual(baseline["aggregate"][mode]["grounded_rate"], 1.0)
+            cli_baseline = self.run_cli(
+                "agent",
+                "benchmark",
+                str(ROOT / "tests" / "fixtures" / "agent_high_risk_review_cases.json"),
+                "--conditions",
+                "raw,full,no_memory",
+                "--runs",
+                "2",
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            cli_payload = json.loads(cli_baseline.stdout)
+            self.assertEqual(cli_payload["conditions"], ["raw", "full", "no_memory"])
+            self.assertEqual(cli_payload["runs_per_case"], 2)
+            self.assertEqual(len(cli_payload["rows"]), 18)
+
+    def test_semantic_pass_cannot_override_missing_required_metric_progress(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            (run_dir / "verification.json").write_text(
+                json.dumps(
+                    {
+                        "checks": [],
+                        "metric_deltas": {
+                            "prose.exclusionary_narration": {
+                                "before_count": 35,
+                                "after_count": 35,
+                                "before_severity": "P2",
+                                "after_severity": "P2",
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (run_dir / "session.json").write_text(json.dumps({"state": "verifying"}), encoding="utf-8")
+            (run_dir / "comprehensive_review.json").write_text(
+                json.dumps(
+                    {
+                        "issues": [
+                            {
+                                "severity": "P2",
+                                "metric_keys": ["prose.exclusionary_narration"],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            semantic = {
+                "verdict": "pass",
+                "invariants": [
+                    {"name": name, "status": "pass", "evidence": "model claims it is fixed"}
+                    for name in (
+                        "plot_events",
+                        "point_of_view",
+                        "chronology",
+                        "character_intentions",
+                        "information_boundaries",
+                        "ambiguity_and_withholding",
+                        "review_findings_addressed",
+                    )
+                ],
+                "summary": "The model reports success.",
+            }
+            verification = merge_semantic_verification(run_dir, semantic)
+            self.assertFalse(verification["ready_for_approval"])
+            self.assertIn("review_metric_progress_consistent", verification["blocking_failures"])
 
     def test_audit_continuity_detects_standard_project_gaps(self) -> None:
         temp, target = self.make_project()
@@ -5314,6 +6957,26 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(decided["status"], "completed")
             self.assertEqual(decided["human_decision"]["decision"], "reject")
 
+            chapter = target / "closed_loop_chapter.md"
+            engine = target / "closed_loop_engine.md"
+            engine.write_text("# Closed Loop Chapter\n\n- target chars: 200\n", encoding="utf-8")
+            closed_loop = module.build_session(
+                {
+                    "project_path": str(target),
+                    "goal": "Prepare a canonical closed-loop chapter run.",
+                    "chapter_file": str(chapter),
+                    "engine_file": str(engine),
+                    "runtime_mode": "closed_loop",
+                    "dry_run": True,
+                    "acceptance_mode": "human_governed",
+                },
+                task="draft",
+            )
+            self.assertEqual(closed_loop["api_version"], "1.0")
+            self.assertEqual(closed_loop["metrics"]["runtime_mode"], "closed_loop")
+            self.assertEqual(closed_loop["runtime_report"]["api_version"], "1.0")
+            self.assertEqual(closed_loop["runtime_report"]["command"], "agent-write-workflow")
+
     def test_ai_first_chapter_commands_stage_or_prepare_outputs(self) -> None:
         temp, target = self.make_project()
         with temp:
@@ -5476,15 +7139,19 @@ class FictionOpsCliTests(unittest.TestCase):
                 command=[
                     sys.executable,
                     "-c",
-                    "import sys; data = sys.stdin.read(); print('# Runner Output'); print('has prompt', 'FictionOps' in data)",
+                    "import json, sys; data = sys.stdin.read(); receipt={'schema':'fictionops.runner_receipt.v1','provider':'test','model':'test-model','request_id':'req-123','usage':{'input_tokens':11,'output_tokens':7,'total_tokens':18},'cost':{'currency':'USD','total':0.0003}}; print('FICTIONOPS_RUNNER_RECEIPT:'+json.dumps(receipt), file=sys.stderr); print('# Runner Output'); print('has prompt', 'FictionOps' in data)",
                 ],
             )
             self.assertEqual(report.executed, True)
             self.assertEqual(report.written, True)
             self.assertEqual(report.returncode, 0)
             self.assertGreater(report.input_chars, 0)
+            self.assertEqual(report.telemetry["request_id"], "req-123")
+            self.assertEqual(report.telemetry["usage"]["total_tokens"], 18)
             self.assertIn("has prompt True", (run_dir / "output.md").read_text(encoding="utf-8"))
             self.assertTrue((run_dir / "execution.json").exists())
+            receipt = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+            self.assertEqual(receipt["telemetry"]["cost"]["total"], 0.0003)
 
             ready = build_agent_inbox(target)
             self.assertEqual(ready.status, "ready_for_review")
@@ -5591,6 +7258,51 @@ class FictionOpsCliTests(unittest.TestCase):
 
             ready = build_agent_inbox(target)
             self.assertEqual(ready.status, "ready_for_review")
+
+    def test_openai_compatible_chat_runner_retries_transient_transport_failure(self) -> None:
+        runner = ROOT / "examples" / "agent_runner_openai_chat.py"
+        spec = importlib.util.spec_from_file_location("fictionops_chat_runner_retry_test", runner)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self):
+                return json.dumps({"choices": [{"message": {"content": "recovered"}}]}).encode("utf-8")
+
+        with mock.patch.object(
+            module.urllib.request,
+            "urlopen",
+            side_effect=[module.urllib.error.URLError("temporary reset"), Response()],
+        ) as opened:
+            output, receipt = module.call_chat_completions(
+                payload="bundle",
+                model="test-model",
+                api_key="secret",
+                base_url="https://example.invalid/v1",
+                timeout=1,
+                max_tokens=10,
+                temperature=0.2,
+                max_output_chars=100,
+                retries=1,
+                retry_backoff=0,
+                provider="test-provider",
+                input_cost_per_million=1.0,
+                output_cost_per_million=2.0,
+                currency="USD",
+            )
+        self.assertEqual(output, "recovered")
+        self.assertEqual(receipt["provider"], "test-provider")
+        self.assertEqual(receipt["usage"], {})
+        self.assertEqual(receipt["cost"]["total"], 0.0)
+        self.assertEqual(opened.call_count, 2)
 
     def test_openai_compatible_chat_runner_dry_run_is_usable(self) -> None:
         temp, target = self.make_project()

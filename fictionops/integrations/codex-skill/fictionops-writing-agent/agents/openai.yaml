@@ -1,0 +1,4 @@
+interface:
+  display_name: "FictionOps Writing Agent"
+  short_description: "Run governed long-form writing workflows"
+  default_prompt: "Use $fictionops-writing-agent to write or revise this chapter through the stateful FictionOps runtime."

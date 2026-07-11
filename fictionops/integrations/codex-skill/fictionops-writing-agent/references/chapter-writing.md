@@ -26,3 +26,5 @@ A staged draft is not accepted until it:
 - Keeps character knowledge and voice distinct.
 - Leaves usable hooks for the next chapter.
 - Avoids explaining every motive through narration.
+
+Use `ready_for_approval` only as a review eligibility signal. Confirm the source and candidate hashes are current, show the user the material change, and call `fictionops agent accept <run-dir>` only after explicit approval.

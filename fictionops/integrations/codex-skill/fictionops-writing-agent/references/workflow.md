@@ -2,19 +2,18 @@
 
 ## AI-Native Chapter Cycle
 
-1. Inspect current state with `agent-next`, `doctor`, and the book/chapter outline.
-2. Build a task bundle with `draft-brief`, `context-pack`, or `agent-run`.
-3. Execute with a real model runner, such as `examples/agent_runner_openai_chat.py`, configured through environment variables.
-4. Stage results under the FictionOps agent run directory.
-5. Review staged outputs through `agent-inbox`.
-6. Apply accepted changes and run post-draft or review gates.
+1. Inspect existing sessions/checkpoints plus `doctor` and the chapter engine.
+2. Run `fictionops agent write` with a real runner and explicit budgets.
+3. Review `candidate.md`, `changes.diff`, `verification.v1.json`, `issues.after.json`, and `model_budget.json`.
+4. Resume a supported interrupted phase with `fictionops agent resume`; never replay completed phases manually.
+5. Apply only after explicit author approval with `fictionops agent accept`.
 
 ## Revision Cycle
 
-1. Identify concrete problems through audits or user notes.
-2. Use `revision-plan` or `workflow-plan` to separate structural fixes from prose fixes.
-3. Ask the runner for a scoped patch or rewrite plan.
-4. Keep rejected alternatives in notes only when they explain a future constraint.
+1. Identify concrete problems through the persistent issue ledger, audits, or user notes.
+2. Run `fictionops agent revise`; default to comprehensive review unless the user deliberately scopes a style-only pass.
+3. Inspect before/after issue identity, semantic invariants, and any targeted retry evidence.
+4. Waive/reject/reopen issues only with an explicit author reason.
 
 ## Publishing Cycle
 

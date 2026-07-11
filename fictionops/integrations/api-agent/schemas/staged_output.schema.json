@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fictionops.example/schemas/staged_output.schema.json",
+  "$id": "https://southwinter.github.io/fictionops/schemas/v1/staged_output.schema.json",
   "title": "StagedOutput",
   "type": "object",
   "required": ["run_dir", "output_file", "role", "task", "state", "review_required"],

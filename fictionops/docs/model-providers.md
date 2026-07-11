@@ -6,9 +6,17 @@ This keeps FictionOps usable with OpenAI, Chinese mainstream model providers, lo
 
 ## Recommended Runner Choice
 
-- Use `examples/agent_runner_openai_chat.py` for OpenAI-compatible Chat Completions APIs. This is the easiest path for DeepSeek, Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, many gateways, and local servers. The runner supports provider presets, `.env` files, dry-run reports, timeout settings, and output-length guards.
+- Use `examples/agent_runner_openai_chat.py` for OpenAI-compatible Chat Completions APIs. This is the easiest path for DeepSeek, Qwen/DashScope, Kimi/Moonshot, GLM/Zhipu, Doubao/Volcengine Ark, SiliconFlow, many gateways, and local servers. The runner supports provider presets, `.env` files, dry-run reports, timeout settings, output-length guards, and bounded retries for transport errors, HTTP 429, and HTTP 5xx.
 - Use `examples/agent_runner_openai_responses.py` for OpenAI's Responses API.
 - Write a custom runner when the provider does not expose an OpenAI-compatible chat endpoint or needs special authentication.
+
+The OpenAI-compatible runner emits a versioned telemetry receipt on stderr after each successful real call. Provider response ids and token usage are recorded automatically. Cost is calculated only when you explicitly pass `--input-cost-per-million` and/or `--output-cost-per-million`; FictionOps does not embed a provider price table that may become stale.
+
+```powershell
+fictionops agent write chapter.md --engine engine.md --max-total-tokens 200000 --max-cost 2.00 --cost-currency USD --runner python examples/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat --input-cost-per-million 0.27 --output-cost-per-million 1.10
+```
+
+The thresholds use observed provider usage and are checked before the next model call. A single in-flight response can therefore cross a threshold; the controller records that overage and refuses the following call.
 
 ## DeepSeek Example
 

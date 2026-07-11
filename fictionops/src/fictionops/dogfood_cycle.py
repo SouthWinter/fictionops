@@ -14,6 +14,7 @@ DECISIONS = {"accepted", "deferred", "failed"}
 READY_STATUSES = {"ready", "ready_for_project_work", "complete", "completed"}
 MIN_DOGFOOD_CALENDAR_DAYS = 7
 RECOGNIZED_FICTIONOPS_COMMANDS = {
+    "agent",
     "adopt",
     "adopt-review",
     "adopt-plan",
@@ -46,7 +47,10 @@ RECOGNIZED_FICTIONOPS_COMMANDS = {
     "agent-run",
     "agent-exec",
     "agent-inbox",
+    "agent-memory",
     "agent-revise-workflow",
+    "agent-accept-revision",
+    "agent-write-workflow",
     "write-chapter",
     "revise-chapter",
     "audit-chapter",

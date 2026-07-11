@@ -1,8 +1,8 @@
 # API Agent Adapter
 
-This directory sketches a platform-neutral contract for external AI agents that want to use FictionOps as a long-form writing harness.
+This directory defines the v1 platform-neutral contract for external AI agents that use FictionOps as a long-form writing harness.
 
-The current server is a thin local reference implementation, not a production hosted service. It defines how a controller, hosted agent, IDE extension, or web app could talk to FictionOps without depending on Codex-specific behavior.
+The server is a thin local reference implementation, not a production hosted service. Closed-loop requests delegate to the public `fictionops.api` facade, which uses the same runtime as the CLI and Codex skill.
 
 ## Shape
 
@@ -36,7 +36,17 @@ python integrations/api-agent/server.py --host 127.0.0.1 --port 8765
 
 Then post a request to `http://127.0.0.1:8765/v1/write-chapter`.
 
-If `runner_command` is omitted, the server prepares an `agent-run` bundle and stops before model execution. If `runner_command` is present, the server calls `agent-exec`, writes staged output, and inspects it with `agent-inbox`.
+For the canonical runtime, send `runtime_mode: closed_loop`, `chapter_file`, and (for writing) `engine_file`. If `runner_command` is omitted, the workflow prepares a resumable run and stops before model execution. Legacy requests without `chapter_file` retain the v0 bundle behavior for compatibility.
+
+The Python API is importable directly:
+
+```python
+from fictionops.api import write_chapter
+
+report = write_chapter("chapter.md", engine_file="engine.md", runner=["python", "runner.py"])
+```
+
+The public facade and HTTP responses declare API version `1.0`. Additive response fields are allowed; removing or changing existing v1 fields requires a new API version.
 
 Example runner command for a no-network smoke:
 

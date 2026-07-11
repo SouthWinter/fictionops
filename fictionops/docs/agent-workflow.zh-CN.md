@@ -2,7 +2,7 @@
 
 这份文档回答一个很窄但很重要的问题：FictionOps 接上 AI 或模型 API 之后，它自己算不算一个 agent workflow？
 
-简短答案是：**FictionOps 本体不是 agent。接上模型 API runner 后，它是 API-backed AI workflow；再接上能够选择安全下一步并循环调用 runner 的 controller 后，整套系统才构成 agentic workflow。**
+简短答案是：**当前 FictionOps 已经包含一个有状态 Agent runtime。`fictionops agent write|revise|accept|continue` 由 controller、项目记忆、模型 runner、验证器和采纳门禁共同组成；底层 core 仍可单独作为 workflow harness 使用。**
 
 ## 边界怎么划
 
@@ -13,7 +13,7 @@ FictionOps 本体负责四件事：
 - 记录暂存输出；
 - 在正文或正史被接纳前运行门禁与审计。
 
-外部 runner 和 controller 位于 FictionOps 本体之外：
+模型 runner 仍是可替换的外部 adapter；controller 已有内置产品入口，也允许外部 controller 复用同一协议：
 
 - 读取任务包；
 - 调用模型 API、本地模型服务、脚本或其他工具；
@@ -28,7 +28,8 @@ FictionOps 本体负责四件事：
 | 作者把 `context-pack` 复制进聊天框 | AI-assisted workflow | 人决定任务，也决定如何采纳结果。 |
 | `agent-run` + 外部 API/模型 runner + `agent-inbox` | API-backed AI workflow | runner 为范围化任务调用模型或服务，FictionOps 把结果收进暂存区等待复核。 |
 | 接入 runner/controller 前运行 `audit-agent-workflow` | 预检门禁 | FictionOps 检查项目骨架、暂存输出、模型配置和 controller 边界是否 ready。 |
-| `agent-next` + 外部 controller | agentic workflow | controller 可以根据项目证据选择下一条安全命令。 |
+| `fictionops agent ...` + API runner | 有状态 Agent | 内置 controller 组织写章/修订闭环、预算、session 和安全停止。 |
+| `agent-next` + 外部 controller | 可扩展 agentic workflow | 外部 controller 可以根据项目证据选择下一条安全命令。 |
 | controller 连续推进多步，但保留暂存输出和门禁 | 有边界的 agentic workflow | 自动化能推进流程，但权力不直接交给模型输出。 |
 | 模型直接覆盖正文或正史 | 不属于 FictionOps 安全契约 | 它绕过了暂存、复核和门禁。 |
 
@@ -42,7 +43,7 @@ FictionOps 本体负责四件事：
 - **门禁边界：** 后续命令判断项目是否真的可以进入下一步。
 - **人类权威：** 人决定什么进入正史、正文和发布稿。
 
-所以 FictionOps 不是在争当“更会写小说的 agent”。它更像一层操作系统，让模型 API、本地工具、人类协作者和 controller 可以参与长篇项目，却不悄悄破坏正史、信息边界和复盘顺序。
+所以 FictionOps 是 Agent，但不是“模型直接掌权的自动小说家”。它更像一层操作系统，让模型 API、本地工具、人类协作者和 controller 可以参与长篇项目，却不悄悄破坏正史、信息边界和复盘顺序。
 
 ## 实际怎么叫
 

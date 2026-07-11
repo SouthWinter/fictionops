@@ -11,6 +11,8 @@ from .models import AgentExecReport
 
 DEFAULT_AGENT_EXEC_OUTPUT = "output.md"
 AGENT_EXEC_RECEIPT = "execution.json"
+RUNNER_RECEIPT_PREFIX = "FICTIONOPS_RUNNER_RECEIPT:"
+RUNNER_RECEIPT_SCHEMA = "fictionops.runner_receipt.v1"
 
 
 def require_simple_output_name(output_name: str) -> str:
@@ -100,6 +102,40 @@ def stderr_preview(text: str, limit: int = 600) -> str:
     return cleaned[:limit].rstrip() + "..."
 
 
+def parse_runner_receipt(stderr: str) -> dict[str, object] | None:
+    matches = [line[len(RUNNER_RECEIPT_PREFIX) :].strip() for line in stderr.splitlines() if line.startswith(RUNNER_RECEIPT_PREFIX)]
+    if not matches:
+        return None
+    if len(matches) > 1:
+        raise ValueError("agent runner emitted more than one FictionOps runner receipt")
+    try:
+        payload = json.loads(matches[0])
+    except json.JSONDecodeError as exc:
+        raise ValueError("agent runner emitted an invalid FictionOps runner receipt") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != RUNNER_RECEIPT_SCHEMA:
+        raise ValueError(f"agent runner receipt must declare schema {RUNNER_RECEIPT_SCHEMA}")
+    usage = payload.get("usage")
+    if usage is not None:
+        if not isinstance(usage, dict):
+            raise ValueError("agent runner receipt usage must be an object")
+        for key, value in usage.items():
+            if value is not None and (not isinstance(value, int) or isinstance(value, bool) or value < 0):
+                raise ValueError(f"agent runner receipt usage.{key} must be a non-negative integer")
+    cost = payload.get("cost")
+    if cost is not None:
+        if not isinstance(cost, dict):
+            raise ValueError("agent runner receipt cost must be an object")
+        currency = str(cost.get("currency") or "").strip()
+        if not currency:
+            raise ValueError("agent runner receipt cost.currency is required")
+        for key, value in cost.items():
+            if key == "currency" or value is None:
+                continue
+            if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"agent runner receipt cost.{key} must be a non-negative number")
+    return payload
+
+
 def agent_exec_safety() -> dict[str, object]:
     return {
         "calls_external_command": True,
@@ -168,6 +204,7 @@ def build_agent_exec(
     stderr = ""
     executed = False
     written = False
+    telemetry: dict[str, object] | None = None
 
     if not dry_run:
         try:
@@ -193,6 +230,7 @@ def build_agent_exec(
             raise RuntimeError(f"agent runner exited with {completed.returncode}: {preview}")
         if not stdout.strip():
             raise ValueError("agent runner produced empty stdout; no staging output was written.")
+        telemetry = parse_runner_receipt(stderr)
         output_file.write_text(stdout.rstrip() + "\n", encoding="utf-8", newline="\n")
         receipt = {
             "schema": "fictionops.agent_exec_receipt.v1",
@@ -203,6 +241,7 @@ def build_agent_exec(
             "returncode": returncode,
             "stdout_chars": len(stdout.strip()),
             "stderr_chars": len(stderr.strip()),
+            "telemetry": telemetry,
             "safety": agent_exec_safety(),
         }
         receipt_file.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -226,6 +265,7 @@ def build_agent_exec(
         stdout_chars=len(stdout.strip()),
         stderr_chars=len(stderr.strip()),
         stderr_preview=stderr_preview(stderr),
+        telemetry=telemetry,
         returncode=returncode,
         dry_run=dry_run,
         executed=executed,

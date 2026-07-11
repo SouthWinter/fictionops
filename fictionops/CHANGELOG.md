@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+- Added state-aware scene-by-scene drafting and evidence-guided scene rewriting for new chapters.
+- Added deterministic story fact ledgers for quantities, timelines, and coded object-state transitions.
+- Added bounded JSON/schema repair for causal simulation, planning, adversarial review, and evaluation.
+- Added strict scene-target budget normalization, under/over-length repair, and candidate-grounded review evidence checks.
+- Added evidence-routed selective scene rewriting so unaffected scenes remain byte-for-byte unchanged during retries.
+- Added hard model-call and wall-clock budgets with a persistent `model_budget.json` ledger for write and revision workflows.
+- Added versioned runner telemetry receipts for provider/model/request ids, token usage, explicit-price cost estimates, cumulative resume accounting, and pre-next-call token/cost budget stops.
+- Added the unified `fictionops agent write|revise|accept|continue` product entry and a session-aware safe continuation controller.
+- Added a persistent cross-session issue ledger with stable identity, duplicate merging, automatic reopen, verified/accepted transitions, and explicit author waive/reject/reopen decisions.
+- Added three anonymous high-risk semantic review fixtures for information boundaries, character voice, and prose/reader experience.
+- Added a reproducible raw-vs-RAG-vs-workflow review baseline harness over the anonymous high-risk fixtures.
+- Added a validated installable Codex skill and a versioned `fictionops.api` v1 facade shared by the HTTP adapter and canonical runtime.
+- Added phase checkpoints with source/artifact hashes, explicit auditable session cancellation, and checkpoint-aware `agent resume` for safe write/revision phases without replaying completed model calls.
+- Added revision resume from `verification_ready` and a read-only `agent status` author workbench for project-wide sessions, issues, usage, and cost.
+- Added a unified attributed `trajectory.jsonl`, an explicit pure controller policy, repeated raw/RAG/full/ablation experiments, and a seven-scenario failure-injection lab with protected-hash checks.
+- Added an interview-ready research case, architecture, reproducible evidence, and 3-minute/10-minute technical scripts grounded in real DeepSeek failures.
+- Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
+
 All notable changes to FictionOps will be documented in this file.
 
 The project uses semantic versioning while the CLI contracts are still small enough to audit by hand.
@@ -18,12 +38,31 @@ The project uses semantic versioning while the CLI contracts are still small eno
 - AI-first `write-chapter`, `revise-chapter`, and `audit-chapter` commands that compose staged `agent-run`, optional `agent-exec`, and `agent-inbox` workflows.
 - `agent-session` command for durable multi-step AI writing session ledgers across chapter write, revise, and audit runs.
 - `setup-ai` command for guided OpenAI-compatible provider setup, safe model config generation, and API-key-free runner env examples.
+- Closed-loop `agent-revise-workflow` runtime with source manifests, persistent session/events, structured before/after issues, unified diffs, static checks, model-backed semantic invariant verification, and bounded targeted retries.
+- `agent-accept-revision` command for explicit atomic application of verified candidates with source/candidate SHA-256 checks and stale-source refusal.
+- Agent system design documenting the controller loop, memory layers, risk levels, chapter state machine, and implementation priorities.
+- Project-aware context compiler for custom and standard novel layouts, with adjacent-chapter discovery, entity-linked character memory, authority labels, hashes, reasons, and bounded context budgets.
+- Comprehensive old-chapter review covering continuity, character, information boundaries, foreshadowing, chapter function, and prose/reader experience before revision.
+- Closed-loop `agent-write-workflow` covering model-backed chapter planning, drafting, eight-dimension evaluation, targeted rewrite, retrospective drafting, canon-sync suggestions, and safe acceptance of previously absent target files.
 
 ### Changed
 
 - Package metadata now includes project URLs and expanded keywords.
 - CI and publish distribution checks include the newer onboarding docs, provider docs, chat runner example, and quickstart preview asset.
 - Public-facing release and promotion copy now targets 0.1.1 as the recommended PyPI/TestPyPI candidate after the 0.1.0 MVP proof.
+- Real-model revision dogfood now feeds the static P1/P2 issue ledger into comprehensive review and semantic verification, preserves role-diverse project context under tight budgets, and rejects token-level fixes that leave material chapter-wide prose clusters unresolved.
+- Comprehensive reviewer output gets one bounded schema-repair retry when an otherwise useful model response is malformed; both the original and repaired outputs remain in the evidence bundle.
+- Metaphor auditing now treats common Chinese explicit comparison markers as one family, records per-marker distribution and dominance, and routes implicit metaphor, literal likeness, register fit, and image precision to semantic review instead of rewarding mechanical synonym rotation.
+- Draft evaluation now checks every planned preserve/forbidden constraint by stable ID and blocks acceptance when any explicit constraint fails, even if broad semantic dimensions pass.
+- Revision verification now cross-checks P1/P2 review claims against required static metric deltas, preventing a model's self-reported fix from overriding unchanged counts or severity.
+- Chapter-title verification now reads explicit engine headings such as `# Chapter 5 "Title"` before falling back to target filenames.
+- Added typed, rebuildable project memory with source authority, hashes, line ranges, scoped retrieval, explicit author preferences, and acceptance-event history through `agent-memory`.
+- Added model-backed pre-draft causal simulation, explicit chapter contracts, and per-scene entry/exit state handoffs to the closed-loop chapter writer.
+- Added an independent adversarial reviewer that checks continuity, character/knowledge, prose/reader experience, every explicit constraint, and every expected scene state before semantic evaluation.
+- Added deterministic story-contract checks for prohibited conclusions, suspicious forbidden-viewpoint scenes, constrained formal passages, and paragraph-rhythm evidence.
+- Hash-guarded acceptance now records accepted manuscript events and invalidates the memory cache without automatically promoting model suggestions into canon or author preferences.
+- Chapter plans are now checked against causal viewpoint whitelists, forbidden viewpoints, theme questions, and forbidden conclusions before prose generation, with one bounded plan-only repair.
+- The OpenAI-compatible Chat runner now retries only transient transport failures, HTTP 429, and HTTP 5xx with bounded exponential backoff.
 
 ## [0.1.0] - 2026-07-05
 

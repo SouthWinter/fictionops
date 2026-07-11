@@ -28,7 +28,7 @@ python ../../src/fictionops/cli.py
 
 可以这样说：
 
-> FictionOps 不是自主写小说的 agent。它是一套面向长篇小说的文件化 workflow harness：管理正史、书纲、信息边界、任务包、模型暂存输出、审计和发布门禁。
+> FictionOps 是一个面向长篇小说的有状态 Agent：用文件化 workflow 管理正史、书纲、信息边界、模型调用、暂存候选、验证预算和发布门禁，但不替作者接受正文。
 
 运行：
 

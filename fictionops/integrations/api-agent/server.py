@@ -19,6 +19,7 @@ if str(SRC) not in sys.path:
 from fictionops.agent_exec import build_agent_exec  # noqa: E402
 from fictionops.agent_inbox import build_agent_inbox  # noqa: E402
 from fictionops.agent_run import build_agent_run  # noqa: E402
+from fictionops.api import revise_chapter, write_chapter  # noqa: E402
 
 
 DEFAULT_MAX_CONTEXT_CHARS = 60000
@@ -127,6 +128,65 @@ def session_status(*, prepared: bool, executed: bool, inbox: Any | None, failed:
     return "running"
 
 
+def build_closed_loop_session(goal: dict[str, Any], *, task: str, session_id: str) -> dict[str, Any]:
+    chapter_file = goal_text(goal, "chapter_file")
+    if not chapter_file:
+        raise ValueError("chapter_file is required for closed_loop mode")
+    command = runner_command(goal)
+    common: dict[str, Any] = {
+        "runner": command,
+        "out_dir": goal_text(goal, "out_dir"),
+        "provider": goal_text(goal, "provider"),
+        "model": goal_text(goal, "model"),
+        "timeout_seconds": goal_int(goal, "timeout_seconds", 600 if task == "draft" else 300),
+        "max_model_calls": goal_int(goal, "max_model_calls", 32 if task == "draft" else 12),
+        "max_runtime_seconds": goal_int(goal, "max_runtime_seconds", 3600 if task == "draft" else 1800),
+        "max_total_tokens": goal.get("max_total_tokens"),
+        "max_cost": goal.get("max_cost"),
+        "cost_currency": goal_text(goal, "cost_currency", "USD") or "USD",
+        "dry_run": goal_bool(goal, "dry_run", False),
+    }
+    if task == "draft":
+        engine_file = goal_text(goal, "engine_file")
+        if not engine_file:
+            raise ValueError("engine_file is required for closed-loop chapter writing")
+        report = write_chapter(
+            chapter_file,
+            engine_file=engine_file,
+            outline_file=goal_text(goal, "outline_file"),
+            **common,
+        )
+    else:
+        report = revise_chapter(
+            chapter_file,
+            review_file=goal_text(goal, "review_file"),
+            semantic_verify=goal_bool(goal, "semantic_verify", True),
+            review_scope=goal_text(goal, "review_scope", "comprehensive") or "comprehensive",
+            **common,
+        )
+    staged_outputs = list(report.get("staged_outputs") or [])
+    status = "waiting_for_review" if report.get("ready_for_approval") or staged_outputs else "planned"
+    session = {
+        "api_version": "1.0",
+        "session_id": session_id,
+        "status": status,
+        "goal": goal,
+        "steps": [{"name": f"agent_{task}", "status": "completed", "summary": str(report.get("stop_reason") or "prepared")}],
+        "staged_outputs": staged_outputs,
+        "stop_reason": str(report.get("stop_reason") or "closed_loop_prepared"),
+        "metrics": {
+            "runtime_mode": "closed_loop",
+            "model_calls_used": report.get("model_calls_used"),
+            "max_model_calls": report.get("max_model_calls"),
+            "verification_status": report.get("verification_status"),
+            "ready_for_approval": report.get("ready_for_approval"),
+        },
+        "runtime_report": report,
+    }
+    SESSIONS[session_id] = session
+    return session
+
+
 def build_session(goal: dict[str, Any], *, task: str | None = None) -> dict[str, Any]:
     session_id = f"sess_{uuid.uuid4().hex[:12]}"
     normalized_task = task or goal_text(goal, "task", "planning") or "planning"
@@ -141,6 +201,7 @@ def build_session(goal: dict[str, Any], *, task: str | None = None) -> dict[str,
 
     if normalized_task == "planning":
         session = {
+            "api_version": "1.0",
             "session_id": session_id,
             "status": status,
             "goal": goal,
@@ -157,6 +218,9 @@ def build_session(goal: dict[str, Any], *, task: str | None = None) -> dict[str,
         raise ValueError("project_path is required for write, revise, and audit tasks.")
 
     project = Path(project_path).expanduser()
+    runtime_mode = goal_text(goal, "runtime_mode", "closed_loop") or "closed_loop"
+    if normalized_task in {"draft", "review"} and runtime_mode == "closed_loop" and goal_text(goal, "chapter_file"):
+        return build_closed_loop_session(goal, task=normalized_task, session_id=session_id)
     out_dir = goal_text(goal, "out_dir") or default_out_dir(goal, normalized_task)
     prepared = False
     executed = False
@@ -224,6 +288,7 @@ def build_session(goal: dict[str, Any], *, task: str | None = None) -> dict[str,
 
     status = session_status(prepared=prepared, executed=executed, inbox=inbox)
     session = {
+        "api_version": "1.0",
         "session_id": session_id,
         "status": status,
         "goal": goal,

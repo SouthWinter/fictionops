@@ -90,6 +90,7 @@ FictionOps 可以支持以下研究问题：
 - H2：有边界的任务包比 raw chat 更能提高轨迹完整性、减少无关上下文。
 - H3：FictionOps controller 比通用自主循环更可靠地停在复核边界。
 - H4：审计和门禁产物能降低坏输出之后的恢复成本。
+- H5：在同一模型与匿名高风险案例上，完整 workflow 相比 raw single-call 和仅 RAG 能提高问题命中与证据落地，并减少无关发现。
 - H5：人类更容易接受、拒绝或隔离暂存输出，而不是自由聊天输出。
 - H6：AI-first FictionOps Agent 相比 raw chat 能减少重复上下文准备和项目查找工作，同时保留作者权威。
 

@@ -2,9 +2,15 @@
 
 [English](README.md) | 简体中文
 
-> 一个面向长篇小说的创作操作系统，用于规划、写作、复盘、审计和发布。它服务于人的审美，也允许外部模型 API、runner 或 controller 参与协作。
+> 一个面向长篇小说的有状态 AI Agent 与创作操作系统，用于规划、写作、审读、修订、复盘和发布，同时保留作者对正文与正史的最终权威。
 
-FictionOps 是一套拟开源的长篇小说工作流底座。它不是“一键生成小说”的工具，也不是把小说写成表格的管理软件，更不是自主写作 agent。更准确地说，它是一套 API-backed workflow harness：用文件、命令、上下文包、任务包、外部 runner、收件箱和门禁，把人类作者与模型 API/外部工具之间的协作边界固定下来。接上外部模型 API runner 后，它是 AI-assisted 或 API-backed workflow；再接上能够读取状态、选择下一步、调用 runner 并在复核边界停下的 controller 后，整套系统才构成 agentic workflow。FictionOps 本体仍然是编排、暂存和门禁层，不是直接掌权的自主小说家。它的目标是帮助作者、编辑、模型工具和 controller 一起维护那些可能跨越数百章、数百万字、多视角、多时间线、多卷设定和长期伏笔的故事。
+FictionOps 是一套拟开源的长篇小说 Agent。它不是“一键生成小说”的黑箱，也不是把小说写成表格的管理软件。默认路径通过 OpenAI-compatible API runner 调用模型，由确定性 controller 读取项目记忆、模拟因果、规划场景、写作或修订、独立反证、验证不变量、控制调用预算并保存 session 证据；`fictionops agent write|revise|resume|status|accept|continue` 是统一入口。底层 workflow harness 与审计 CLI 仍保留为可解释、可测试的研究接口。模型可以完成工作闭环，但不能自行覆盖正文、修改正史或绕过作者采纳。
+
+```powershell
+fictionops agent write path/to/new_chapter.md --engine path/to/chapter_engine.md --runner python path/to/agent_runner_openai_chat.py
+fictionops agent revise path/to/old_chapter.md --runner python path/to/agent_runner_openai_chat.py
+fictionops agent continue path/to/novel --execute
+```
 
 核心判断很简单：
 
@@ -155,7 +161,7 @@ fictionops/
 2. 再读 [从故事种子到发布](workflows/from-seed-to-publication.zh-CN.md)，理解完整流程。
 3. 读 [审计优先级](docs/audit-priority.zh-CN.md)，理解哪些问题必须先修。
 4. 读 [Agent 协作协议](docs/agent-protocol.zh-CN.md)，理解 AI 协作的输入输出边界。
-5. 读 [Agent workflow 定位说明](docs/agent-workflow.zh-CN.md)，理解“接上模型 API 后算不算 agent workflow”以及 FictionOps 本体和外部 runner/controller 的边界。
+5. 读 [Agent workflow 定位说明](docs/agent-workflow.zh-CN.md)，理解“接上模型 API 后算不算 agent workflow”以及 FictionOps 本体和外部 runner/controller 的边界；再读 [Agent 系统设计](docs/agent-system-design.zh-CN.md)，了解完整运行循环、状态机、权限与实现顺序。
 6. 读 [CLI 使用说明](docs/cli.zh-CN.md)，了解所有 CLI 命令。
 7. 读 [CLI 契约](docs/cli-contracts.zh-CN.md)，理解命令输入、输出、失败语义和稳定承诺。
 8. 读 [测试说明](docs/testing.zh-CN.md)，了解如何验证 CLI。
@@ -165,7 +171,7 @@ fictionops/
 12. 读 [后续完成路线](docs/roadmap.zh-CN.md)，理解 0.2、0.3、0.5 和 1.0 分别需要什么证据。
 13. 读 [真实长篇 adopt 迁移报告](docs/dogfood-legacy-adopt.zh-CN.md)，看 `adopt` 在百万字级旧项目上的分层结果和暴露的问题。
 14. 读 [Dogfood 案例研究](docs/dogfood-case-study.zh-CN.md)，看一个私有百万字级项目如何经过结构修复、读者体验修订和发布链路烟测。
-15. 读 [面试备忘](docs/interview-brief.zh-CN.md)，看如何把项目讲成 agent research / workflow harness，而不是“AI 写小说”。
+15. 读 [Agent 研究面试案例](docs/interview-agent-research-case.zh-CN.md) 和 [三分钟/十分钟讲稿](docs/interview-agent-script.zh-CN.md)，看如何用真实失败、统一轨迹、对照实验和 failure lab 讲清研究价值；[面试备忘](docs/interview-brief.zh-CN.md) 保留更完整的历史证据。
 16. 读 [0.1.0 发布说明](docs/release-notes-0.1.0.zh-CN.md)，了解发布边界和已知限制。
 17. 读 [兼容性策略](docs/compatibility.zh-CN.md)，理解哪些 CLI 和 JSON 行为可以被脚本或 controller 依赖。
 18. 读 [已知限制](docs/known-limits.zh-CN.md)，理解哪些事情 FictionOps 当前不保证。
@@ -187,7 +193,7 @@ fictionops/
 
 ### CLI 快速开始
 
-当前 CLI 实现了五十八个最小 MVP 命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`review-workflow`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`eval-agent`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-revise-workflow`、`write-chapter`、`revise-chapter`、`audit-chapter`、`agent-session`、`agent-next`、`audit-agent-workflow`、`setup-ai`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
+当前 CLI 实现了六十一个命令：`adopt`、`adopt-review`、`adopt-plan`、`import-plan`、`init`、`new-book`、`new-chapter`、`plan-chapter`、`scene-plan`、`draft-brief`、`post-draft`、`review-gate`、`book-gate`、`audit-plan`、`retrospective`、`stats`、`scan-words`、`check-tables`、`audit-wave`、`audit-style`、`review-workflow`、`audit-continuity`、`audit-echoes`、`audit-info`、`audit-characters`、`agent-prompt`、`agent-connect`、`eval-agent`、`agent-smoke`、`agent-run`、`agent-exec`、`agent-inbox`、`agent-memory`、`agent-revise-workflow`、`agent-write-workflow`、`agent-accept-revision`、`write-chapter`、`revise-chapter`、`audit-chapter`、`agent-session`、`agent-next`、`audit-agent-workflow`、`setup-ai`、`model-config`、`context-pack`、`workflow-plan`、`revision-plan`、`doctor`、`report`、`export-clean`、`audit-publish`、`publish-copy`、`export-metadata`、`export-manifest`、`export-epub`、`audit-epub`、`release-gate`、`audit-release-evidence`、`audit-dogfood-cycle`、`audit-stability-window` 和 `audit-stable-core`。
 
 在仓库根目录运行：
 
@@ -221,6 +227,12 @@ python fictionops/src/fictionops/cli.py agent-smoke my-novel --connector local-r
 python fictionops/src/fictionops/cli.py agent-run my-novel --role draft-writer --chapter 001 --out-dir 00_management/agent_runs/ch_001
 python fictionops/src/fictionops/cli.py agent-exec my-novel/00_management/agent_runs/ch_001 --runner python run_model.py
 python fictionops/src/fictionops/cli.py agent-inbox my-novel
+python fictionops/src/fictionops/cli.py agent-memory build my-novel
+python fictionops/src/fictionops/cli.py agent-memory query my-novel --query "鹿煜 当前知识边界"
+python fictionops/src/fictionops/cli.py agent-revise-workflow path/to/old_chapter.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+python fictionops/src/fictionops/cli.py agent-write-workflow path/to/new_chapter.md --engine path/to/chapter_engine.md --outline path/to/book_outline.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+python fictionops/src/fictionops/cli.py agent-write-workflow path/to/complex_chapter.md --engine path/to/chapter_engine.md --scene-by-scene --runner python /absolute/path/to/agent_runner_openai_chat.py
+python fictionops/src/fictionops/cli.py agent-accept-revision path/to/agent_run --dry-run
 python fictionops/src/fictionops/cli.py agent-next my-novel --book book_01 --chapter 001 --format json
 python fictionops/src/fictionops/cli.py audit-agent-workflow my-novel --level runner
 python fictionops/src/fictionops/cli.py model-config my-novel --provider local --planning-model planner --drafting-model writer --audit-model auditor
@@ -283,6 +295,10 @@ fictionops agent-smoke my-novel --connector local-runner
 fictionops agent-run my-novel --role draft-writer --chapter 001 --out-dir 00_management/agent_runs/ch_001
 fictionops agent-exec my-novel/00_management/agent_runs/ch_001 --runner python run_model.py
 fictionops agent-inbox my-novel
+fictionops agent-revise-workflow path/to/old_chapter.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-write-workflow path/to/new_chapter.md --engine path/to/chapter_engine.md --outline path/to/book_outline.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-write-workflow path/to/complex_chapter.md --engine path/to/chapter_engine.md --scene-by-scene --runner python /absolute/path/to/agent_runner_openai_chat.py
+fictionops agent-accept-revision path/to/agent_run --dry-run
 fictionops agent-next my-novel --book book_01 --chapter 001 --format json
 fictionops model-config my-novel --provider local --planning-model planner --drafting-model writer --audit-model auditor
 fictionops context-pack my-novel --task draft --chapter 001
@@ -1204,5 +1220,7 @@ FictionOps 的存在，是为了帮一部长篇记住自己，而不是逼它变
 - [最小示例教程](docs/tutorial-demo.zh-CN.md)：按步骤演示如何运行 `examples/demo_novel/`。
 - [两分钟 Demo 台本](docs/two-minute-demo.zh-CN.md)：用于短录屏、现场演示或面试讲解。
 - [研究定位](docs/research-positioning.zh-CN.md)：说明 FictionOps 作为 long-horizon agent workflow harness 的研究贡献和边界。
+- [Agent 研究面试案例](docs/interview-agent-research-case.zh-CN.md)：把三次真实 DeepSeek 失败、系统演化、架构和 claim 边界组织成一个强案例。
+- [Agent 科研实习讲稿](docs/interview-agent-script.zh-CN.md)：提供三分钟、十分钟版本和高频追问。
 - [评估计划](docs/evaluation-plan.zh-CN.md)：把 agent 评估协议转成可执行实验路线、指标和证据标准。
 - [长篇大纲迁移案例（中文）](examples/long_novel_outline_migration_case_zh.md)：展示一部多卷长篇如何从混乱大纲、修订意见和设定碎片，迁移为可维护的 FictionOps 结构。

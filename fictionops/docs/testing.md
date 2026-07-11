@@ -24,7 +24,7 @@ python -m unittest discover -s fictionops/tests -p test_cli.py -k release_smoke 
 
 ## Current Coverage
 
-The current suite covers 58 CLI commands and 140 regression tests. It checks:
+The current suite covers 62 CLI commands and 158 regression tests. It checks:
 
 - every CLI help entry;
 - CLI contracts and documentation coverage;
@@ -39,8 +39,14 @@ The current suite covers 58 CLI commands and 140 regression tests. It checks:
 - explicit migration waivers for deferred adopt-review blockers;
 - grouped migration cleanup with `adopt-plan`;
 - import queue sorting with `import-plan`;
-- agent prompt, connector kit generation, reproducible agent harness evaluation, connector smoke tests, run, exec, inbox, next-step controller, guided AI setup, agent workflow preflight audit, no-model controller loop workflows, OpenAI-compatible Chat runner v1 presets/env-file wiring, and OpenAI Responses runner dry-run wiring;
+- unified `agent write|revise|accept|continue`, agent prompt, connector kit generation, reproducible agent harness evaluation, connector smoke tests, run, exec, inbox, closed-loop revision verification, hash-guarded revision acceptance, session-aware safe continuation, guided AI setup, agent workflow preflight audit, no-model controller loop workflows, OpenAI-compatible Chat runner v1 presets/env-file wiring, and OpenAI Responses runner dry-run wiring;
+- persistent issue identity, cross-session merge/reopen, explicit waive/reject decisions, and anonymous information-boundary/character/prose high-risk reviewer fixtures;
+- phase checkpoints with artifact hashes, explicit session cancellation, duplicate-cancel refusal, and cancelled-session controller boundaries;
+- runner receipt parsing, token/cost aggregation across resume segments, and observed token-budget stops before the next model call;
+- unified trajectory steps for attributed context, paired model calls, state transitions, and author authority;
+- table-driven deterministic controller policy, repeated raw/RAG/full/ablation benchmarking, prompt-answer isolation, and seven bounded failure-injection scenarios;
 - model config and context packs;
+- structured quantity/time/object fact ledgers, state-aware scene-by-scene chapter assembly, evidence-routed selective scene rewriting, and hard model-call budget stops;
 - clean Markdown, metadata, manifest, EPUB export, and EPUB audit;
 - release, dogfood-cycle, stability-window, and stable-core evidence auditing;
 - demo project workflow;

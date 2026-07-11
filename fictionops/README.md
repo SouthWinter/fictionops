@@ -2,9 +2,9 @@
 
 Languages: English | [Chinese](README.zh-CN.md)
 
-FictionOps is a file-based operating system and API-backed workflow harness for long-form fiction planning, drafting, auditing, migration, and publishing. It is not a one-click novel generator and it is not an autonomous writing agent. Its job is to help a writer keep a large story maintainable: structure, canon, information boundaries, character memory, prose-pattern audits, handoff context, model/API task bundles, staged outputs, and release artifacts all live in ordinary files.
+FictionOps is a file-based, stateful AI agent and operating system for long-form fiction planning, drafting, reviewing, revision, migration, and publishing. It is not a one-click novel generator: a deterministic controller compiles project memory, calls an external model API runner, verifies results, enforces execution budgets, and stages evidence while the author retains authority over manuscript and canon changes.
 
-The current package is Chinese-first and local-first. It uses Markdown, YAML, JSON, and EPUB files, and the CLI does not call a model by itself. External runners may call OpenAI, local model servers, or other APIs; external controllers may turn those calls into an agentic loop.
+The current package is Chinese-first and local-first. It uses Markdown, YAML, JSON, and EPUB files. `fictionops agent write|revise|resume|status|accept|continue` is the product entry; OpenAI-compatible runners perform model calls, while the lower-level workflow harness remains available as a reproducible engineering and research interface.
 
 ## Start Here
 
@@ -29,6 +29,15 @@ fictionops new-chapter my-novel --book book_01 --chapter 001 --title "Chapter On
 fictionops plan-chapter my-novel --book book_01 --chapter 001
 fictionops draft-brief my-novel --book book_01 --chapter 001
 fictionops doctor my-novel --book book_01
+fictionops agent write path/to/new_chapter.md --engine path/to/chapter_engine.md --runner python /absolute/path/to/agent_runner_openai_chat.py
+fictionops agent revise path/to/old_chapter.md --runner python /absolute/path/to/agent_runner_openai_chat.py
+fictionops agent continue my-novel --execute
+
+# Stable low-level workflow commands remain available for debugging and research.
+fictionops agent-revise-workflow path/to/old_chapter.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-write-workflow path/to/new_chapter.md --engine path/to/chapter_engine.md --outline path/to/book_outline.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-write-workflow path/to/complex_chapter.md --engine path/to/chapter_engine.md --scene-by-scene --max-model-calls 24 --runner python /absolute/path/to/agent_runner_openai_chat.py
+fictionops agent-accept-revision path/to/agent_run --dry-run
 ```
 
 For the shorter onboarding guide, see [Getting started](docs/getting-started.md). For model/API setup, see [Model providers](docs/model-providers.md).
@@ -141,6 +150,9 @@ fictionops/
 - [Agent evaluation demo report](docs/agent-evaluation-demo-report.md)
 - [Interview brief for agent research discussions](docs/interview-brief.md)
 - [Interview brief, Chinese reference](docs/interview-brief.zh-CN.md)
+- [Agent research interview case, Chinese](docs/interview-agent-research-case.zh-CN.md)
+- [3-minute/10-minute agent interview script, Chinese](docs/interview-agent-script.zh-CN.md)
+- [Current failure-injection evidence](docs/evidence/failure-lab-current.json)
 - [Migration guide](docs/migration.md)
 - [Promotion kit](docs/promotion-kit.md)
 - [Promotion kit, Chinese reference](docs/promotion-kit.zh-CN.md)
@@ -194,9 +206,9 @@ fictionops/
 
 ## CLI Quick Start
 
-The current CLI includes fifty-six MVP commands:
+The current CLI includes sixty-one commands:
 
-`adopt`, `adopt-review`, `adopt-plan`, `import-plan`, `init`, `new-book`, `new-chapter`, `plan-chapter`, `scene-plan`, `draft-brief`, `post-draft`, `review-gate`, `book-gate`, `audit-plan`, `retrospective`, `stats`, `scan-words`, `check-tables`, `audit-wave`, `audit-style`, `review-workflow`, `audit-continuity`, `audit-echoes`, `audit-info`, `audit-characters`, `agent-prompt`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-revise-workflow`, `write-chapter`, `revise-chapter`, `audit-chapter`, `agent-session`, `agent-next`, `audit-agent-workflow`, `setup-ai`, `model-config`, `context-pack`, `workflow-plan`, `revision-plan`, `doctor`, `report`, `export-clean`, `audit-publish`, `publish-copy`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, `release-gate`, `audit-release-evidence`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`.
+`agent`, `adopt`, `adopt-review`, `adopt-plan`, `import-plan`, `init`, `new-book`, `new-chapter`, `plan-chapter`, `scene-plan`, `draft-brief`, `post-draft`, `review-gate`, `book-gate`, `audit-plan`, `retrospective`, `stats`, `scan-words`, `check-tables`, `audit-wave`, `audit-style`, `review-workflow`, `audit-continuity`, `audit-echoes`, `audit-info`, `audit-characters`, `agent-prompt`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-memory`, `agent-revise-workflow`, `agent-write-workflow`, `agent-accept-revision`, `write-chapter`, `revise-chapter`, `audit-chapter`, `agent-session`, `agent-next`, `audit-agent-workflow`, `setup-ai`, `model-config`, `context-pack`, `workflow-plan`, `revision-plan`, `doctor`, `report`, `export-clean`, `audit-publish`, `publish-copy`, `export-metadata`, `export-manifest`, `export-epub`, `audit-epub`, `release-gate`, `audit-release-evidence`, `audit-dogfood-cycle`, `audit-stability-window`, and `audit-stable-core`.
 
 From the repository root:
 
@@ -215,6 +227,8 @@ python fictionops/src/fictionops/cli.py agent-connect migrated-novel --name loca
 python fictionops/src/fictionops/cli.py setup-ai migrated-novel --provider deepseek --model deepseek-chat
 python fictionops/src/fictionops/cli.py eval-agent examples/demo_novel --chapter 002 --out docs/agent-evaluation-smoke.md
 python fictionops/src/fictionops/cli.py agent-smoke migrated-novel --connector local-runner
+python fictionops/src/fictionops/cli.py agent-memory build migrated-novel
+python fictionops/src/fictionops/cli.py agent-memory query migrated-novel --query "character knowledge boundary"
 python fictionops/src/fictionops/cli.py audit-agent-workflow migrated-novel --level runner --connector local-runner
 python fictionops/src/fictionops/cli.py release-gate migrated-novel --book book_01
 python fictionops/src/fictionops/cli.py audit-release-evidence . --file docs/release-trial-evidence.md
@@ -259,7 +273,7 @@ python -m pip wheel ./fictionops -w fictionops/dist --no-deps --no-build-isolati
 python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'); pathlib.Path('dist').mkdir(exist_ok=True); print(b.build_sdist('dist'))"
 ```
 
-The test suite currently covers 58 CLI commands and 140 regression tests, including source and built-wheel installation smoke tests, wheel and source-distribution content checks, template sync checks, release governance checks, release evidence auditing, sustained dogfood-cycle auditing, stability-window auditing, stable-core auditing, English documentation coverage, runnable demo and migration examples, the real-project `adopt` dogfood entry point, `adopt --copy-to`, copy-path collision disambiguation, `adopt-review`, migration waivers, `adopt-plan`, `import-plan`, `review-workflow`, `agent-connect`, `eval-agent`, `agent-smoke`, `agent-run`, `agent-exec`, `agent-inbox`, `agent-revise-workflow`, `write-chapter`, `revise-chapter`, `audit-chapter`, `agent-session`, `agent-next`, `audit-agent-workflow`, `setup-ai`, the no-model controller loop example, the OpenAI-compatible Chat Completions runner v1 preset/env-file dry-run paths, and the OpenAI Responses runner dry-run path. `audit-stable-core --format json` also emits structured `action_items` so a maintainer or controller can see the remaining evidence files, audit commands, and acceptance criteria without treating the plan as proof.
+The test suite currently covers 62 CLI commands and 158 regression tests, including the unified agent entry, persistent issue identity and author decisions, high-risk semantic fixtures, phase/hash checkpoints, auditable cancellation, typed memory, causal simulation, story-fact ledgers, state-aware scene drafting, selective rewriting, hard execution budgets, grounded adversarial review, closed-loop revision/writing, and hash-guarded acceptance.
 
 ## Positioning
 

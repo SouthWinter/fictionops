@@ -1,0 +1,98 @@
+{
+  "schema": "fictionops.agent_failure_lab.v1",
+  "scenario_count": 7,
+  "detected_count": 7,
+  "detection_rate": 1.0,
+  "protected_hash_success_rate": 1.0,
+  "recoverable_count": 1,
+  "recovery_success_rate": 1.0,
+  "scenarios": [
+    {
+      "scenario_id": "stale_source",
+      "expected_boundary": "reject stale source before resume",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "error": "source file changed after checkpoint; resume refused",
+        "detection_point": "resume_preflight"
+      }
+    },
+    {
+      "scenario_id": "tampered_artifact",
+      "expected_boundary": "reject changed checkpoint evidence",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "error": "checkpoint artifact changed; resume refused: <failure-lab-root>\\tampered_artifact\\artifact.json",
+        "detection_point": "artifact_hash_preflight"
+      }
+    },
+    {
+      "scenario_id": "cancelled_resume",
+      "expected_boundary": "cancelled sessions remain non-resumable",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "error": "agent checkpoint is not resumable",
+        "detection_point": "authority_preflight"
+      }
+    },
+    {
+      "scenario_id": "budget_exhaustion",
+      "expected_boundary": "stop before an over-budget call and resume in a new segment",
+      "detected": true,
+      "recovery_succeeded": true,
+      "protected_hash_unchanged": true,
+      "details": {
+        "detection_point": "pre_next_call",
+        "cumulative_calls": 2
+      }
+    },
+    {
+      "scenario_id": "malformed_runner_receipt",
+      "expected_boundary": "reject invalid telemetry without treating it as evidence",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "error": "agent runner emitted an invalid FictionOps runner receipt",
+        "detection_point": "runner_receipt_parse"
+      }
+    },
+    {
+      "scenario_id": "ungrounded_reviewer",
+      "expected_boundary": "reject reviewer findings absent from the candidate",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "detection_point": "review_grounding_gate",
+        "issues": [
+          {
+            "kind": "ungrounded_review_issue",
+            "issue_index": 1,
+            "evidence": [
+              "a sentence absent from the candidate"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "forbidden_story_state",
+      "expected_boundary": "block a forbidden conclusion before approval",
+      "detected": true,
+      "recovery_succeeded": null,
+      "protected_hash_unchanged": true,
+      "details": {
+        "detection_point": "deterministic_story_gate",
+        "blocking_failures": [
+          "forbidden_conclusion_C1"
+        ]
+      }
+    }
+  ]
+}

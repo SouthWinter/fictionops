@@ -2,7 +2,7 @@
 
 This document answers a narrow but important question: once FictionOps is connected to AI or a model API, does FictionOps itself count as an agent workflow?
 
-Short answer: **FictionOps core is not an agent. Connected to a model API through a runner, it is an API-backed AI workflow. Connected to a controller that can choose safe next steps and call runners in a loop, the whole setup becomes an agentic workflow.**
+Short answer: **FictionOps now includes a stateful agent runtime. `fictionops agent write|revise|accept|continue` combines a controller, durable project memory, external model runner, verifiers, execution budgets, and approval gates. The lower-level core remains usable as a workflow harness.**
 
 ## The Boundary
 
@@ -13,7 +13,7 @@ FictionOps core does four things:
 - records staged outputs;
 - runs gates and audits before manuscript or canon changes are accepted.
 
-External runners and controllers sit outside FictionOps core:
+Model runners remain replaceable external adapters; FictionOps now provides a built-in product controller while still allowing external controllers to reuse the same protocol:
 
 - reads a task bundle;
 - calls a model API, local model server, script, or other tool;

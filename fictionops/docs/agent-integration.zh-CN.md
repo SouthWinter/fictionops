@@ -2,7 +2,7 @@
 
 这份文档回答一个更落地的问题：怎样把外部模型 API、runner 或 controller 接进 FictionOps，同时不让模型输出悄悄覆盖正文或正史。
 
-FictionOps 本体是 workflow harness。runner 可以只是 API 包装器、本地脚本、IDE 工具或模型服务客户端；controller 才可能把这些调用串成 agentic loop。外部 runner 和 controller 应遵守的最小接口边界见 [Agent 接入契约](agent-connector-contract.zh-CN.md)。
+FictionOps 的底层 core 是 workflow harness，当前产品层已经提供有状态 controller 与统一 `fictionops agent ...` 入口。runner 可以是 API 包装器、本地脚本、IDE 工具或模型服务客户端；外部 controller 也可以复用同一协议。最小接口边界见 [Agent 接入契约](agent-connector-contract.zh-CN.md)。
 
 ## 接入层级
 

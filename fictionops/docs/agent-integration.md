@@ -2,7 +2,7 @@
 
 This guide shows how to connect an external model API, runner, or controller to FictionOps without letting model output silently overwrite manuscript or canon files.
 
-FictionOps core is the workflow harness. A runner may be a simple API wrapper, a local script, an IDE tool, or a model service client; a controller may turn those calls into an agentic loop. For the compact interface contract that external runners and controllers should follow, see [Agent connector contract](agent-connector-contract.md).
+FictionOps core remains the workflow harness, while the product layer now provides a stateful controller through `fictionops agent ...`. A runner may be an API wrapper, local script, IDE tool, or model service client; external controllers may reuse the same protocol. See [Agent connector contract](agent-connector-contract.md).
 
 ## Integration Levels
 

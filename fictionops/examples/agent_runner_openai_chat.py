@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -17,6 +18,7 @@ PLACEHOLDER_PROVIDERS = {"", "-", "configurable"}
 DEFAULT_PROVIDER = "openai-chat"
 DEFAULT_API_KEY_ENV = "OPENAI_API_KEY"
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
+RUNNER_RECEIPT_PREFIX = "FICTIONOPS_RUNNER_RECEIPT:"
 
 PROVIDER_PRESETS: dict[str, dict[str, str]] = {
     "openai": {"api_key_env": "OPENAI_API_KEY", "base_url": "https://api.openai.com/v1"},
@@ -127,7 +129,8 @@ def make_messages(payload: str) -> list[dict[str, str]]:
             "role": "system",
             "content": (
                 "You are an external FictionOps runner. Follow the FictionOps output contract. "
-                "Write only staged Markdown for human review. Do not claim that manuscript or canon files were edited."
+                "Return exactly the format requested by the task, which may be staged Markdown or JSON. "
+                "Do not claim that manuscript or canon files were edited."
             ),
         },
         {"role": "user", "content": payload},
@@ -189,6 +192,51 @@ def extract_choice_text(data: dict[str, object]) -> str:
     raise ValueError("chat completions response did not contain message content")
 
 
+def non_negative_int(value: object) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
+
+
+def build_runner_receipt(
+    data: dict[str, object],
+    *,
+    provider: str,
+    model: str,
+    input_cost_per_million: float | None,
+    output_cost_per_million: float | None,
+    currency: str,
+) -> dict[str, object]:
+    raw_usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
+    prompt_details = raw_usage.get("prompt_tokens_details") if isinstance(raw_usage.get("prompt_tokens_details"), dict) else {}
+    completion_details = raw_usage.get("completion_tokens_details") if isinstance(raw_usage.get("completion_tokens_details"), dict) else {}
+    usage = {
+        "input_tokens": non_negative_int(raw_usage.get("prompt_tokens")),
+        "output_tokens": non_negative_int(raw_usage.get("completion_tokens")),
+        "total_tokens": non_negative_int(raw_usage.get("total_tokens")),
+        "cached_input_tokens": non_negative_int(prompt_details.get("cached_tokens")),
+        "reasoning_tokens": non_negative_int(completion_details.get("reasoning_tokens")),
+    }
+    usage = {key: value for key, value in usage.items() if value is not None}
+    receipt: dict[str, object] = {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": provider,
+        "model": str(data.get("model") or model),
+        "request_id": str(data.get("id") or "") or None,
+        "usage": usage,
+    }
+    input_tokens = int(usage.get("input_tokens") or 0)
+    output_tokens = int(usage.get("output_tokens") or 0)
+    if input_cost_per_million is not None or output_cost_per_million is not None:
+        input_cost = input_tokens * float(input_cost_per_million or 0) / 1_000_000
+        output_cost = output_tokens * float(output_cost_per_million or 0) / 1_000_000
+        receipt["cost"] = {
+            "currency": currency.upper(),
+            "input": round(input_cost, 12),
+            "output": round(output_cost, 12),
+            "total": round(input_cost + output_cost, 12),
+        }
+    return receipt
+
+
 def call_chat_completions(
     *,
     payload: str,
@@ -199,23 +247,34 @@ def call_chat_completions(
     max_tokens: int | None,
     temperature: float | None,
     max_output_chars: int | None,
-) -> str:
+    retries: int,
+    retry_backoff: float,
+    provider: str,
+    input_cost_per_million: float | None,
+    output_cost_per_million: float | None,
+    currency: str,
+) -> tuple[str, dict[str, object]]:
     endpoint = base_url.rstrip("/") + "/chat/completions"
-    request = urllib.request.Request(
-        endpoint,
-        data=json.dumps(
-            make_request_body(payload, model=model, max_tokens=max_tokens, temperature=temperature),
-            ensure_ascii=False,
-        ).encode("utf-8"),
-        headers=request_headers(api_key),
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            raw = response.read().decode("utf-8")
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"OpenAI-compatible Chat Completions API returned HTTP {exc.code}: {detail[:1200]}") from exc
+    body = json.dumps(
+        make_request_body(payload, model=model, max_tokens=max_tokens, temperature=temperature),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    raw = ""
+    for attempt in range(retries + 1):
+        request = urllib.request.Request(endpoint, data=body, headers=request_headers(api_key), method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                raw = response.read().decode("utf-8")
+            break
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            retryable = exc.code in {429, 500, 502, 503, 504}
+            if not retryable or attempt >= retries:
+                raise RuntimeError(f"OpenAI-compatible Chat Completions API returned HTTP {exc.code}: {detail[:1200]}") from exc
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if attempt >= retries:
+                raise RuntimeError(f"OpenAI-compatible Chat Completions transport failed after {attempt + 1} attempts: {exc}") from exc
+        time.sleep(retry_backoff * (2**attempt))
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise ValueError("OpenAI-compatible Chat Completions API returned non-object JSON")
@@ -225,7 +284,14 @@ def call_chat_completions(
             f"provider output has {len(text)} chars, exceeding --max-output-chars {max_output_chars}; "
             "rerun with a larger limit only after confirming this is expected"
         )
-    return text
+    return text, build_runner_receipt(
+        data,
+        provider=provider,
+        model=model,
+        input_cost_per_million=input_cost_per_million,
+        output_cost_per_million=output_cost_per_million,
+        currency=currency,
+    )
 
 
 def build_dry_run_output(
@@ -240,6 +306,8 @@ def build_dry_run_output(
     max_tokens: int | None,
     temperature: float | None,
     max_output_chars: int | None,
+    retries: int,
+    retry_backoff: float,
 ) -> str:
     role = text_value(request, "role", "-")
     task = text_value(request, "task", "-")
@@ -265,6 +333,8 @@ def build_dry_run_output(
             f"- Max tokens: {max_tokens if max_tokens is not None else '-'}",
             f"- Temperature: {temperature if temperature is not None else '-'}",
             f"- Max output chars: {max_output_chars if max_output_chars is not None else '-'}",
+            f"- Transport retries: {retries}",
+            f"- Retry backoff seconds: {retry_backoff}",
             f"- Input chars: {len(payload)}",
             "",
             "## Staged Result",
@@ -315,6 +385,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout", type=int, default=300, help="HTTP timeout in seconds. Default: 300.")
     parser.add_argument("--max-tokens", type=int, help="Optional Chat Completions max_tokens value.")
     parser.add_argument("--temperature", type=float, help="Optional Chat Completions temperature value.")
+    parser.add_argument("--input-cost-per-million", type=float, help="Optional input-token price per million tokens. No built-in price table is assumed.")
+    parser.add_argument("--output-cost-per-million", type=float, help="Optional output-token price per million tokens. No built-in price table is assumed.")
+    parser.add_argument("--currency", default="USD", help="Currency label for explicit token prices. Default: USD.")
+    parser.add_argument("--retries", type=int, default=2, help="Retries for transport errors, HTTP 429, and HTTP 5xx. Default: 2.")
+    parser.add_argument("--retry-backoff", type=float, default=1.5, help="Initial exponential retry backoff in seconds. Default: 1.5.")
     parser.add_argument(
         "--max-output-chars",
         type=int,
@@ -328,6 +403,16 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.max_output_chars is not None and args.max_output_chars <= 0:
         raise ValueError("--max-output-chars must be greater than zero when provided")
+    if args.retries < 0 or args.retries > 5:
+        raise ValueError("--retries must be between 0 and 5")
+    if args.retry_backoff < 0:
+        raise ValueError("--retry-backoff must not be negative")
+    if args.input_cost_per_million is not None and args.input_cost_per_million < 0:
+        raise ValueError("--input-cost-per-million must not be negative")
+    if args.output_cost_per_million is not None and args.output_cost_per_million < 0:
+        raise ValueError("--output-cost-per-million must not be negative")
+    if not args.currency.strip():
+        raise ValueError("--currency must not be empty")
     load_env_file(args.env_file)
     payload = read_stdin_utf8()
     request = extract_request(payload)
@@ -364,6 +449,8 @@ def main(argv: list[str] | None = None) -> int:
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 max_output_chars=args.max_output_chars,
+                retries=args.retries,
+                retry_backoff=args.retry_backoff,
             )
         )
         return 0
@@ -371,7 +458,7 @@ def main(argv: list[str] | None = None) -> int:
     api_key = os.environ.get(api_key_env, "").strip() if api_key_env else ""
     if api_key_env and not api_key:
         raise ValueError(f"missing API key environment variable: {api_key_env}")
-    text = call_chat_completions(
+    text, receipt = call_chat_completions(
         payload=payload,
         model=model,
         api_key=api_key,
@@ -380,7 +467,14 @@ def main(argv: list[str] | None = None) -> int:
         max_tokens=args.max_tokens,
         temperature=args.temperature,
         max_output_chars=args.max_output_chars,
+        retries=args.retries,
+        retry_backoff=args.retry_backoff,
+        provider=provider,
+        input_cost_per_million=args.input_cost_per_million,
+        output_cost_per_million=args.output_cost_per_million,
+        currency=args.currency,
     )
+    print(RUNNER_RECEIPT_PREFIX + json.dumps(receipt, ensure_ascii=False, separators=(",", ":")), file=sys.stderr)
     print(text.rstrip())
     return 0
 

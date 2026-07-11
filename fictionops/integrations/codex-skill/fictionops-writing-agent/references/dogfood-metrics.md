@@ -12,6 +12,9 @@ Track metrics that show whether the AI workflow improves real long-form writing 
 - Continuity issues caught before publication.
 - Canon or outline updates required after a chapter.
 - Regression count introduced by accepted AI output.
+- Per-step retrieval, model-call, verification, and authority transitions from `trajectory.jsonl`.
+- Detection and recovery rates from `fictionops agent failure-lab`.
+- Raw/RAG/full/ablation detection, grounding, token, and cost deltas from `fictionops agent benchmark`.
 
 ## Evidence Shape
 
@@ -31,6 +34,8 @@ Record:
 - Follow-up audits.
 
 Use these notes to evaluate the agent workflow, not to claim that the model autonomously wrote the book.
+
+For a controlled comparison, keep provider, model, sampling settings, fixtures, and runner fixed. Run multiple samples per condition and preserve the generated JSON report. The fixture's expected category and reference review must never enter model prompts.
 
 ## Sustained Cycle Evidence
 

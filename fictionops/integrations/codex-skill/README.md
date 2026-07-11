@@ -1,6 +1,6 @@
 # Codex Skill Adapter
 
-This directory contains a draft Codex Skill for running FictionOps inside Codex.
+This directory contains the installable Codex Skill adapter for running FictionOps inside Codex.
 
 It is not a fork of FictionOps. The skill should call the FictionOps CLI and use the same project files, staged agent runs, inbox reviews, and audit gates as the generic workflow.
 
@@ -25,7 +25,7 @@ fictionops-writing-agent/
     dogfood-metrics.md
 ```
 
-To use it in a local Codex setup, copy `fictionops-writing-agent/` into a Codex skills directory, then point Codex at a FictionOps project checkout.
+To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_HOME/skills/`, restart Codex, then invoke `$fictionops-writing-agent` in a FictionOps project checkout. The skill delegates to the installed FictionOps CLI and does not fork the runtime.
 
 ## Design Notes
 

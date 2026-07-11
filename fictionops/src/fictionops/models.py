@@ -1478,6 +1478,7 @@ class AgentExecReport:
     stdout_chars: int
     stderr_chars: int
     stderr_preview: str
+    telemetry: dict[str, object] | None
     returncode: int | None
     dry_run: bool
     executed: bool
