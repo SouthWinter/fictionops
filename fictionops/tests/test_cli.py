@@ -159,6 +159,7 @@ from fictionops.agent_research_baseline import (  # noqa: E402
     score_review,
 )
 from fictionops.agent_policy import select_agent_policy  # noqa: E402
+from fictionops.agent_author_guards import active_author_guards, load_author_guard_registry, set_author_guard  # noqa: E402
 from fictionops.agent_preservation_verifier import (  # noqa: E402
     PRESERVATION_VERIFICATION_SCHEMA,
     apply_preservation_verification,
@@ -5295,6 +5296,13 @@ class FictionOpsCliTests(unittest.TestCase):
                 "# Style\n\nRepeated negation must be classified in context rather than deleted mechanically.\n",
                 encoding="utf-8",
             )
+            set_author_guard(
+                target,
+                guard_id="G-STYLE-NEGATION",
+                kind="style",
+                statement="保留具有场景功能的单次否定，不按词频机械删除。",
+                source="style.md",
+            )
             review = {
                 "schema": "fictionops.comprehensive_chapter_review.v1",
                 "overall_risk": "high",
@@ -5406,6 +5414,7 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(data["review_scope"], "comprehensive")
             self.assertGreater(data["context_file_count"], 0)
             self.assertGreater(data["memory_record_count"], 0)
+            self.assertEqual(data["author_guard_count"], 1)
             self.assertEqual(data["comprehensive_review"]["overall_risk"], "high")
             self.assertEqual(data["preservation_call_count"], 2)
             self.assertEqual(data["preservation_verification"]["upheld_count"], 1)
@@ -5420,6 +5429,7 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertTrue((run_dir / "memory_context.md").exists())
             self.assertIn("耶儿_人物弧线.md", (run_dir / "project_context.md").read_text(encoding="utf-8"))
             self.assertIn("style.md", (run_dir / "project_context.md").read_text(encoding="utf-8"))
+            self.assertIn("G-STYLE-NEGATION", (run_dir / "project_context.md").read_text(encoding="utf-8"))
             ledger = json.loads((run_dir / "issues.before.json").read_text(encoding="utf-8"))
             self.assertTrue(any(item["category"] == "semantic.character" for item in ledger["issues"]))
             self.assertIn("review_findings_addressed", [item["name"] for item in data["verification"]["semantic_verification"]["invariants"]])
@@ -5430,6 +5440,8 @@ class FictionOpsCliTests(unittest.TestCase):
             reviewer_context = (run_dir / "comprehensive_reviewer" / "context_pack.md").read_text(encoding="utf-8")
             self.assertIn("## Static Prose Issue Ledger", reviewer_context)
             self.assertIn("prose.exclusionary_narration", reviewer_context)
+            preservation_context = (run_dir / "preservation_verifier" / "context_pack.md").read_text(encoding="utf-8")
+            self.assertIn("G-STYLE-NEGATION", preservation_context)
             verifier_context = (run_dir / "semantic_verifier" / "context_pack.md").read_text(encoding="utf-8")
             self.assertIn("### Comprehensive Review", verifier_context)
             self.assertIn("### Static Issue Ledger", verifier_context)
@@ -6711,6 +6723,91 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertEqual(unguarded_verification["withdrawn_count"], 0)
         self.assertEqual(unguarded_verification["needs_counterevidence_count"], 1)
         self.assertEqual(len(unguarded_filtered["needs_counterevidence_issues"]), 1)
+
+    def test_author_guard_registry_keeps_stable_ids_history_and_withdraw_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "00_management").mkdir()
+            created = self.run_cli(
+                "agent",
+                "guard",
+                "set",
+                str(project),
+                "--id",
+                "G-STYLE-001",
+                "--kind",
+                "style",
+                "--statement",
+                "保留葬礼中三次‘归土’的仪式递进。",
+                "--source",
+                "写作设定/葬礼节奏",
+                "--format",
+                "json",
+            )
+            self.assertEqual(json.loads(created.stdout)["guards"][0]["guard_id"], "G-STYLE-001")
+            updated = self.run_cli(
+                "agent",
+                "guard",
+                "set",
+                str(project),
+                "--id",
+                "G-STYLE-001",
+                "--kind",
+                "style",
+                "--statement",
+                "保留葬礼中三次‘归土’，每次必须推动不同人物动作。",
+                "--source",
+                "写作设定/葬礼节奏",
+                "--format",
+                "json",
+            )
+            self.assertEqual(len(json.loads(updated.stdout)["guards"][0]["history"]), 1)
+            registry = load_author_guard_registry(project)
+            self.assertEqual(registry["guard_count"], 1)
+            guards = active_author_guards(project)
+            self.assertIn("G-STYLE-001", guards)
+
+            review = {
+                "issues": [
+                    {
+                        "category": "prose_and_reader_experience",
+                        "evidence": ["归土。"],
+                        "problem": "The three repetitions should be reduced.",
+                        "suggested_action": "Keep only one repetition.",
+                    }
+                ]
+            }
+            model = {
+                "decisions": [
+                    {
+                        "issue_index": 0,
+                        "verdict": "withdraw",
+                        "evidence": [guards["G-STYLE-001"]],
+                        "guard_ids": ["G-STYLE-001"],
+                        "reason": "The registered author guard requires all three beats.",
+                        "authority": "model",
+                    }
+                ]
+            }
+            filtered, verification = apply_preservation_verification(review, model, author_guards=guards)
+            self.assertEqual(verification["withdrawn_count"], 1)
+            self.assertEqual(verification["authorized_guard_count"], 1)
+            self.assertEqual(filtered["issues"], [])
+
+            retired = self.run_cli(
+                "agent",
+                "guard",
+                "retire",
+                str(project),
+                "--id",
+                "G-STYLE-001",
+                "--reason",
+                "该仪式段已从当前版本删除。",
+                "--format",
+                "json",
+            )
+            self.assertEqual(json.loads(retired.stdout)["guards"][0]["status"], "retired")
+            self.assertEqual(active_author_guards(project), {})
 
     def test_semantic_pass_cannot_override_missing_required_metric_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -482,5 +482,146 @@
   },
   "actual_models": [
     "deepseek-v4-flash"
-  ]
+  ],
+  "author_guard_registry_dogfood": [
+    {
+      "prompt_id": "B08",
+      "author_guards": {
+        "G-B08-CHILD-INTELLIGENCE": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。"
+      },
+      "original_issue_count": 3,
+      "effective_issue_count": 0,
+      "withdrawn_count": 0,
+      "needs_counterevidence_count": 3,
+      "target_effective": null,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+          ],
+          "guard_ids": [],
+          "reason": "The issue claims the girl's question exceeds her cognitive framework, but the chapter shows she points to an empty rice vat and contrasts it with 'three granaries'—a concrete observation from her immediate environment. The context establishes she learns from 'price, hunger, goods, and her father's expressions,' which could plausibly include noticing empty pots and full granaries. However, the leap to proposing redistribution as a strategic solution is not directly supported by the supplied evidence; the chapter does not show a memory or overheard conversation that bridges this. The guard G-B08-CHILD-INTELLIGENCE permits intelligence but does not specifically authorize this level of logistical reasoning without additional cues. Needs_counterevidence is appropriate because the claim may be valid but lacks enough evidence to uphold or withdraw.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+          ],
+          "guard_ids": [],
+          "reason": "The issue questions how a 12-year-old knows about 'three granaries' and their status. The chapter provides no explicit mechanism for her knowledge—no scene of her overhearing inventory talk or visiting granaries. The context says she learns from 'price, hunger, goods, and her father's expressions,' but precise inventory numbers are not clearly within that scope. The guard G-B08-CHILD-INTELLIGENCE allows intelligence but does not specify information access boundaries. Without counterevidence showing a plausible source, the claim may be valid, but the evidence is insufficient to uphold or withdraw.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 2,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？"
+          ],
+          "guard_ids": [],
+          "reason": "The issue claims the dialogue lacks softening cues and may read as precocious or confrontational. The chapter shows the girl speaks directly, without hesitation or deferential tone. The context does not specify the father-daughter relationship dynamic, so it is unclear whether this tone is appropriate. The guard G-B08-CHILD-INTELLIGENCE permits intelligence but does not address tone or hierarchy. The claim may be valid, but without evidence of the expected relationship norms, the verdict is needs_counterevidence.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "usage": {
+        "input_tokens": 1325,
+        "output_tokens": 697,
+        "total_tokens": 2022,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "prompt_id": "B06",
+      "author_guards": {
+        "G-B06-RHYTHMIC-ANCHOR": "保留最有功能的一组重复，不做机械同义词替换。"
+      },
+      "original_issue_count": 6,
+      "effective_issue_count": 2,
+      "withdrawn_count": 1,
+      "needs_counterevidence_count": 3,
+      "target_effective": true,
+      "decisions": [
+        {
+          "issue_index": 0,
+          "verdict": "uphold",
+          "evidence": [
+            "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+          ],
+          "guard_ids": [],
+          "reason": "The issue correctly identifies that the excerpt repeats the same triple-triple structure (exclusionary narration, triple parallelism, simile) as the adjacent paragraphs. The author constraint G-B06-RHYTHMIC-ANCHOR only protects functional repetition from mechanical synonym replacement, but does not authorize retaining identical structure across three consecutive paragraphs when it creates a mechanical pattern. The issue's suggested action to vary syntactic structure while preserving oppressive tone is a material defect supported by the chapter and context.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 1,
+          "verdict": "uphold",
+          "evidence": [
+            "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+          ],
+          "guard_ids": [],
+          "reason": "The issue correctly identifies that the lack of progression in prose technique across three consecutive paragraphs may cause the scene to feel static rather than building tension. The author constraint does not address progression or escalation. The chapter and context support this as a material defect in narrative momentum.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 2,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+          ],
+          "guard_ids": [],
+          "reason": "The claim that the paragraph provides no new information about setting, character, or plot is plausible but not fully supported by the supplied chapter alone. The excerpt is a single paragraph; its function within the broader chapter (e.g., as a deliberate atmospheric plateau) cannot be determined without more context. The issue may be valid but lacks sufficient evidence from the provided material.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 3,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "窗像一块冻住的水"
+          ],
+          "guard_ids": [],
+          "reason": "The claim that the frozen water simile could function as foreshadowing but is not developed is speculative. The excerpt does not provide enough context to determine whether this is intended as foreshadowing or simply a static atmospheric image. Without more chapter context, the issue lacks sufficient evidence to be upheld or withdrawn.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 4,
+          "verdict": "needs_counterevidence",
+          "evidence": [
+            "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+          ],
+          "guard_ids": [],
+          "reason": "The claim that the paragraph's function within the chapter is unclear is based on the excerpt alone, which is insufficient to determine whether the paragraph serves a specific narrative beat (e.g., climax, transition, pause). More chapter context is needed to assess this as a material defect.",
+          "authority": "model"
+        },
+        {
+          "issue_index": 5,
+          "verdict": "withdraw",
+          "evidence": [
+            "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。"
+          ],
+          "guard_ids": [
+            "G-B06-RHYTHMIC-ANCHOR"
+          ],
+          "reason": "The issue suggests evaluating which set of repetitions to break, which would involve mechanical synonym replacement or removal of functional repetition. The author constraint G-B06-RHYTHMIC-ANCHOR explicitly protects the most functional set of repetition and prohibits mechanical synonym replacement. The triple-triple structure is fully retained and functional for building rhythm; the issue's suggested action would violate the preservation constraint.",
+          "authority": "model"
+        }
+      ],
+      "repair_used": false,
+      "usage": {
+        "input_tokens": 1785,
+        "output_tokens": 936,
+        "total_tokens": 2721,
+        "cached_input_tokens": 0
+      }
+    }
+  ],
+  "author_guard_model_call_count": 2,
+  "author_guard_usage": {
+    "input_tokens": 3110,
+    "output_tokens": 1633,
+    "total_tokens": 4743,
+    "cached_input_tokens": 0
+  }
 }

@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from .agent_budget import ModelExecutionBudget, execute_model_bundle, start_model_budget
+from .agent_author_guards import active_author_guards
 from .agent_exec import DEFAULT_AGENT_EXEC_OUTPUT
 from .agent_inbox import build_agent_inbox
 from .agent_comprehensive_review import (
@@ -109,6 +110,7 @@ class AgentReviseWorkflowReport:
     review_scope: str
     context_file_count: int
     memory_record_count: int
+    author_guard_count: int
     comprehensive_review: dict[str, object] | None
     preservation_verification_enabled: bool
     preservation_call_count: int
@@ -476,6 +478,15 @@ def build_agent_revise_workflow(
     review_text, review_file = read_or_build_review(chapter_file, review.expanduser().resolve() if review else None)
 
     anchor = find_project_anchor(chapter_file)
+    author_guard_snapshot_file = run_dir / "author_guards.json"
+    if resume and author_guard_snapshot_file.is_file():
+        author_guard_snapshot = json.loads(author_guard_snapshot_file.read_text(encoding="utf-8"))
+        author_guards = {
+            str(key): str(value)
+            for key, value in (author_guard_snapshot.get("guards") or {}).items()
+        }
+    else:
+        author_guards = active_author_guards(anchor)
     model_config = build_model_config_report(anchor)
     selected_provider = provider or model_config.provider
     selected_model = model or model_config.drafting_model
@@ -663,8 +674,33 @@ def build_agent_revise_workflow(
                     )
                 context_file_count = len(project_context.items)
                 project_context_file = run_dir / "project_context.md"
-                project_context_file.write_text(render_project_context(project_context), encoding="utf-8", newline="\n")
+                project_context_text = "\n".join(
+                    [
+                        render_project_context(project_context).rstrip(),
+                        "",
+                        "## Active Author Guard Registry",
+                        "",
+                        "Only these stable ids carry author authority.",
+                        "",
+                        "```json",
+                        json.dumps(author_guards, ensure_ascii=False, indent=2),
+                        "```",
+                        "",
+                    ]
+                )
+                project_context_file.write_text(project_context_text, encoding="utf-8", newline="\n")
+                author_guard_snapshot_file.write_text(
+                    json.dumps(
+                        {"schema": "fictionops.author_guard_snapshot.v1", "guards": author_guards},
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
                 file_reports.append(AgentReviseWorkflowFile(kind="project_context", path=str(project_context_file), written=True))
+                file_reports.append(AgentReviseWorkflowFile(kind="author_guards", path=str(author_guard_snapshot_file), written=True))
                 reviewer_dir = prepare_comprehensive_review_bundle(
                     run_dir,
                     chapter_file=chapter_file,
@@ -725,6 +761,7 @@ def build_agent_revise_workflow(
                         chapter_text=chapter_text,
                         project_context=project_context_file.read_text(encoding="utf-8"),
                         review=comprehensive_review,
+                        author_guards=author_guards,
                         provider=selected_provider,
                         model=selected_review_model,
                         force=force or resume,
@@ -776,6 +813,7 @@ def build_agent_revise_workflow(
                 comprehensive_review, preservation_verification = apply_preservation_verification(
                     comprehensive_review,
                     model_preservation,
+                    author_guards=author_guards,
                 )
                 preservation_file = run_dir / "preservation_verification.json"
                 preservation_file.write_text(
@@ -800,7 +838,7 @@ def build_agent_revise_workflow(
                     run_dir,
                     phase="review_ready",
                     next_action="run_chapter_reviser",
-                    artifacts=[run_dir / "comprehensive_review.json", run_dir / "issues.before.json", preservation_file, project_context_file],
+                    artifacts=[run_dir / "comprehensive_review.json", run_dir / "issues.before.json", preservation_file, project_context_file, author_guard_snapshot_file],
                 )
             reuse_candidate = bool(
                 resume
@@ -963,6 +1001,7 @@ def build_agent_revise_workflow(
         review_scope=review_scope,
         context_file_count=context_file_count,
         memory_record_count=memory_record_count,
+        author_guard_count=len(author_guards),
         comprehensive_review=comprehensive_review,
         preservation_verification_enabled=preservation_verify,
         preservation_call_count=preservation_call_count,
@@ -1019,6 +1058,7 @@ def format_agent_revise_workflow(report: AgentReviseWorkflowReport) -> str:
         f"- Review scope: `{report.review_scope}`",
         f"- Project context files: {report.context_file_count}",
         f"- Retrieved memory records: {report.memory_record_count}",
+        f"- Active author guards: {report.author_guard_count}",
         f"- Preservation verifier calls: {report.preservation_call_count if report.preservation_verification_enabled else 'disabled'}",
         f"- Semantic verifier calls: {report.semantic_call_count if report.semantic_verification_enabled else 'disabled'}",
         f"- Model-call budget: {report.model_calls_used}/{report.max_model_calls} calls; runtime limit {report.max_runtime_seconds}s",

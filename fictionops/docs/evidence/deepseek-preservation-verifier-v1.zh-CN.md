@@ -41,6 +41,15 @@ Verifier 不能凭模型意见直接删除问题：
 
 B06 verifier 首次返回畸形 JSON。系统新增一次有界 repair：保留原始输出，只修复 JSON/schema，并计入模型预算。repair 成功恢复全部 6 个逐条决定；若 repair 仍失败，系统退回确定性裁决，不让格式错误自动清空 reviewer findings。
 
+## Author Guard ID 复测
+
+在项目级稳定 guard registry 完成后，又对 B08 与 B06 运行 2 次 DeepSeek verifier，共 4,743 tokens：
+
+- B08 注册 `G-B08-CHILD-INTELLIGENCE`。模型认为“少女可以聪明”不足以直接裁定库存信息来源和父女语气，因此没有引用该 ID，三条争议全部保持 `needs_counterevidence`，没有越权撤回。
+- B06 注册 `G-B06-RHYTHMIC-ANCHOR`。模型 uphold 两条核心修辞/节奏问题，三条证据不足的问题进入 counterevidence，只对一条会导致机械同义词替换的建议引用 guard 并 withdraw；目标问题仍在自动修订集合。
+
+这说明 guard id 不是“给模型一个撤回理由”，而是限制它只能在 statement 覆盖范围内使用作者权限。
+
 ## 结论
 
-v1 证明 verifier 可以显著降低自动误修，但不能被描述成“提升了整体审读准确率”。它把一部分模型不确定性从自动 action 转成了人工 review boundary。下一步应给作者保留约束建立稳定 guard id，并对 counterevidence 队列做人类盲评，判断哪些可安全自动 withdraw。
+v1 证明 verifier 可以显著降低自动误修，但不能被描述成“提升了整体审读准确率”。它把一部分模型不确定性从自动 action 转成了人工 review boundary。稳定 author guard id 已完成；下一步应对 counterevidence 队列做人类盲评，判断哪些可安全自动 withdraw。

@@ -12,6 +12,8 @@
 
 确定性规则优先于模型裁决，例如 `No change needed`、`无需修改`、`建议保留` 出现在 issue 内时必须撤回。独立模型不能取得作者权限；它只能缩小自动修订集合，不能接受稿件、改写 canon 或删除原始审计记录。
 
+作者权限来自项目级 `.fictionops/author_guards.json`。每条 active guard 使用稳定 `G-*` ID，记录 kind、statement、source、状态与修订历史。`agent guard set` 创建或沿用 ID 更新措辞，`agent guard retire` 退役但不删除历史，`agent guards` 查看当前注册表。Reviewer 自己生成的 `preserve_constraints` 不会自动获得 ID，也不能授权 withdraw；模型若未引用 active author guard，只能把争议降为 `needs_counterevidence`。
+
 当前要求级完成度见 [Agent Runtime 完成度审计](agent-runtime-completion-audit.zh-CN.md)。
 
 > 状态：实现中。Memory-first Agent 已落地类型化记忆、显式作者偏好、因果模拟、故事事实账本、逐场景状态契约、独立反证、确定性门禁、选择性场景复修、执行预算和采纳后事件；主要未完成项已转向统一产品入口与项目级 controller。

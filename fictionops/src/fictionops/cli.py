@@ -106,6 +106,26 @@ def build_parser() -> argparse.ArgumentParser:
     agent_issue_parser.add_argument("--reason", required=True, help="Author reason preserved in the decision log.")
     agent_issue_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
 
+    agent_guards_parser = agent_subparsers.add_parser("guards", help="Inspect stable author preservation guards.")
+    agent_guards_parser.add_argument("path", nargs="?", default=".")
+    agent_guards_parser.add_argument("--status", choices=sorted(AUTHOR_GUARD_STATUSES))
+    agent_guards_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
+
+    agent_guard_parser = agent_subparsers.add_parser("guard", help="Create, update, or retire an author guard.")
+    agent_guard_subparsers = agent_guard_parser.add_subparsers(dest="guard_action", required=True)
+    agent_guard_set_parser = agent_guard_subparsers.add_parser("set", help="Create or update a stable author guard.")
+    agent_guard_set_parser.add_argument("path", nargs="?", default=".")
+    agent_guard_set_parser.add_argument("--id", dest="guard_id")
+    agent_guard_set_parser.add_argument("--kind", required=True, choices=sorted(AUTHOR_GUARD_KINDS))
+    agent_guard_set_parser.add_argument("--statement", required=True)
+    agent_guard_set_parser.add_argument("--source", default="author")
+    agent_guard_set_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_guard_retire_parser = agent_guard_subparsers.add_parser("retire", help="Retire a guard without deleting its history.")
+    agent_guard_retire_parser.add_argument("path", nargs="?", default=".")
+    agent_guard_retire_parser.add_argument("--id", required=True, dest="guard_id")
+    agent_guard_retire_parser.add_argument("--reason", required=True)
+    agent_guard_retire_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
+
     agent_cancel_parser = agent_subparsers.add_parser("cancel", help="Cancel a resumable agent session with an auditable reason.")
     agent_cancel_parser.add_argument("run_dir", help="Agent run directory containing session.json.")
     agent_cancel_parser.add_argument("--reason", required=True, help="Reason preserved in cancellation.json and events.jsonl.")
@@ -3949,6 +3969,44 @@ def handle_agent(args: argparse.Namespace) -> int:
             print(f"fictionops: agent issue failed: {exc}", file=sys.stderr)
             return 1
         print(render_issue_ledger(payload, args.format))
+        return 0
+    if args.agent_action == "guards":
+        try:
+            payload = load_author_guard_registry(Path(args.path))
+            guards = [item for item in payload.get("guards") or [] if isinstance(item, dict)]
+            if args.status:
+                guards = [item for item in guards if str(item.get("status")) == args.status]
+            payload = {**payload, "guard_count": len(guards), "guards": guards}
+        except (OSError, RuntimeError, ValueError) as exc:
+            print(f"fictionops: agent guards failed: {exc}", file=sys.stderr)
+            return 1
+        print(render_author_guard_registry(payload, args.format))
+        return 0
+    if args.agent_action == "guard":
+        try:
+            if args.guard_action == "set":
+                entry = set_author_guard(
+                    Path(args.path),
+                    statement=args.statement,
+                    kind=args.kind,
+                    source=args.source,
+                    guard_id=args.guard_id,
+                )
+            else:
+                entry = retire_author_guard(
+                    Path(args.path),
+                    guard_id=args.guard_id,
+                    reason=args.reason,
+                )
+            payload = {
+                "schema": AUTHOR_GUARD_SCHEMA,
+                "guard_count": 1,
+                "guards": [entry],
+            }
+        except (KeyError, OSError, RuntimeError, ValueError) as exc:
+            print(f"fictionops: agent guard failed: {exc}", file=sys.stderr)
+            return 1
+        print(render_author_guard_registry(payload, args.format))
         return 0
     if args.agent_action == "cancel":
         try:

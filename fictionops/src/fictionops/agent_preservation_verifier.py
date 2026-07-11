@@ -59,18 +59,6 @@ def deterministic_preservation_decisions(review: dict[str, object]) -> list[dict
     return decisions
 
 
-def indexed_preservation_guards(review: dict[str, object]) -> dict[str, str]:
-    guards: dict[str, str] = {}
-    for issue_index, issue in enumerate(review.get("issues") or []):
-        if not isinstance(issue, dict):
-            continue
-        for guard_index, value in enumerate(issue.get("preserve_constraints") or []):
-            text = str(value).strip()
-            if text:
-                guards[f"I{issue_index}P{guard_index}"] = text
-    return guards
-
-
 def prepare_preservation_verifier_bundle(
     run_dir: Path,
     *,
@@ -78,6 +66,7 @@ def prepare_preservation_verifier_bundle(
     chapter_text: str,
     project_context: str,
     review: dict[str, object],
+    author_guards: dict[str, str] | None = None,
     provider: str,
     model: str,
     force: bool,
@@ -156,7 +145,7 @@ def prepare_preservation_verifier_bundle(
             "Only these ids can authorize a direct model withdrawal. If no matching id exists, use needs_counterevidence rather than withdraw.",
             "",
             "```json",
-            json.dumps(indexed_preservation_guards(review), ensure_ascii=False, indent=2),
+            json.dumps(author_guards or {}, ensure_ascii=False, indent=2),
             "```",
         ]
     ).rstrip() + "\n"
@@ -284,7 +273,10 @@ def parse_preservation_verification(text: str, *, issue_count: int) -> dict[str,
 
 
 def apply_preservation_verification(
-    review: dict[str, object], model_verification: dict[str, object] | None
+    review: dict[str, object],
+    model_verification: dict[str, object] | None,
+    *,
+    author_guards: dict[str, str] | None = None,
 ) -> tuple[dict[str, object], dict[str, object]]:
     original_issues = [deepcopy(item) for item in review.get("issues") or [] if isinstance(item, dict)]
     deterministic = {int(item["issue_index"]): item for item in deterministic_preservation_decisions(review)}
@@ -293,7 +285,7 @@ def apply_preservation_verification(
         for item in (model_verification or {}).get("decisions") or []
         if isinstance(item, dict) and isinstance(item.get("issue_index"), int)
     }
-    valid_guard_ids = set(indexed_preservation_guards(review))
+    valid_guard_ids = set(author_guards or {})
     final_decisions: list[dict[str, object]] = []
     effective: list[dict[str, object]] = []
     withdrawn: list[dict[str, object]] = []
@@ -334,6 +326,7 @@ def apply_preservation_verification(
         "needs_counterevidence_count": len(disputed),
         "decisions": final_decisions,
         "model_verification_available": model_verification is not None,
+        "authorized_guard_count": len(valid_guard_ids),
         "summary": str((model_verification or {}).get("summary") or "").strip(),
     }
     filtered = deepcopy(review)
