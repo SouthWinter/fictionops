@@ -152,7 +152,7 @@ from fictionops.agent_issue_ledger import (  # noqa: E402
     transition_issue,
 )
 from fictionops.agent_revision_runtime import merge_semantic_verification  # noqa: E402
-from fictionops.agent_research_baseline import baseline_prompt, run_baselines  # noqa: E402
+from fictionops.agent_research_baseline import baseline_prompt, run_baselines, score_review  # noqa: E402
 from fictionops.agent_policy import select_agent_policy  # noqa: E402
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
@@ -6481,6 +6481,21 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertNotIn("## Workflow Contract", raw_prompt)
             self.assertNotIn(case["project_context"], raw_prompt)
         self.assertEqual(len(issue_ids), 3)
+        alias_score = score_review(
+            cases[0],
+            "raw",
+            {
+                "issues": [
+                    {
+                        "category": "narrative intrusion",
+                        "evidence": "The narrator states: ‘她早已决定今夜背叛主人’.",
+                    }
+                ]
+            },
+            None,
+        )
+        self.assertTrue(alias_score["detected"])
+        self.assertTrue(alias_score["evidence_grounded"])
         with tempfile.TemporaryDirectory() as tmp:
             runner = Path(tmp) / "baseline_runner.py"
             expected = {case["case_id"]: case["review"] for case in cases}
@@ -6500,6 +6515,7 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(len(baseline["rows"]), 9)
             self.assertEqual(baseline["rows"][0]["review"], cases[0]["review"])
             self.assertEqual(len(baseline["rows"][0]["prompt_sha256"]), 64)
+            self.assertIn("information_boundary", baseline["rows"][0]["accepted_categories"])
             for mode in ("raw", "rag", "workflow"):
                 self.assertEqual(baseline["aggregate"][mode]["detection_rate"], 1.0)
                 self.assertEqual(baseline["aggregate"][mode]["grounded_rate"], 1.0)

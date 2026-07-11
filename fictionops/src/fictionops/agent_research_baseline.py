@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -80,19 +81,47 @@ def parse_review(text: str) -> dict[str, Any]:
     return payload
 
 
+def normalize_category(value: object) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
+
+
+def evidence_fragments(value: object) -> list[str]:
+    values = value if isinstance(value, list) else [value]
+    fragments: list[str] = []
+    for item in values:
+        text = str(item or "").strip()
+        if not text:
+            continue
+        fragments.append(text)
+        quoted = re.findall(r"'([^']+)'|\"([^\"]+)\"|‘([^’]+)’|“([^”]+)”", text)
+        fragments.extend(fragment.strip() for groups in quoted for fragment in groups if len(fragment.strip()) >= 4)
+    return list(dict.fromkeys(fragments))
+
+
 def score_review(case: dict[str, Any], mode: str, review: dict[str, Any], telemetry: dict[str, Any] | None) -> dict[str, Any]:
     issues = [item for item in review.get("issues") or [] if isinstance(item, dict)]
     expected = str(case.get("expected_category") or "")
-    matched = [item for item in issues if str(item.get("category") or "") == expected]
+    accepted = {normalize_category(expected)}
+    accepted.update(normalize_category(value) for value in case.get("accepted_categories") or [])
+    matched = [item for item in issues if normalize_category(item.get("category")) in accepted]
     excerpt = str(case.get("chapter_excerpt") or "")
-    evidence = [str(value) for item in matched for value in (item.get("evidence") or []) if str(value)]
-    grounded = bool(evidence) and all(value in excerpt for value in evidence)
+    sources = [excerpt]
+    if mode in {"rag", "full", "workflow", "no_guard", "no_contract"}:
+        sources.append(str(case.get("project_context") or ""))
+    matched_evidence = [evidence_fragments(item.get("evidence")) for item in matched]
+    grounded_issue_count = sum(
+        any(fragment in source for fragment in fragments for source in sources) for fragments in matched_evidence
+    )
     return {
         "case_id": case.get("case_id"),
         "mode": mode,
         "expected_category": expected,
+        "accepted_categories": sorted(accepted),
+        "matched_categories": [str(item.get("category") or "") for item in matched],
         "detected": bool(matched),
-        "evidence_grounded": grounded,
+        "evidence_grounded": grounded_issue_count > 0,
+        "matched_issue_count": len(matched),
+        "grounded_issue_count": grounded_issue_count,
         "issue_count": len(issues),
         "extra_issue_count": max(0, len(issues) - len(matched)),
         "telemetry": telemetry,
@@ -160,7 +189,7 @@ def run_baselines(
         }
     return {
         "schema": BASELINE_SCHEMA,
-        "fixtures": str(fixtures.resolve()),
+        "fixtures": fixtures.as_posix(),
         "conditions": selected_conditions,
         "runs_per_case": runs,
         "rows": rows,

@@ -1,0 +1,854 @@
+{
+  "schema": "fictionops.agent_review_baseline.v1",
+  "fixtures": "tests/fixtures/agent_high_risk_review_cases.json",
+  "conditions": [
+    "raw",
+    "rag",
+    "full"
+  ],
+  "runs_per_case": 2,
+  "rows": [
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "raw",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "narrative intrusion"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "33df1844-3582-4a84-b1bc-5cc70ec4e367",
+        "usage": {
+          "input_tokens": 250,
+          "output_tokens": 126,
+          "total_tokens": 376,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "53722eddbf65a9944fcebeee2cd9eb2d734dea517cbee9a7fea370aabce9d87f",
+      "review": {
+        "issues": [
+          {
+            "category": "narrative intrusion",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narrative voice ('旁白') explicitly states the character's hidden intention, violating the 'show, don't tell' principle and removing ambiguity that could create suspense.",
+            "suggested_action": "Remove the narrator's direct assertion of the character's decision. Instead, imply her intention through subtle actions, environmental cues, or internal conflict, allowing the reader to infer the betrayal."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "raw",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "information_boundary"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "bdf2f518-ca8e-4d44-ba31-66671a4758c9",
+        "usage": {
+          "input_tokens": 250,
+          "output_tokens": 150,
+          "total_tokens": 400,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "e9b9e260a6c68c368f66ddb1cd24652dfffd359e741a2f7b0ea662720e27198d",
+      "review": {
+        "issues": [
+          {
+            "category": "information_boundary",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narrator directly reveals the character's hidden intention ('she had already decided to betray her master tonight') without any narrative justification or character action that would allow the reader to infer this. This violates the information boundary by providing omniscient access to internal states that are not externally observable.",
+            "suggested_action": "Remove the direct statement of intention. Instead, show the character's decision through subtle actions, expressions, or environmental cues that imply her resolve, allowing the reader to infer the hidden intention."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "rag",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "information boundary violation"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "c378dba9-0a00-4b52-a7ac-18ee5f91bfe6",
+        "usage": {
+          "input_tokens": 288,
+          "output_tokens": 139,
+          "total_tokens": 427,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "d3ab760cd9abf7231adf4e40bee3ec1ad4078a14bb2d1add802cc9f94f8bf55b",
+      "review": {
+        "issues": [
+          {
+            "category": "information boundary violation",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narration asserts knowledge of the female official's hidden intention (betrayal) that has not been revealed to any character or through any observable action, violating the limited perspective of the current viewpoint character.",
+            "suggested_action": "Remove or rephrase the omniscient assertion. Instead, show only observable cues (e.g., her hand trembles, she avoids eye contact) that suggest a hidden intention, without stating it as fact."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "rag",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "narrative intrusion"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "9c9946ae-7b26-48d2-8e83-58aba160394a",
+        "usage": {
+          "input_tokens": 288,
+          "output_tokens": 111,
+          "total_tokens": 399,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "c1445a533837b8ba83a339bc4194ec76457fc4bb0612a4277e70896296e860a6",
+      "review": {
+        "issues": [
+          {
+            "category": "narrative intrusion",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narration explicitly states the female official's hidden intention, which violates the information boundary established by the current viewpoint character who only observes external actions.",
+            "suggested_action": "Remove or rephrase the narrator's assertion to stay within the viewpoint character's limited knowledge, showing only observable behavior or ambiguous cues."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "full",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "information_boundary"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "6c903cbf-ea64-4170-afed-7ee6df11f1b6",
+        "usage": {
+          "input_tokens": 365,
+          "output_tokens": 159,
+          "total_tokens": 524,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "eeae0911aa1c207322191a7caf268466952625fed0fb58ef6a3137e10eaf12c2",
+      "review": {
+        "issues": [
+          {
+            "category": "information_boundary",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narrator asserts the female official's hidden intention (betrayal) as a fact, which violates the limited perspective established by the excerpt and project context. The context states that the current viewpoint character only sees external actions, and the female official's true decision has not been disclosed to anyone. The narrator's omniscient statement leaks information beyond the viewpoint character's knowledge.",
+            "suggested_action": "Replace the narrator's assertion with a description of the viewpoint character's inference or suspicion, or leave the intention ambiguous to maintain the information boundary."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "mode": "full",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "information_boundary_violation",
+        "narrative_intrusion"
+      ],
+      "matched_categories": [
+        "information_boundary"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "7836b07c-ceae-4cea-9c19-2a26348a5151",
+        "usage": {
+          "input_tokens": 365,
+          "output_tokens": 152,
+          "total_tokens": 517,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "747213e6cd00f09d3b9b88485c5aacee0b2fdb5153509de565da72d70f0d5834",
+      "review": {
+        "issues": [
+          {
+            "category": "information_boundary",
+            "evidence": "旁白却断定，她早已决定今夜背叛主人。",
+            "problem": "The narrator asserts knowledge of the female official's internal decision ('早已决定今夜背叛主人'), which is not observable by the current viewpoint character and contradicts the project context that her true decision has not been disclosed to anyone. This constitutes a leak of privileged information beyond the viewpoint's boundary.",
+            "suggested_action": "Replace the narrator's omniscient assertion with a description of the viewpoint character's inference or suspicion about the female official's intentions, or remove the internal knowledge claim entirely to maintain the information boundary."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "raw",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character_voice_age_and_status"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "5d94f3a6-5b9d-45af-9f22-284c76ed83ba",
+        "usage": {
+          "input_tokens": 248,
+          "output_tokens": 173,
+          "total_tokens": 421,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "77eee294d7d97245ae25ed4ba6c2e0389bebbd926827bd4d9f525a02840efc8f",
+      "review": {
+        "issues": [
+          {
+            "category": "character_voice_age_and_status",
+            "evidence": "十二岁的粮商女儿踢开湿鞋，盯着父亲的算盘说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+            "problem": "A twelve-year-old merchant's daughter uses formal, technical business jargon ('仓储周转结构', '优化跨区域调拨策略') that is inconsistent with her age, background, and likely vocabulary. The dialogue sounds like an adult business consultant, not a child.",
+            "suggested_action": "Revise the dialogue to use simpler, more childlike language and perspective appropriate for a twelve-year-old, such as expressing concern about food running out or suggesting moving grain from one place to another in plain terms."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "raw",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character_voice_age_and_status"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "9ae5c012-9890-4c07-988f-13580c602283",
+        "usage": {
+          "input_tokens": 248,
+          "output_tokens": 182,
+          "total_tokens": 430,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "eec3ab129bd8ed5444e6f02f5e060d3678658c5bfcaa3436117d0dddc6cf8ff0",
+      "review": {
+        "issues": [
+          {
+            "category": "character_voice_age_and_status",
+            "evidence": "十二岁的粮商女儿踢开湿鞋，盯着父亲的算盘说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+            "problem": "The dialogue uses formal, technical business terminology ('仓储周转结构', '优化跨区域调拨策略') that is inconsistent with the expected vocabulary and cognitive development of a twelve-year-old child, regardless of her merchant background. This breaks the character's age-appropriate voice.",
+            "suggested_action": "Replace the line with simpler, more concrete language that reflects a child's understanding of the situation, such as '爹，咱们把南边的粮食运到北边卖，能多赚钱吧？' or a similarly age-appropriate observation."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "rag",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character_voice_age_and_status"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "8c560b2c-ff14-419c-ad02-63343c21a02f",
+        "usage": {
+          "input_tokens": 284,
+          "output_tokens": 181,
+          "total_tokens": 465,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "d464eca1c9db7f8aafca4afb246b8e6a091a36d3d5fc8c37646c77c791d124e9",
+      "review": {
+        "issues": [
+          {
+            "category": "character_voice_age_and_status",
+            "evidence": "十二岁的粮商女儿说：'依照当前仓储周转结构，我们应当优化跨区域调拨策略。'",
+            "problem": "对话使用了现代商业术语（如'仓储周转结构'、'优化跨区域调拨策略'），与角色年龄（十二岁）、身份（粮商女儿）及未受官署文书训练的背景严重不符，破坏了角色声音的真实性。",
+            "suggested_action": "将对话改为符合角色年龄和认知水平的语言，例如使用更具体、生活化的表达，如'爹，咱们把东边的粮先挪到西边卖，能多赚些钱'，并融入她对价钱、饥饿和父亲脸色的观察。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "rag",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character_voice_age_and_status"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "09984b5d-3b9e-4b38-961f-82087b407ae3",
+        "usage": {
+          "input_tokens": 284,
+          "output_tokens": 187,
+          "total_tokens": 471,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "7944eadba7e40cc4a69afdc9bd3ca93052bab34d03a133d37bced0e9eda7dffb",
+      "review": {
+        "issues": [
+          {
+            "category": "character_voice_age_and_status",
+            "evidence": "十二岁的粮商女儿说：'依照当前仓储周转结构，我们应当优化跨区域调拨策略。'",
+            "problem": "对话使用了现代商业术语（如'仓储周转结构'、'优化跨区域调拨策略'），与角色年龄（12岁）、身份（粮商女儿）和背景（未受官署文书训练）严重不符，破坏了角色声音的真实性。",
+            "suggested_action": "将对话改为符合角色年龄和认知水平的语言，例如使用更直观、生活化的表达，如'爹，咱们把东边的粮先挪到西边卖，能多赚些钱'，并体现她'从价钱、饥饿和父亲的脸色理解生意'的特点。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "full",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character",
+        "character"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 2,
+      "grounded_issue_count": 1,
+      "issue_count": 3,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "51a2bf6d-0d40-4db2-bf5a-88e3a982b213",
+        "usage": {
+          "input_tokens": 368,
+          "output_tokens": 459,
+          "total_tokens": 827,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "288eb03a544828c037e6342f1b55175a303fb40d9dc8cea3d7cc67d835785519",
+      "review": {
+        "issues": [
+          {
+            "category": "character",
+            "evidence": "十二岁的粮商女儿……说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+            "problem": "The character's dialogue uses formal, bureaucratic, and analytical language ('仓储周转结构', '优化跨区域调拨策略') that is inconsistent with her age (12 years old) and background (no formal training, learns from price, hunger, and her father's face). The language sounds like a trained logistics officer, not a child who picks up business intuitively.",
+            "suggested_action": "Replace the dialogue with simpler, more concrete language that reflects a child's understanding of business—e.g., focusing on immediate observations like 'we have too much grain here and not enough there' or using metaphors from her daily experience."
+          },
+          {
+            "category": "prose/reader experience",
+            "evidence": "踢开湿鞋，盯着父亲的算盘说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+            "problem": "The juxtaposition of a concrete, childish action ('踢开湿鞋') with abstract, adult jargon creates a jarring tonal mismatch that undermines reader immersion and plausibility.",
+            "suggested_action": "Harmonize the action and dialogue: either keep the childish action and use childlike speech, or keep the analytical speech and adjust the action to match (e.g., '她指着账本说')."
+          },
+          {
+            "category": "character",
+            "evidence": "她聪明、爱抢话，先从价钱、饥饿和父亲的脸色理解生意；她没有受过官署文书训练。",
+            "problem": "The context explicitly states she has no formal training and learns from concrete, sensory cues (price, hunger, father's face). The excerpt's dialogue contradicts this by using formal, abstract terminology that would require training or exposure to official documents.",
+            "suggested_action": "Rewrite the dialogue to reflect her experiential learning—e.g., using terms like '我们这边的米多，那边的人饿，应该多运些过去' instead of bureaucratic jargon."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "mode": "full",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_voice_age_and_status"
+      ],
+      "matched_categories": [
+        "character"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "aab5a0f0-9115-41cb-b4a8-3381e63f517d",
+        "usage": {
+          "input_tokens": 368,
+          "output_tokens": 183,
+          "total_tokens": 551,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "bf6c769515d66cd1ad49ac061d775322ea8b1152510c09782232c303e94bc798",
+      "review": {
+        "issues": [
+          {
+            "category": "character",
+            "evidence": "十二岁的粮商女儿踢开湿鞋，盯着父亲的算盘说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+            "problem": "The character's speech uses formal, technical business terminology ('仓储周转结构', '优化跨区域调拨策略') that is inconsistent with her age (12) and lack of formal training ('她没有受过官署文书训练'). The retrieved context establishes she learns from '价钱、饥饿和父亲的脸色', not from structured logistics concepts. This creates a voice authenticity issue.",
+            "suggested_action": "Replace the dialogue with language that reflects her experiential, informal learning—e.g., concrete observations about grain movement or hunger, using simpler, more colloquial phrasing that still demonstrates intelligence."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "raw",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition_and_breath",
+        "prose_repetition_and_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 2,
+      "grounded_issue_count": 2,
+      "issue_count": 2,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "8980a5f3-acbc-47a3-8137-00dd448acdca",
+        "usage": {
+          "input_tokens": 256,
+          "output_tokens": 294,
+          "total_tokens": 550,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "2e3d23731c7b5388c9995c1a50d2598d9d8f43e353bcb48e0b61a2fd2fdcab2c",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "Repeated use of '不是' and '没有人' in parallel clauses: '不是风，不是雨，不是门外的人。没有人说话，没有人抬头，没有人知道。'",
+            "problem": "The triple repetition of '不是' and '没有人' creates a rhythmic but monotonous pattern that may reduce the impact of the imagery and make the prose feel breathless or overly mechanical.",
+            "suggested_action": "Vary the sentence structures or break the parallelism to introduce more natural breath and emphasis. For example, combine some clauses or use different negations to avoid the repetitive cadence."
+          },
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "Repetition of '像' in three consecutive similes: '灯像一只眼，桌像一口井，纸像一层冰。'",
+            "problem": "The triple '像' structure creates a list-like effect that can feel forced or lacking in rhythmic variation, potentially flattening the emotional resonance of the imagery.",
+            "suggested_action": "Consider altering the simile construction for at least one of the images, such as using a metaphor or a different comparative phrase, to break the pattern and enhance the prose's natural flow."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "raw",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition",
+        "prose_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": false,
+      "matched_issue_count": 2,
+      "grounded_issue_count": 0,
+      "issue_count": 2,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "d9b40e4e-8302-4dcc-b4e5-59824d733e05",
+        "usage": {
+          "input_tokens": 256,
+          "output_tokens": 280,
+          "total_tokens": 536,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "cfe0a6e6e2ee564e96a7ab66e5e85984a214a296285a8fc7ebfdb97cfd7b1a16",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition",
+            "evidence": "The excerpt repeats the structure '不是X，不是Y，不是Z' and '没有人X，没有人Y，没有人Z' in rapid succession, followed by 'X像Y，X像Z，X像W'.",
+            "problem": "The triple-repetition pattern is used three times in a row, creating a rhythmic but monotonous effect that may feel mechanical or overwrought rather than evocative.",
+            "suggested_action": "Vary the sentence structures or break the pattern after the first or second use to maintain reader engagement and avoid predictability."
+          },
+          {
+            "category": "prose_breath",
+            "evidence": "The entire excerpt consists of three short, parallel clauses without any punctuation variation or longer sentences to provide pacing contrast.",
+            "problem": "The lack of sentence length variation or breath points (e.g., a longer sentence, a pause, or a shift in rhythm) can make the prose feel breathless or staccato, reducing its emotional impact.",
+            "suggested_action": "Introduce at least one longer or more complex sentence, or use a dash or semicolon to create a natural pause, allowing the reader to absorb the imagery before continuing."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "rag",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition_and_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": false,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "f6b0fc9a-0fe2-4b22-8448-2d8ca9b009b0",
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 189,
+          "total_tokens": 483,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "4a28cfb415efac969ddfc23ae454de0ad27f86d11bef8a338e5b3775c8d0038b",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "连续三组排比结构：'不是……不是……不是……'、'没有人……没有人……没有人……'、'……像……像……像……'，每组内部结构高度一致，且三组之间缺乏节奏变化。",
+            "problem": "相邻段落（或同一段落内）连续使用排除式旁白、同构排比和解释性明喻，导致句式重复、节奏单一，削弱了压迫感的递进效果，使读者产生审美疲劳。",
+            "suggested_action": "打破其中至少一组排比的对称结构，例如将第二组改为短句或倒装，或将第三组明喻中的一项改为隐喻或直接陈述，以制造节奏变化和语义层次。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "rag",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition_and_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": false,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "0c513646-65f4-4a73-82a3-84966ca21214",
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 204,
+          "total_tokens": 498,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "5b582bb7361db16ce7dc0dbf3fd3ebb26c58683f8f4e948d403e60e020e743ec",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "连续三组排比结构（“不是……不是……不是……”、“没有人……没有人……没有人……”、“灯像……桌像……纸像……”）在相邻短句中重复使用相同的句式，且与上下文已使用的排除式旁白和解释性明喻高度同构。",
+            "problem": "排比和明喻的密集堆叠导致节奏单一、缺乏呼吸感，压迫感因手法重复而减弱，读者容易产生审美疲劳。",
+            "suggested_action": "打破其中至少一组排比结构，例如将“灯像一只眼，桌像一口井，纸像一层冰”改为非排比的具象描写（如“灯是一只眼，桌是井口，纸是冰面”），或插入一个短句作为节奏变化点。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "full",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition_and_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "104e2abd-2369-41bf-b52f-9f62266b7576",
+        "usage": {
+          "input_tokens": 381,
+          "output_tokens": 199,
+          "total_tokens": 580,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_sha256": "98d48fbf87c017bacc8a58508c911e074f134a8764575bec2719490a3f9f197c",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "连续三组排比结构：'不是风，不是雨，不是门外的人'、'没有人说话，没有人抬头，没有人知道'、'灯像一只眼，桌像一口井，纸像一层冰'。每组内部重复相同句式，且三组之间结构高度同构。",
+            "problem": "相邻段落已连续使用排除式旁白、同构排比和解释性明喻，此处三组排比叠加导致节奏单一、呼吸感不足，削弱了压迫感的递进效果。",
+            "suggested_action": "保留第一组或第二组排比以维持节奏，将剩余一组改为非排比句式（如短句或破折号插入），或调整其中一项为不同长度的短语以打破单调。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "mode": "full",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_breath",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_repetition_and_breath"
+      ],
+      "matched_categories": [
+        "prose_repetition_and_breath"
+      ],
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "1fc1665f-39e5-4407-ac69-ae933031a045",
+        "usage": {
+          "input_tokens": 381,
+          "output_tokens": 258,
+          "total_tokens": 639,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 2,
+      "prompt_sha256": "448077d2eb25d80658d27b8f87c7b64422d51b9ec78510150321142561fdb04b",
+      "review": {
+        "issues": [
+          {
+            "category": "prose_repetition_and_breath",
+            "evidence": "连续三组排比结构：“不是风，不是雨，不是门外的人” / “没有人说话，没有人抬头，没有人知道” / “灯像一只眼，桌像一口井，纸像一层冰”。每组内部重复三次相同句式，且三组之间结构完全一致。",
+            "problem": "相邻段落已连续使用排除式旁白、同构排比和解释性明喻（据项目上下文），本段再次使用完全相同的修辞组合，导致节奏单调、压迫感因重复而减弱，而非增强。",
+            "suggested_action": "保留其中一组排比作为节奏锚点，将另外两组改为非排比句式或缩短为双项结构，以维持压迫感的同时避免机械重复。例如：保留“不是风，不是雨，不是门外的人”，将“没有人说话，没有人抬头，没有人知道”改为“无人说话，无人抬头”，将“灯像一只眼，桌像一口井，纸像一层冰”改为“灯如眼，桌如井，纸如冰”。"
+          }
+        ]
+      }
+    }
+  ],
+  "aggregate": {
+    "raw": {
+      "cases": 6,
+      "detection_rate": 1.0,
+      "grounded_rate": 0.8333333333333334,
+      "extra_issue_count": 0,
+      "input_tokens": 1508,
+      "output_tokens": 1205,
+      "cost_by_currency": {}
+    },
+    "rag": {
+      "cases": 6,
+      "detection_rate": 1.0,
+      "grounded_rate": 0.6666666666666666,
+      "extra_issue_count": 0,
+      "input_tokens": 1732,
+      "output_tokens": 1011,
+      "cost_by_currency": {}
+    },
+    "full": {
+      "cases": 6,
+      "detection_rate": 1.0,
+      "grounded_rate": 1.0,
+      "extra_issue_count": 1,
+      "input_tokens": 2228,
+      "output_tokens": 1410,
+      "cost_by_currency": {}
+    }
+  }
+}

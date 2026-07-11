@@ -1,5 +1,7 @@
 # FictionOps Agent 研究面试案例
 
+最新真实对照实验见 [`evidence/deepseek-baseline-pilot.zh-CN.md`](evidence/deepseek-baseline-pilot.zh-CN.md)：18 次 DeepSeek 调用中，三组检出率均饱和，`full` 将可核验引证率从 `raw` 的 83.3% 提高到 100%，同时暴露了样例过易与评测标签脆弱两个限制。
+
 ## 一句话
 
 FictionOps 研究的不是“让模型一次写出更长的小说”，而是：当创作项目跨越数月、数百万字和多次上下文重置时，如何让模型在持久状态、独立验证、失败恢复和作者权限约束下可靠工作。
