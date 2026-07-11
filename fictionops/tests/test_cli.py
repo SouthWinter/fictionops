@@ -6267,6 +6267,9 @@ class FictionOpsCliTests(unittest.TestCase):
             ({"state": "cancelled"}, "start_new_session_after_cancellation", "author"),
             ({"state": "applied", "canon_sync_pending": True}, "review_canon_sync", "author"),
             ({"state": None, "memory_stale": True}, "rebuild_memory", "controller"),
+            ({"state": None, "counterevidence_open_count": 1}, "prepare_counterevidence_revision", "controller"),
+            ({"state": None, "counterevidence_blocked_count": 1}, "retrieve_counterevidence", "controller"),
+            ({"state": None, "counterevidence_withdrawn_count": 1}, "review_model_withdrawals", "author"),
             ({"state": None}, "inspect_project", "controller"),
         ]
         for inputs, expected_action, expected_authority in policy_cases:
@@ -6957,6 +6960,23 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(compact["excluded_issue_count"], 3)
             queue = json.loads((run_dir / "counterevidence_reviser_queue.json").read_text(encoding="utf-8"))
             self.assertEqual(queue["issue_count"], 1)
+            continued_open = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
+            self.assertEqual(continued_open["selected_action"], "prepare_counterevidence_revision")
+            self.assertEqual(continued_open["counterevidence"]["open_count"], 1)
+            self.assertFalse(continued_open["requires_human"])
+            open_issue = next(item for item in ledger["issues"] if item["status"] == "open")
+            transition_issue(project, issue_id=open_issue["issue_id"], to_status="model_withdrawn", reason="controlled state routing", actor="controller")
+            continued_blocked = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
+            self.assertEqual(continued_blocked["selected_action"], "retrieve_counterevidence")
+            blocked_issue = next(item for item in load_issue_ledger(project)["issues"] if item["status"] == "evidence_blocked")
+            transition_issue(project, issue_id=blocked_issue["issue_id"], to_status="model_withdrawn", reason="controlled state routing", actor="controller")
+            continued_withdrawn = json.loads(self.run_cli("agent", "continue", str(project), "--execute", "--format", "json").stdout)
+            self.assertEqual(continued_withdrawn["selected_action"], "review_model_withdrawals")
+            self.assertTrue(continued_withdrawn["requires_human"])
+            self.assertEqual(continued_withdrawn["stop_reason"], "human_authority_required")
+            status = json.loads(self.run_cli("agent", "status", str(project), "--format", "json").stdout)
+            self.assertEqual(status["author_actions"]["review_model_withdrawals"], 3)
+            self.assertEqual(status["author_actions"]["evidence_blocked"], 0)
             duplicate = self.run_cli(
                 "agent", "counterevidence", "apply", str(report_file), "--packet", str(packet_file), "--escalation", str(escalation_file), "--run-dir", str(run_dir), "--format", "json", check=False
             )

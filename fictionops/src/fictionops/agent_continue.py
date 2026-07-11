@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from .agent_memory import build_memory_index, memory_status
+from .agent_issue_ledger import issue_ledger_path, load_issue_ledger
 from .agent_policy import select_agent_policy
 from .agent_project_context import discover_project_root
 
@@ -18,6 +19,7 @@ class AgentContinueReport:
     observed_session_count: int
     latest_session: dict[str, object] | None
     memory: dict[str, object]
+    counterevidence: dict[str, object]
     selected_action: str
     reason: str
     risk: str
@@ -100,6 +102,18 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
     sessions = discover_agent_sessions(root)
     latest = sessions[0] if sessions else None
     memory = memory_status(root)
+    issue_payload = load_issue_ledger(root)
+    persistent_issues = [item for item in issue_payload.get("issues") or [] if isinstance(item, dict)]
+    counterevidence_issues = [item for item in persistent_issues if isinstance(item.get("counterevidence"), dict)]
+    counterevidence = {
+        "issue_count": len(counterevidence_issues),
+        "open_count": sum(str(item.get("status")) == "open" for item in counterevidence_issues),
+        "evidence_blocked_count": sum(str(item.get("status")) == "evidence_blocked" for item in counterevidence_issues),
+        "model_withdrawn_count": sum(str(item.get("status")) == "model_withdrawn" for item in counterevidence_issues),
+        "open_issue_ids": [str(item.get("issue_id")) for item in counterevidence_issues if str(item.get("status")) == "open"],
+        "evidence_blocked_issue_ids": [str(item.get("issue_id")) for item in counterevidence_issues if str(item.get("status")) == "evidence_blocked"],
+        "model_withdrawn_issue_ids": [str(item.get("issue_id")) for item in counterevidence_issues if str(item.get("status")) == "model_withdrawn"],
+    }
     action = "inspect_project"
     reason = "No safe automatic transition is currently justified."
     risk = "R0"
@@ -107,6 +121,14 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
     executable = False
     suggested_command: str | None = None
     evidence: list[str] = []
+    if counterevidence_issues:
+        evidence.append(str(issue_ledger_path(root).resolve()))
+        application_files = sorted(root.rglob("counterevidence_application.json"), key=lambda item: item.stat().st_mtime_ns, reverse=True)
+        queue_files = sorted(root.rglob("counterevidence_reviser_queue.json"), key=lambda item: item.stat().st_mtime_ns, reverse=True)
+        if application_files:
+            evidence.append(str(application_files[0].resolve()))
+        if queue_files:
+            evidence.append(str(queue_files[0].resolve()))
 
     state = None
     ready_for_approval = False
@@ -132,6 +154,9 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
         budget_status=budget_status,
         memory_stale=bool(memory.get("stale")),
         canon_sync_pending=canon_sync_pending,
+        counterevidence_open_count=int(counterevidence["open_count"]),
+        counterevidence_blocked_count=int(counterevidence["evidence_blocked_count"]),
+        counterevidence_withdrawn_count=int(counterevidence["model_withdrawn_count"]),
     )
     action = policy.action
     reason = policy.reason
@@ -145,6 +170,12 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
     elif action == "rebuild_memory":
         suggested_command = f'fictionops agent-memory build "{root}"'
         evidence.append(str(memory.get("index_file") or ""))
+    elif action == "prepare_counterevidence_revision":
+        suggested_command = f'fictionops agent issues "{root}" --status open --format json'
+    elif action == "retrieve_counterevidence":
+        suggested_command = f'fictionops agent issues "{root}" --status evidence_blocked --format json'
+    elif action == "review_model_withdrawals":
+        suggested_command = f'fictionops agent issues "{root}" --status model_withdrawn --format json'
 
     executed = False
     result: dict[str, object] | None = None
@@ -170,6 +201,7 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
         observed_session_count=len(sessions),
         latest_session=latest_public,
         memory=memory,
+        counterevidence=counterevidence,
         selected_action=action,
         reason=reason,
         risk=risk,
@@ -198,6 +230,7 @@ def render_agent_continue(report: AgentContinueReport, output_format: str) -> st
         f"- Requires human: {'yes' if report.requires_human else 'no'}",
         f"- Executed: {'yes' if report.executed else 'no'}",
         f"- Stop reason: `{report.stop_reason}`",
+        f"- Counterevidence: open {report.counterevidence['open_count']}, blocked {report.counterevidence['evidence_blocked_count']}, model-withdrawn {report.counterevidence['model_withdrawn_count']}",
         "",
         report.reason,
     ]

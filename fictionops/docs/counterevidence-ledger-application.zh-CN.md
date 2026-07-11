@@ -44,3 +44,5 @@ fictionops agent counterevidence apply escalated-reverification.json `
 - `manuscript_edited=false`。
 
 公开 application 结果见 [`deepseek-counterevidence-application-v1.json`](evidence/deepseek-counterevidence-application-v1.json)。这是受控状态闭环证据，不是对《江山》真实章节 ledger 的修改。
+
+这些状态如何被 `agent continue` 消费，见 [`counterevidence-controller-routing.zh-CN.md`](counterevidence-controller-routing.zh-CN.md)。

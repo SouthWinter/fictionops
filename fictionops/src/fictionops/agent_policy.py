@@ -28,6 +28,9 @@ def select_agent_policy(
     budget_status: str | None = None,
     memory_stale: bool = False,
     canon_sync_pending: bool = False,
+    counterevidence_open_count: int = 0,
+    counterevidence_blocked_count: int = 0,
+    counterevidence_withdrawn_count: int = 0,
 ) -> AgentPolicyDecision:
     normalized = (state or "unknown").strip()
     if ready_for_approval or normalized in HUMAN_STATES:
@@ -42,4 +45,31 @@ def select_agent_policy(
         return AgentPolicyDecision(POLICY_SCHEMA, "review_canon_sync", "Manuscript text was applied, but canon synchronization remains an author decision.", "R4", "author", False)
     if memory_stale:
         return AgentPolicyDecision(POLICY_SCHEMA, "rebuild_memory", "Accepted evidence marked the derived memory index stale.", "R0", "controller", True)
+    if counterevidence_open_count > 0:
+        return AgentPolicyDecision(
+            POLICY_SCHEMA,
+            "prepare_counterevidence_revision",
+            f"{counterevidence_open_count} grounded counterevidence issue(s) are open and may enter a staged reviser.",
+            "R2",
+            "controller",
+            False,
+        )
+    if counterevidence_blocked_count > 0:
+        return AgentPolicyDecision(
+            POLICY_SCHEMA,
+            "retrieve_counterevidence",
+            f"{counterevidence_blocked_count} issue(s) remain evidence-blocked; retrieve matching-scope sources before another verdict.",
+            "R1",
+            "controller",
+            False,
+        )
+    if counterevidence_withdrawn_count > 0:
+        return AgentPolicyDecision(
+            POLICY_SCHEMA,
+            "review_model_withdrawals",
+            f"{counterevidence_withdrawn_count} model-withdrawn issue(s) await optional author confirmation; no automatic revision is justified.",
+            "R3",
+            "author",
+            False,
+        )
     return AgentPolicyDecision(POLICY_SCHEMA, "inspect_project", "No safe automatic transition is currently justified.", "R0", "controller", False)

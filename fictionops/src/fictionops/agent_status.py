@@ -73,6 +73,11 @@ def build_agent_project_status(path: Path, *, latest: int = 12) -> dict[str, Any
             "ready_for_approval": sum(bool(item["ready_for_approval"]) for item in sessions),
             "needs_revision_attention": state_counts.get("needs_revision_attention", 0),
             "resumable": sum(bool(item["resumable"]) for item in sessions),
+            "review_model_withdrawals": issue_counts.get("model_withdrawn", 0),
+            "evidence_blocked": issue_counts.get("evidence_blocked", 0),
+            "counterevidence_reviser_queue": sum(
+                str(item.get("status")) == "open" and isinstance(item.get("counterevidence"), dict) for item in issues
+            ),
         },
         "issue_count": len(issues),
         "issue_status_counts": dict(sorted(issue_counts.items())),
