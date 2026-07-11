@@ -3,6 +3,7 @@ from __future__ import annotations
 from .agent_exec import *
 from .agent_author_guards import *
 from .agent_counterevidence_review import *
+from .agent_evidence_escalation import *
 from .agent_failure_lab import *
 from .agent_connect import *
 from .agent_evaluation import *

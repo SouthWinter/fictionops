@@ -25,6 +25,7 @@
 - Added anonymous counterevidence packet export and strict annotation scoring, with private control keys, issue-level evaluability boundaries, repair-harm ratings, and human-effort metrics.
 - Counterevidence JSON readers accept the UTF-8 BOM emitted by Windows PowerShell annotation workflows.
 - Counterevidence scoring reports disagreements with inherited case controls as label challenges rather than falsely treating dynamic issue samples as issue-level ground truth.
+- Added deterministic counterevidence escalation routing for chapter, adjacent-paragraph, knowledge-source, character-memory, and author-intent evidence, with exact duplicate collapse and explicit missing-source stops.
 - Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
 
 All notable changes to FictionOps will be documented in this file.

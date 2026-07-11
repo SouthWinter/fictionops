@@ -824,6 +824,8 @@
 
 `agent counterevidence export` 把 preservation verifier 留下的 `needs_counterevidence` finding 导出为匿名标注包，并把 prompt/case/condition/control 标签隔离到单独私钥。输入可以是 `agent revise` 运行目录，也可以是 preservation evidence、benchmark 输出和 fixture 三件套。`agent counterevidence score` 拒绝未填、非法或 packet/key 不匹配的标注，统计裁决、证据落地、误修风险、人工耗时，以及与继承自 benchmark 的 case-level control 的一致或标签挑战；它不会把 case 标签伪装成动态 finding 的 issue-level 真值。
 
+`agent counterevidence escalate` 对人工标为 `insufficient` 的 finding 做确定性精确去重，并按断言尺度路由到全章、相邻段、知识来源、人物记忆或作者意图证据；未标注 packet 则预路由全部 finding。提供 `--chapter` 时可检索有界正文与项目上下文，缺源时停在 `needs_source`，不会伪造证据或修改正文。
+
 ### `fictionops agent-memory`
 
 契约：

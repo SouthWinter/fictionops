@@ -171,6 +171,12 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_score.add_argument("--key", required=True, help="Private key created during export.")
     agent_counterevidence_score.add_argument("--out", help="Optional evaluation report output path.")
     agent_counterevidence_score.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_escalate = agent_counterevidence_subparsers.add_parser("escalate", help="Deduplicate disputed findings and retrieve evidence at the required scope.")
+    agent_counterevidence_escalate.add_argument("packet", help="Annotated packet, or an unannotated packet to pre-route all findings.")
+    agent_counterevidence_escalate.add_argument("--chapter", help="Optional full source chapter used for chapter/paragraph retrieval.")
+    agent_counterevidence_escalate.add_argument("--max-chars-per-item", type=int, default=20000)
+    agent_counterevidence_escalate.add_argument("--out", help="Optional escalation report output path.")
+    agent_counterevidence_escalate.add_argument("--format", choices=["markdown", "json"], default="markdown")
 
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
@@ -4111,6 +4117,19 @@ def handle_agent(args: argparse.Namespace) -> int:
                 output.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
                 key_output.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
                 print(json.dumps({"packet": str(output), "key": str(key_output), "sample_count": packet["sample_count"]}, ensure_ascii=False, indent=2))
+                return 0
+            if args.counterevidence_action == "escalate":
+                report = build_evidence_escalation(
+                    Path(args.packet),
+                    chapter_file=Path(args.chapter) if args.chapter else None,
+                    max_chars_per_item=args.max_chars_per_item,
+                )
+                rendered = render_evidence_escalation(report, args.format)
+                if args.out:
+                    output = Path(args.out).expanduser().resolve()
+                    output.parent.mkdir(parents=True, exist_ok=True)
+                    output.write_text(rendered, encoding="utf-8", newline="\n")
+                print(rendered, end="")
                 return 0
             report = evaluate_counterevidence(Path(args.packet), Path(args.key))
             rendered = render_counterevidence_evaluation(report, args.format)

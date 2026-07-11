@@ -171,6 +171,7 @@ from fictionops.agent_counterevidence_review import (  # noqa: E402
     build_counterevidence_from_run,
     evaluate_counterevidence,
 )
+from fictionops.agent_evidence_escalation import build_evidence_escalation, classify_evidence_scope  # noqa: E402
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -6716,6 +6717,57 @@ class FictionOpsCliTests(unittest.TestCase):
             run_packet, run_key = build_counterevidence_from_run(run_dir)
             self.assertEqual(run_packet["sample_count"], 1)
             self.assertEqual(run_key["samples"][0]["control_class"], "unevaluable")
+            self.assertEqual(run_packet["samples"][0]["source_scope"], "full_chapter")
+
+            run_packet["samples"][0]["annotation"] = {
+                "decision": "insufficient",
+                "evidence_grounded": False,
+                "repair_harm_risk": "medium",
+                "effort_minutes": 1,
+                "notes": "needs chapter-scale evidence",
+            }
+            run_packet["samples"][0]["reviewer_finding"]["category"] = "chapter function"
+            run_packet_file = run_dir / "counterevidence.annotated.json"
+            run_packet_file.write_text(json.dumps(run_packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            escalation = build_evidence_escalation(run_packet_file)
+            self.assertEqual(escalation["selected_sample_count"], 1)
+            self.assertEqual(escalation["ready_for_reverification_count"], 1)
+            self.assertEqual(escalation["requests"][0]["route"]["scope"], "full_chapter")
+            self.assertEqual(classify_evidence_scope({"reviewer_finding": {"category": "information boundaries", "problem": "How did she know the exact inventory?"}})["scope"], "knowledge_source")
+
+            adjacent_packet = json.loads(json.dumps(run_packet))
+            adjacent_packet["samples"][0]["sample_id"] = "adjacent-1"
+            adjacent_packet["samples"][0]["reviewer_finding"] = {
+                "category": "prose rhythm",
+                "evidence": ["Original text."],
+                "problem": "The adjacent paragraphs repeat the same syntactic pattern.",
+                "suggested_action": "Compare the neighboring paragraphs before revising.",
+            }
+            duplicate = json.loads(json.dumps(adjacent_packet["samples"][0]))
+            duplicate["sample_id"] = "adjacent-2"
+            adjacent_packet["samples"].append(duplicate)
+            adjacent_packet["sample_count"] = 2
+            adjacent_packet_file = run_dir / "counterevidence-adjacent.json"
+            adjacent_packet_file.write_text(json.dumps(adjacent_packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            adjacent_escalation = build_evidence_escalation(adjacent_packet_file, chapter_file=run_dir / "source_chapter.md")
+            self.assertEqual(adjacent_escalation["request_count"], 1)
+            self.assertEqual(adjacent_escalation["duplicates_collapsed"], 1)
+            self.assertEqual(adjacent_escalation["requests"][0]["route"]["scope"], "adjacent_paragraphs")
+            self.assertIn("Original text.", adjacent_escalation["requests"][0]["evidence_items"][0]["content"])
+
+            escalated_path = run_dir / "escalation.json"
+            escalated = self.run_cli(
+                "agent",
+                "counterevidence",
+                "escalate",
+                str(run_packet_file),
+                "--out",
+                str(escalated_path),
+                "--format",
+                "json",
+            )
+            self.assertEqual(escalated.returncode, 0, escalated.stderr)
+            self.assertEqual(json.loads(escalated_path.read_text(encoding="utf-8"))["request_count"], 1)
 
     def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
         review = {

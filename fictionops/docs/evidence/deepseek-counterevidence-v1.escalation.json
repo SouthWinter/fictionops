@@ -1,0 +1,106 @@
+{
+    "schema":  "fictionops.counterevidence_escalation.v1",
+    "packet":  "private author-annotated packet",
+    "selected_sample_count":  6,
+    "request_count":  4,
+    "duplicates_collapsed":  2,
+    "ready_for_reverification_count":  0,
+    "needs_source_count":  4,
+    "scope_counts":  {
+                         "adjacent_paragraphs":  1,
+                         "author_intent":  0,
+                         "character_memory":  0,
+                         "full_chapter":  3,
+                         "knowledge_source":  0
+                     },
+    "requests":  [
+                     {
+                         "request_id":  "er-4f660270382ce5",
+                         "sample_ids":  [
+                                            "ce-1ba55fc142fa50"
+                                        ],
+                         "deduplicated_count":  1,
+                         "route":  {
+                                       "scope":  "full_chapter",
+                                       "requested_sources":  [
+                                                                 "full_chapter",
+                                                                 "chapter_engine",
+                                                                 "outline"
+                                                             ],
+                                       "rationale":  "The claim evaluates a chapter-level function or narrative echo and needs evidence at the same structural scale."
+                                   },
+                         "status":  "needs_source",
+                         "evidence_items":  [
+
+                                            ],
+                         "remaining_gap":  "The requested evidence source was not supplied or could not be located.",
+                         "next_action":  "request_source_before_human_review"
+                     },
+                     {
+                         "request_id":  "er-5a84e001752020",
+                         "sample_ids":  [
+                                            "ce-449f2fcd2947d2",
+                                            "ce-606b0131a33065"
+                                        ],
+                         "deduplicated_count":  2,
+                         "route":  {
+                                       "scope":  "full_chapter",
+                                       "requested_sources":  [
+                                                                 "full_chapter",
+                                                                 "chapter_engine",
+                                                                 "outline"
+                                                             ],
+                                       "rationale":  "The claim evaluates a chapter-level function or narrative echo and needs evidence at the same structural scale."
+                                   },
+                         "status":  "needs_source",
+                         "evidence_items":  [
+
+                                            ],
+                         "remaining_gap":  "The requested evidence source was not supplied or could not be located.",
+                         "next_action":  "request_source_before_human_review"
+                     },
+                     {
+                         "request_id":  "er-e9d8a06207959c",
+                         "sample_ids":  [
+                                            "ce-bda4e3afae5889",
+                                            "ce-4cc0b7156d626e"
+                                        ],
+                         "deduplicated_count":  2,
+                         "route":  {
+                                       "scope":  "full_chapter",
+                                       "requested_sources":  [
+                                                                 "full_chapter",
+                                                                 "chapter_engine",
+                                                                 "outline"
+                                                             ],
+                                       "rationale":  "The claim evaluates a chapter-level function or narrative echo and needs evidence at the same structural scale."
+                                   },
+                         "status":  "needs_source",
+                         "evidence_items":  [
+
+                                            ],
+                         "remaining_gap":  "The requested evidence source was not supplied or could not be located.",
+                         "next_action":  "request_source_before_human_review"
+                     },
+                     {
+                         "request_id":  "er-ff9f0d5e79e938",
+                         "sample_ids":  [
+                                            "ce-970ddf3804ae5d"
+                                        ],
+                         "deduplicated_count":  1,
+                         "route":  {
+                                       "scope":  "adjacent_paragraphs",
+                                       "requested_sources":  [
+                                                                 "adjacent_paragraphs"
+                                                             ],
+                                       "rationale":  "The claim compares prose across paragraph boundaries and needs the neighboring source text."
+                                   },
+                         "status":  "needs_source",
+                         "evidence_items":  [
+
+                                            ],
+                         "remaining_gap":  "The requested evidence source was not supplied or could not be located.",
+                         "next_action":  "request_source_before_human_review"
+                     }
+                 ]
+}

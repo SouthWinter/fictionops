@@ -97,6 +97,7 @@ def build_counterevidence_from_evidence(
                 samples.append(
                     {
                         "sample_id": sample_id,
+                        "source_scope": "benchmark_excerpt",
                         "chapter_excerpt": str(case.get("chapter_excerpt") or ""),
                         "authoritative_context": str(case.get("project_context") or ""),
                         "supplied_preservation_context": str(case.get("false_positive_guard") or ""),
@@ -152,6 +153,7 @@ def build_counterevidence_from_run(run_dir: Path) -> tuple[dict[str, Any], dict[
         samples.append(
             {
                 "sample_id": sample_id,
+                "source_scope": "full_chapter",
                 "chapter_excerpt": chapter,
                 "authoritative_context": context,
                 "supplied_preservation_context": "",
