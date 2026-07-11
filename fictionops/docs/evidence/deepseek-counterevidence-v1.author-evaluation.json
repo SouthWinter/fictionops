@@ -1,0 +1,172 @@
+{
+    "schema":  "fictionops.counterevidence_evaluation.v1",
+    "evaluation_type":  "author_blind_review",
+    "packet":  "docs/evidence/deepseek-counterevidence-v1.blind.json",
+    "sample_count":  16,
+    "decision_counts":  {
+                            "insufficient":  6,
+                            "uphold":  5,
+                            "withdraw":  5
+                        },
+    "resolved_rate":  0.625,
+    "grounded_rate":  0.3125,
+    "high_harm_risk_count":  4,
+    "total_effort_minutes":  32.0,
+    "mean_effort_minutes":  2.0,
+    "median_effort_minutes":  2.0,
+    "control_summary":  {
+                            "expected_detect_upheld":  1,
+                            "detect_label_challenge":  0,
+                            "preserve_label_challenge":  2,
+                            "preserve_confirmed":  4,
+                            "unresolved_control":  1
+                        },
+    "control_agreement_rate":  0.7142857142857143,
+    "control_label_scope":  "Case-level benchmark labels inherited by issue samples; disagreements are label challenges, not adjudicator errors.",
+    "rows":  [
+                 {
+                     "sample_id":  "ce-1ba55fc142fa50",
+                     "decision":  "insufficient",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-f8b3c8a089e6b3",
+                     "decision":  "uphold",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  true,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-59ba6d88eb92dd",
+                     "decision":  "uphold",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_label_challenge",
+                     "evidence_grounded":  true,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-e5cbf0686b0b80",
+                     "decision":  "withdraw",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_confirmed",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "high",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-63cdaa391c9c77",
+                     "decision":  "withdraw",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-ef8bcf1cb93b88",
+                     "decision":  "withdraw",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_confirmed",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "high",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-bda4e3afae5889",
+                     "decision":  "insufficient",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-44db4bcc1f4b3e",
+                     "decision":  "withdraw",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_confirmed",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "high",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-449f2fcd2947d2",
+                     "decision":  "insufficient",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-1ca4c02499cb5d",
+                     "decision":  "uphold",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_label_challenge",
+                     "evidence_grounded":  true,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-728697a1b3e691",
+                     "decision":  "withdraw",
+                     "control_class":  "preserve",
+                     "outcome":  "preserve_confirmed",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "high",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-4cc0b7156d626e",
+                     "decision":  "insufficient",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-30097a5e780f27",
+                     "decision":  "uphold",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  true,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-970ddf3804ae5d",
+                     "decision":  "insufficient",
+                     "control_class":  "detect",
+                     "outcome":  "unresolved_control",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-c9706b33b20fdb",
+                     "decision":  "uphold",
+                     "control_class":  "detect",
+                     "outcome":  "expected_detect_upheld",
+                     "evidence_grounded":  true,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 },
+                 {
+                     "sample_id":  "ce-606b0131a33065",
+                     "decision":  "insufficient",
+                     "control_class":  "unevaluable",
+                     "outcome":  "unevaluable",
+                     "evidence_grounded":  false,
+                     "repair_harm_risk":  "medium",
+                     "effort_minutes":  2.0
+                 }
+             ]
+}

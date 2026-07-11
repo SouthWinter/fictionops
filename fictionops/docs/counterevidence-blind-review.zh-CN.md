@@ -46,10 +46,10 @@ fictionops agent counterevidence score counterevidence.annotated.json `
   --format json
 ```
 
-评分器拒绝空标注、非法枚举、重复 sample id 和 packet/key 不匹配。报告包括人工裁决分布、解决率、证据落地率、修订伤害风险、总耗时/中位耗时，以及仅在可靠 control 上计算的 TP/FN/FP/TN。
+评分器拒绝空标注、非法枚举、重复 sample id 和 packet/key 不匹配。报告包括人工裁决分布、解决率、证据落地率、修订伤害风险、总耗时/中位耗时，以及人工裁决与原 benchmark case control 的一致和冲突。
 
-正例章节中 reviewer 额外生成的问题没有自动真值，因此标为 `unevaluable`，不强行计入准确率。这个边界避免把 fixture 的“章节有一个目标问题”错误扩张成“模型报出的每条问题都是真的”。
+正例章节中 reviewer 额外生成的问题没有自动真值，因此标为 `unevaluable`。负例的“整例应保留”也只是 case-level control，不能自动变成每条动态 finding 的 issue-level 真值；人工 uphold 记为 `label challenge`，不冒充 false positive。这个边界避免把 fixture 的章节标签错误扩张到模型生成的每一条问题。
 
 ## 当前证据边界
 
-[`deepseek-counterevidence-v1.blind.json`](evidence/deepseek-counterevidence-v1.blind.json) 是可交给独立标注者的未填写盲包。它证明导出与匿名隔离已完成，不证明人工复核已经完成。只有标注者填完并由 `score` 生成评估后，才能报告人工采纳率、误报和复核成本。
+[`deepseek-counterevidence-v1.blind.json`](evidence/deepseek-counterevidence-v1.blind.json) 是未填写盲包。第一轮作者盲评已经完成，聚合结果见 [`deepseek-counterevidence-v1.zh-CN.md`](evidence/deepseek-counterevidence-v1.zh-CN.md)；原始盲包仍保持空白，可继续交给第二名独立编辑者，避免受到第一轮答案影响。

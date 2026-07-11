@@ -1,6 +1,6 @@
 # FictionOps Agent 研究面试案例
 
-最新真实对照实验见 [`evidence/deepseek-benchmark-v2.zh-CN.md`](evidence/deepseek-benchmark-v2.zh-CN.md)：正式 30 次 DeepSeek 调用中，raw recall 为 16.7%，RAG/full 为 100%；full 的可核验引证率达到 100%，但负例误报率仍有 75%。随后加入的 [`preservation verifier`](evidence/deepseek-preservation-verifier-v1.zh-CN.md) 将自动修订 FPR 降到 0%，代价是 actionable recall 降到 83.3%，被挡下的真实问题进入人工 counterevidence 队列后保留 recall 为 100%。当前已生成 16 条 [`counterevidence 匿名盲包`](evidence/deepseek-counterevidence-v1.zh-CN.md)，但尚未冒充或预填人工结果。早期 18 次 pilot 见 [`evidence/deepseek-baseline-pilot.zh-CN.md`](evidence/deepseek-baseline-pilot.zh-CN.md)。
+最新真实对照实验见 [`evidence/deepseek-benchmark-v2.zh-CN.md`](evidence/deepseek-benchmark-v2.zh-CN.md)：正式 30 次 DeepSeek 调用中，raw recall 为 16.7%，RAG/full 为 100%；full 的可核验引证率达到 100%，但负例误报率仍有 75%。随后加入的 [`preservation verifier`](evidence/deepseek-preservation-verifier-v1.zh-CN.md) 将自动修订 FPR 降到 0%，代价是 actionable recall 降到 83.3%，被挡下的真实问题进入人工 counterevidence 队列后保留 recall 为 100%。16 条 [`counterevidence 作者盲评`](evidence/deepseek-counterevidence-v1.zh-CN.md) 进一步得到 5 uphold、5 withdraw、6 insufficient 和 32 分钟人工成本，并反证了两条过粗的 case-level control 继承。早期 18 次 pilot 见 [`evidence/deepseek-baseline-pilot.zh-CN.md`](evidence/deepseek-baseline-pilot.zh-CN.md)。
 
 ## 一句话
 

@@ -6693,9 +6693,11 @@ class FictionOpsCliTests(unittest.TestCase):
                     "notes": "synthetic regression annotation",
                 }
             packet_path.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            packet_path.write_bytes(b"\xef\xbb\xbf" + packet_path.read_bytes())
             evaluation = evaluate_counterevidence(packet_path, key_path)
             self.assertEqual(evaluation["schema"], COUNTEREVIDENCE_EVALUATION_SCHEMA)
-            self.assertEqual(evaluation["control_accuracy"], 1.0)
+            self.assertEqual(evaluation["control_agreement_rate"], 1.0)
+            self.assertEqual(evaluation["control_summary"]["preserve_label_challenge"], 0)
             self.assertEqual(evaluation["total_effort_minutes"], 24.0)
             self.assertGreater(evaluation["decision_counts"]["insufficient"], 0)
 

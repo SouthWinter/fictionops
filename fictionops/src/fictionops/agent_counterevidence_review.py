@@ -17,7 +17,7 @@ HARM_RISKS = {"low", "medium", "high"}
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(payload, dict):
         raise ValueError(f"expected a JSON object: {path}")
     return payload
@@ -238,13 +238,13 @@ def evaluate_counterevidence(packet_file: Path, key_file: Path) -> dict[str, Any
         control = str(keys[str(sample["sample_id"])].get("control_class") or "unevaluable")
         outcome = "unevaluable"
         if control == "detect" and decision == "uphold":
-            outcome = "true_positive"
+            outcome = "expected_detect_upheld"
         elif control == "detect" and decision == "withdraw":
-            outcome = "false_negative"
+            outcome = "detect_label_challenge"
         elif control == "preserve" and decision == "uphold":
-            outcome = "false_positive"
+            outcome = "preserve_label_challenge"
         elif control == "preserve" and decision == "withdraw":
-            outcome = "true_negative"
+            outcome = "preserve_confirmed"
         elif control in {"detect", "preserve"}:
             outcome = "unresolved_control"
         rows.append(
@@ -259,12 +259,21 @@ def evaluate_counterevidence(packet_file: Path, key_file: Path) -> dict[str, Any
             }
         )
     counts = {decision: sum(row["decision"] == decision for row in rows) for decision in sorted(ANNOTATION_DECISIONS)}
-    confusion = {
+    control_summary = {
         name: sum(row["outcome"] == name for row in rows)
-        for name in ("true_positive", "false_negative", "false_positive", "true_negative", "unresolved_control")
+        for name in (
+            "expected_detect_upheld",
+            "detect_label_challenge",
+            "preserve_label_challenge",
+            "preserve_confirmed",
+            "unresolved_control",
+        )
     }
-    resolved_controls = sum(confusion[name] for name in ("true_positive", "false_negative", "false_positive", "true_negative"))
-    correct_controls = confusion["true_positive"] + confusion["true_negative"]
+    resolved_controls = sum(
+        control_summary[name]
+        for name in ("expected_detect_upheld", "detect_label_challenge", "preserve_label_challenge", "preserve_confirmed")
+    )
+    aligned_controls = control_summary["expected_detect_upheld"] + control_summary["preserve_confirmed"]
     return {
         "schema": COUNTEREVIDENCE_EVALUATION_SCHEMA,
         "packet": str(packet_file.resolve()),
@@ -276,8 +285,9 @@ def evaluate_counterevidence(packet_file: Path, key_file: Path) -> dict[str, Any
         "total_effort_minutes": sum(efforts),
         "mean_effort_minutes": statistics.fmean(efforts) if efforts else 0.0,
         "median_effort_minutes": statistics.median(efforts) if efforts else 0.0,
-        "control_confusion": confusion,
-        "control_accuracy": correct_controls / resolved_controls if resolved_controls else None,
+        "control_summary": control_summary,
+        "control_agreement_rate": aligned_controls / resolved_controls if resolved_controls else None,
+        "control_label_scope": "Case-level benchmark labels inherited by issue samples; disagreements are label challenges, not adjudicator errors.",
         "rows": rows,
     }
 
@@ -288,8 +298,8 @@ def render_counterevidence_evaluation(payload: dict[str, Any], output_format: st
     if output_format != "markdown":
         raise ValueError(f"unsupported counterevidence output format: {output_format}")
     counts = payload["decision_counts"]
-    confusion = payload["control_confusion"]
-    accuracy = payload["control_accuracy"]
+    controls = payload["control_summary"]
+    agreement = payload["control_agreement_rate"]
     return "\n".join(
         [
             "# FictionOps Counterevidence Evaluation",
@@ -300,7 +310,8 @@ def render_counterevidence_evaluation(payload: dict[str, Any], output_format: st
             f"- Grounded rate: {payload['grounded_rate']:.3f}",
             f"- High repair-harm risk: {payload['high_harm_risk_count']}",
             f"- Human effort: {payload['total_effort_minutes']:.1f} minutes total, {payload['median_effort_minutes']:.1f} median",
-            f"- Control confusion: TP {confusion['true_positive']}, FN {confusion['false_negative']}, FP {confusion['false_positive']}, TN {confusion['true_negative']}, unresolved {confusion['unresolved_control']}",
-            f"- Resolved control accuracy: {accuracy:.3f}" if accuracy is not None else "- Resolved control accuracy: n/a",
+            f"- Case-control alignment: expected-detect upheld {controls['expected_detect_upheld']}, preserve confirmed {controls['preserve_confirmed']}, label challenges {controls['detect_label_challenge'] + controls['preserve_label_challenge']}, unresolved {controls['unresolved_control']}",
+            f"- Resolved control agreement: {agreement:.3f}" if agreement is not None else "- Resolved control agreement: n/a",
+            f"- Label scope: {payload['control_label_scope']}",
         ]
     ) + "\n"

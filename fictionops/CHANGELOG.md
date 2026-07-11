@@ -23,6 +23,8 @@
 - Added a project-level author guard registry with stable ids, explicit set/retire history, run snapshots, and verifier authority restricted to active author-authored guards.
 - Recorded a focused DeepSeek guard-id dogfood showing scoped authorized withdrawal without suppressing the benchmark's true repetition finding.
 - Added anonymous counterevidence packet export and strict annotation scoring, with private control keys, issue-level evaluability boundaries, repair-harm ratings, and human-effort metrics.
+- Counterevidence JSON readers accept the UTF-8 BOM emitted by Windows PowerShell annotation workflows.
+- Counterevidence scoring reports disagreements with inherited case controls as label challenges rather than falsely treating dynamic issue samples as issue-level ground truth.
 - Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
 
 All notable changes to FictionOps will be documented in this file.
