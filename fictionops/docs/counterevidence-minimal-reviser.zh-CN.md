@@ -35,3 +35,13 @@ fictionops agent-inbox <bundle-dir>
 ```
 
 模型输出仍只是 staging candidate。bundle 准备阶段不调用模型、不改正文，也不绕过后续 verification 和作者采纳边界。
+
+候选生成后继续运行独立验证与显式采纳：
+
+```powershell
+fictionops agent counterevidence verify-revision <bundle-dir> --runner ...
+fictionops agent counterevidence accept-revision <bundle-dir> --dry-run
+fictionops agent counterevidence accept-revision <bundle-dir>
+```
+
+完整门禁见 [`counterevidence-candidate-closure.zh-CN.md`](counterevidence-candidate-closure.zh-CN.md)。

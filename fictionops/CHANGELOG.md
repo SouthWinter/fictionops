@@ -30,6 +30,7 @@
 - Added hash-guarded, idempotent counterevidence application to persistent issue ledgers, with distinct `model_withdrawn` and `evidence_blocked` machine states, reviser queues for grounded upholds, and preservation of author-owned decisions.
 - Extended the pure controller policy, `agent continue`, and `agent status` to route counterevidence-open, evidence-blocked, and model-withdrawn states without executing non-R0 work or confusing machine withdrawals with author decisions.
 - Added a hash-guarded minimal counterevidence reviser bundle that sends only grounded open upholds, their exact evidence, active author guards, and the unchanged chapter to the existing `agent-exec` protocol without rerunning comprehensive review.
+- Added independent contract-scoped counterevidence candidate verification and explicit atomic acceptance, with grounded candidate quotations, bounded-change checks, author-guard drift refusal, source/candidate hash locks, and accepted issue lifecycle records.
 - Recorded a real DeepSeek dogfood run that completed the full workflow and correctly withheld approval from a structurally valid but stylistically weak candidate.
 
 All notable changes to FictionOps will be documented in this file.

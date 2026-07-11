@@ -6270,6 +6270,9 @@ class FictionOpsCliTests(unittest.TestCase):
             ({"state": "applied", "canon_sync_pending": True}, "review_canon_sync", "author"),
             ({"state": None, "memory_stale": True}, "rebuild_memory", "controller"),
             ({"state": None, "counterevidence_open_count": 1}, "prepare_counterevidence_revision", "controller"),
+            ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "awaiting_verification"}, "verify_counterevidence_revision", "controller"),
+            ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "needs_revision_attention"}, "revise_counterevidence_candidate", "controller"),
+            ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "ready_for_approval"}, "review_counterevidence_candidate", "author"),
             ({"state": None, "counterevidence_blocked_count": 1}, "retrieve_counterevidence", "controller"),
             ({"state": None, "counterevidence_withdrawn_count": 1}, "review_model_withdrawals", "author"),
             ({"state": None}, "inspect_project", "controller"),
@@ -7030,6 +7033,145 @@ class FictionOpsCliTests(unittest.TestCase):
             )
             self.assertNotEqual(stale.returncode, 0)
             self.assertIn("source chapter is stale", stale.stderr)
+
+    def test_counterevidence_candidate_verification_and_acceptance_are_hash_guarded(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "candidate-project"
+            (project / "00_management").mkdir(parents=True)
+            chapter = project / "chapter.md"
+            source_text = "# Rain\n\nGu Chuan lost his left arm.\n\nHe raised his left hand.\n"
+            candidate_text = source_text.replace("raised his left hand", "raised his right hand")
+            chapter.write_text(source_text, encoding="utf-8")
+            source_hash = hashlib.sha256(chapter.read_bytes()).hexdigest()
+            issue_id = "iss-counterevidence-candidate"
+            (project / ".fictionops").mkdir()
+            (project / ".fictionops" / "issues.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "fictionops.issue_ledger.v1",
+                        "project_root": str(project),
+                        "issues": [
+                            {
+                                "issue_id": issue_id,
+                                "chapter_file": str(chapter),
+                                "status": "open",
+                                "category": "semantic.continuity",
+                                "counterevidence": {
+                                    "effective_verdict": "uphold",
+                                    "grounded_evidence": ["lost his left arm", "raised his left hand"],
+                                },
+                            }
+                        ],
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            bundle = project / "agent_runs" / "run-001" / "counterevidence_revision_bundle"
+            bundle.mkdir(parents=True)
+            (bundle.parent / "counterevidence_reviser_queue.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "fictionops.counterevidence_reviser_queue.v1",
+                        "issue_ids": [issue_id],
+                        "issue_count": 1,
+                        "source_application": str(bundle.parent / "counterevidence_application.json"),
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            contract = {
+                "schema": "fictionops.counterevidence_revision_contract.v1",
+                "chapter_file": str(chapter),
+                "source_sha256": source_hash,
+                "issue_count": 1,
+                "issues": [
+                    {
+                        "issue_id": issue_id,
+                        "problem": "The final action contradicts the missing left arm.",
+                        "grounded_evidence": ["lost his left arm", "raised his left hand"],
+                        "suggested_action": "Use the right hand only in the final action.",
+                    }
+                ],
+                "active_author_guards": [],
+            }
+            contract_file = bundle / "issue_contract.json"
+            contract_file.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
+            (bundle / "output.md").write_text(candidate_text, encoding="utf-8", newline="\n")
+            (bundle / "bundle_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "fictionops.counterevidence_revision_bundle.v1",
+                        "artifact_sha256": {"issue_contract.json": hashlib.sha256(contract_file.read_bytes()).hexdigest()},
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            verifier = project / "verifier.py"
+            verifier.write_text(
+                "import json\n"
+                f"print(json.dumps({{'schema':'fictionops.counterevidence_candidate_verification.v1','decisions':[{{'issue_id':'{issue_id}','resolved':True,'candidate_evidence':['He raised his right hand.'],'reason':'fixed'}}],'unrelated_changes':[],'active_author_guards_preserved':True,'new_canon_added':False,'overall_pass':True,'summary':'bounded fix'}}))\n",
+                encoding="utf-8",
+            )
+            awaiting_verification = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
+            self.assertEqual(awaiting_verification["selected_action"], "verify_counterevidence_revision")
+            guard_file = project / ".fictionops" / "author_guards.json"
+            guard_file.write_text(
+                json.dumps(
+                    {
+                        "schema": "fictionops.author_guard_registry.v1",
+                        "guards": [
+                            {
+                                "guard_id": "G-TEST",
+                                "kind": "style",
+                                "statement": "Preserve the original hand reference intentionally.",
+                                "source": "author",
+                                "status": "active",
+                            }
+                        ],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            guard_drift = self.run_cli(
+                "agent", "counterevidence", "verify-revision", str(bundle), "--format", "json", "--runner", sys.executable, str(verifier), check=False
+            )
+            self.assertNotEqual(guard_drift.returncode, 0)
+            self.assertIn("author guards changed", guard_drift.stderr)
+            guard_file.unlink()
+            verified = self.run_cli(
+                "agent", "counterevidence", "verify-revision", str(bundle), "--format", "json", "--runner", sys.executable, str(verifier)
+            )
+            self.assertEqual(verified.returncode, 0, verified.stderr)
+            verification = json.loads(verified.stdout)
+            self.assertTrue(verification["ready_for_approval"])
+            self.assertTrue(verification["bounded_change_scope"]["passed"])
+            self.assertTrue(verification["decisions"][0]["evidence_grounded"])
+            self.assertTrue(Path(verification["attempt"]["raw_file"]).is_file())
+            awaiting_author = json.loads(self.run_cli("agent", "continue", str(project), "--execute", "--format", "json").stdout)
+            self.assertEqual(awaiting_author["selected_action"], "review_counterevidence_candidate")
+            self.assertTrue(awaiting_author["requires_human"])
+            self.assertEqual(awaiting_author["stop_reason"], "human_authority_required")
+            candidate_file = bundle / "output.md"
+            candidate_file.write_text(candidate_text + "drift\n", encoding="utf-8", newline="\n")
+            drifted = self.run_cli("agent", "counterevidence", "accept-revision", str(bundle), "--dry-run", "--format", "json", check=False)
+            self.assertNotEqual(drifted.returncode, 0)
+            self.assertIn("candidate changed", drifted.stderr)
+            candidate_file.write_text(candidate_text, encoding="utf-8", newline="\n")
+            dry = self.run_cli("agent", "counterevidence", "accept-revision", str(bundle), "--dry-run", "--format", "json")
+            self.assertEqual(dry.returncode, 0, dry.stderr)
+            self.assertEqual(chapter.read_text(encoding="utf-8"), source_text)
+            accepted = self.run_cli("agent", "counterevidence", "accept-revision", str(bundle), "--format", "json", check=False)
+            self.assertEqual(accepted.returncode, 0, accepted.stderr)
+            self.assertEqual(chapter.read_text(encoding="utf-8"), candidate_text)
+            stored = next(item for item in load_issue_ledger(project)["issues"] if item["issue_id"] == issue_id)
+            self.assertEqual(stored["status"], "accepted")
+            self.assertEqual([item["to_status"] for item in stored["decisions"]], ["addressed", "verified", "accepted"])
 
     def test_preservation_verifier_withdraws_self_abstaining_issues_without_erasing_evidence(self) -> None:
         review = {

@@ -122,6 +122,8 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
     suggested_command: str | None = None
     evidence: list[str] = []
     latest_queue_file: Path | None = None
+    counterevidence_bundle_dir: Path | None = None
+    counterevidence_candidate_state: str | None = None
     if counterevidence_issues:
         evidence.append(str(issue_ledger_path(root).resolve()))
         application_files = sorted(root.rglob("counterevidence_application.json"), key=lambda item: item.stat().st_mtime_ns, reverse=True)
@@ -141,6 +143,21 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
                 break
         if latest_queue_file is not None:
             evidence.append(str(latest_queue_file))
+            counterevidence_bundle_dir = latest_queue_file.parent / "counterevidence_revision_bundle"
+            candidate_file = counterevidence_bundle_dir / "output.md"
+            verification_file = counterevidence_bundle_dir / "counterevidence_verification.json"
+            if candidate_file.is_file():
+                evidence.append(str(candidate_file.resolve()))
+                counterevidence_candidate_state = "awaiting_verification"
+                if verification_file.is_file():
+                    evidence.append(str(verification_file.resolve()))
+                    try:
+                        verification = json.loads(verification_file.read_text(encoding="utf-8-sig"))
+                        counterevidence_candidate_state = (
+                            "ready_for_approval" if isinstance(verification, dict) and verification.get("ready_for_approval") else "needs_revision_attention"
+                        )
+                    except (OSError, json.JSONDecodeError):
+                        counterevidence_candidate_state = "needs_revision_attention"
         elif application_files:
             evidence.append(str(application_files[0].resolve()))
 
@@ -171,6 +188,7 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
         counterevidence_open_count=int(counterevidence["open_count"]),
         counterevidence_blocked_count=int(counterevidence["evidence_blocked_count"]),
         counterevidence_withdrawn_count=int(counterevidence["model_withdrawn_count"]),
+        counterevidence_candidate_state=counterevidence_candidate_state,
     )
     action = policy.action
     reason = policy.reason
@@ -189,6 +207,12 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
             suggested_command = f'fictionops agent counterevidence prepare-revision "{latest_queue_file.parent}"'
         else:
             suggested_command = f'fictionops agent issues "{root}" --status open --format json'
+    elif action == "verify_counterevidence_revision" and counterevidence_bundle_dir is not None:
+        suggested_command = f'fictionops agent counterevidence verify-revision "{counterevidence_bundle_dir}" --runner ...'
+    elif action == "revise_counterevidence_candidate" and counterevidence_bundle_dir is not None:
+        suggested_command = f'fictionops agent-exec "{counterevidence_bundle_dir}" --force --runner ...'
+    elif action == "review_counterevidence_candidate" and counterevidence_bundle_dir is not None:
+        suggested_command = f'fictionops agent counterevidence accept-revision "{counterevidence_bundle_dir}" --dry-run'
     elif action == "retrieve_counterevidence":
         suggested_command = f'fictionops agent issues "{root}" --status evidence_blocked --format json'
     elif action == "review_model_withdrawals":

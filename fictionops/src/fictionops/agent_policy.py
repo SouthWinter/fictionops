@@ -31,6 +31,7 @@ def select_agent_policy(
     counterevidence_open_count: int = 0,
     counterevidence_blocked_count: int = 0,
     counterevidence_withdrawn_count: int = 0,
+    counterevidence_candidate_state: str | None = None,
 ) -> AgentPolicyDecision:
     normalized = (state or "unknown").strip()
     if ready_for_approval or normalized in HUMAN_STATES:
@@ -46,6 +47,12 @@ def select_agent_policy(
     if memory_stale:
         return AgentPolicyDecision(POLICY_SCHEMA, "rebuild_memory", "Accepted evidence marked the derived memory index stale.", "R0", "controller", True)
     if counterevidence_open_count > 0:
+        if counterevidence_candidate_state == "ready_for_approval":
+            return AgentPolicyDecision(POLICY_SCHEMA, "review_counterevidence_candidate", "The bounded candidate passed independent verification; explicit author acceptance is required.", "R3", "author", False)
+        if counterevidence_candidate_state == "needs_revision_attention":
+            return AgentPolicyDecision(POLICY_SCHEMA, "revise_counterevidence_candidate", "The bounded candidate failed verification and must not be accepted.", "R2", "controller", False)
+        if counterevidence_candidate_state == "awaiting_verification":
+            return AgentPolicyDecision(POLICY_SCHEMA, "verify_counterevidence_revision", "A staged bounded candidate exists and requires independent contract verification.", "R2", "controller", False)
         return AgentPolicyDecision(
             POLICY_SCHEMA,
             "prepare_counterevidence_revision",

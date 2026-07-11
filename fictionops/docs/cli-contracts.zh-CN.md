@@ -832,7 +832,11 @@
 
 `agent counterevidence prepare-revision RUN_DIR` 会重新核对 application 与 queue 的对应关系、原章哈希及 ledger 当前状态，再生成兼容既有 `agent-exec` 的最小修订包。包中只含 grounded `open` uphold、精确修订证据、active author guards 和未改原章；withdrawn、blocked、已解决及作者保护 issue 均被排除，也不会重跑全章综合审读。
 
-`agent continue` 读取带 counterevidence provenance 的持久状态：grounded open 选择 `prepare_counterevidence_revision`，evidence-blocked 选择 `retrieve_counterevidence`，仅剩 model-withdrawn 时选择作者权限的 `review_model_withdrawals`。既有候选、预算、失败、取消、canon-sync 与 stale-memory 优先级不变；`--execute` 不会自动执行这些 R1-R3 动作。
+`agent counterevidence verify-revision BUNDLE --runner ...` 让独立 runner 只判断 contract 内的修复，并要求候选引文逐字落地、没有无关改动、active author guards 未被破坏、没有新增正史、原章未变化，且改动量处于确定性的窄修订上限。它只写 verification artifact，不修改正文或 ledger。
+
+`agent counterevidence accept-revision BUNDLE` 是显式作者边界。命令重新核对 bundle、contract、source、candidate 哈希及 ledger 中仍为 grounded open 的状态；`--dry-run` 只预检，正式执行才原子应用已验证候选，并记录 `addressed -> verified -> accepted` 状态轨迹。
+
+`agent continue` 读取带 counterevidence provenance 的持久状态：grounded open 先选择 `prepare_counterevidence_revision`；已有 staged output 时转入 `verify_counterevidence_revision`；验证失败回到 `revise_counterevidence_candidate`；验证通过则停在作者权限的 `review_counterevidence_candidate`。evidence-blocked 选择 `retrieve_counterevidence`，仅剩 model-withdrawn 时选择作者权限的 `review_model_withdrawals`。既有候选、预算、失败、取消、canon-sync 与 stale-memory 优先级不变；`--execute` 不会自动执行这些 R1-R3 动作。
 
 ### `fictionops agent-memory`
 

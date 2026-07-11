@@ -199,6 +199,16 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_prepare.add_argument("--model")
     agent_counterevidence_prepare.add_argument("--force", action="store_true")
     agent_counterevidence_prepare.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_verify = agent_counterevidence_subparsers.add_parser("verify-revision", help="Independently verify a staged bounded revision against its issue contract.")
+    agent_counterevidence_verify.add_argument("bundle_dir")
+    agent_counterevidence_verify.add_argument("--timeout-seconds", type=int, default=300)
+    agent_counterevidence_verify.add_argument("--force", action="store_true")
+    agent_counterevidence_verify.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_verify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="Independent verifier runner command; place it last.")
+    agent_counterevidence_accept = agent_counterevidence_subparsers.add_parser("accept-revision", help="Atomically apply an independently verified bounded revision.")
+    agent_counterevidence_accept.add_argument("bundle_dir")
+    agent_counterevidence_accept.add_argument("--dry-run", action="store_true")
+    agent_counterevidence_accept.add_argument("--format", choices=["markdown", "json"], default="markdown")
 
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
@@ -4190,6 +4200,19 @@ def handle_agent(args: argparse.Namespace) -> int:
                     force=args.force,
                 )
                 print(render_counterevidence_revision_bundle(report, args.format), end="")
+                return 0
+            if args.counterevidence_action == "verify-revision":
+                runner = list(args.runner or [])
+                if runner and runner[0] == "--":
+                    runner = runner[1:]
+                report = verify_counterevidence_candidate(
+                    Path(args.bundle_dir), runner=runner, timeout_seconds=args.timeout_seconds, force=args.force
+                )
+                print(render_counterevidence_candidate(report, args.format), end="")
+                return 0
+            if args.counterevidence_action == "accept-revision":
+                report = accept_counterevidence_candidate(Path(args.bundle_dir), dry_run=args.dry_run)
+                print(render_counterevidence_candidate(report, args.format), end="")
                 return 0
             report = evaluate_counterevidence(Path(args.packet), Path(args.key))
             rendered = render_counterevidence_evaluation(report, args.format)

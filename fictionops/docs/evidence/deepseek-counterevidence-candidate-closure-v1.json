@@ -1,0 +1,65 @@
+{
+  "schema": "fictionops.counterevidence_candidate_dogfood.v1",
+  "date": "2026-07-12",
+  "provider": "deepseek",
+  "requested_model": "deepseek-chat",
+  "observed_model": "deepseek-v4-flash",
+  "fixture": {
+    "kind": "controlled_continuity_contradiction",
+    "source_claim": "顾川左臂在三年前齐肩而断。",
+    "defective_action": "他抬起左手，把灯放上窗台。",
+    "candidate_action": "他抬起右手，把灯放上窗台。"
+  },
+  "escalated_reverification": {
+    "verdict": "uphold",
+    "confidence": "high",
+    "evidence_grounded": true,
+    "repair_used": false,
+    "usage": {
+      "input_tokens": 1051,
+      "output_tokens": 154,
+      "total_tokens": 1205
+    }
+  },
+  "minimal_revision": {
+    "issue_count": 1,
+    "changed_lines_removed": 1,
+    "changed_lines_added": 1,
+    "unrelated_text_changed": false,
+    "usage": {
+      "input_tokens": 1369,
+      "output_tokens": 84,
+      "total_tokens": 1453
+    }
+  },
+  "independent_verification": {
+    "status": "ready_for_approval",
+    "candidate_evidence_grounded": true,
+    "unrelated_changes": [],
+    "active_author_guards_preserved": true,
+    "new_canon_added": false,
+    "usage": {
+      "input_tokens": 1515,
+      "output_tokens": 212,
+      "total_tokens": 1727
+    }
+  },
+  "acceptance": {
+    "dry_run_preserved_source": true,
+    "source_sha256_before": "657bb6e84375c47cc2f96ec102c1b09532f65b54efbcb0bfca2b56425dea2fc2",
+    "candidate_sha256": "65fea00ab82f0b3f7e195d52e092d43514f2b7be50b34af436e921089100b18d",
+    "source_sha256_after": "65fea00ab82f0b3f7e195d52e092d43514f2b7be50b34af436e921089100b18d",
+    "final_issue_status": "accepted",
+    "status_path": [
+      "open",
+      "addressed",
+      "verified",
+      "accepted"
+    ]
+  },
+  "safety": {
+    "real_novel_edited": false,
+    "api_key_recorded": false,
+    "author_acceptance_required": true
+  }
+}

@@ -166,6 +166,8 @@ def next_actions_for_agent_exec(report: AgentExecReport) -> list[str]:
         actions.append(f"Convert accepted findings into revision notes or run `fictionops revision-plan . --book {report.book}`.")
     elif report.task == "canon-sync":
         actions.append("Apply accepted canon changes manually, then rerun `fictionops doctor .`.")
+    elif report.task == "bounded-revision":
+        actions.append(f"Run `fictionops agent counterevidence verify-revision {report.run_dir} --runner ...` before any acceptance.")
     else:
         actions.append(f"Use the staged output to update project memory, then run `fictionops workflow-plan . --stage {report.task} --book {report.book}` if unsure.")
     return actions
