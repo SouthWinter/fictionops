@@ -132,6 +132,8 @@ def build_parser() -> argparse.ArgumentParser:
     agent_benchmark_parser.add_argument("--runs", type=int, default=1)
     agent_benchmark_parser.add_argument("--timeout-seconds", type=int, default=300)
     agent_benchmark_parser.add_argument("--out", help="Optional report output path.")
+    agent_benchmark_parser.add_argument("--blind-out", help="Optional anonymous human-review packet; requires --blind-key-out.")
+    agent_benchmark_parser.add_argument("--blind-key-out", help="Condition key stored separately from --blind-out.")
     agent_benchmark_parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     agent_benchmark_parser.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
 
@@ -3994,6 +3996,16 @@ def handle_agent(args: argparse.Namespace) -> int:
                 output = Path(args.out).expanduser().resolve()
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_text(rendered, encoding="utf-8", newline="\n")
+            if bool(args.blind_out) != bool(args.blind_key_out):
+                raise ValueError("--blind-out and --blind-key-out must be provided together")
+            if args.blind_out and args.blind_key_out:
+                packet, key = build_blind_review_artifacts(report, Path(args.fixtures))
+                blind_output = Path(args.blind_out).expanduser().resolve()
+                key_output = Path(args.blind_key_out).expanduser().resolve()
+                blind_output.parent.mkdir(parents=True, exist_ok=True)
+                key_output.parent.mkdir(parents=True, exist_ok=True)
+                blind_output.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+                key_output.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
         except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
             print(f"fictionops: agent benchmark failed: {exc}", file=sys.stderr)
             return 1

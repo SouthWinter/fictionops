@@ -24,7 +24,7 @@ python -m unittest discover -s fictionops/tests -p test_cli.py -k release_smoke 
 
 ## Current Coverage
 
-The current suite covers 62 CLI commands and 158 regression tests. It checks:
+The current suite covers 62 CLI commands and 159 regression tests. It checks:
 
 - every CLI help entry;
 - CLI contracts and documentation coverage;
@@ -44,7 +44,7 @@ The current suite covers 62 CLI commands and 158 regression tests. It checks:
 - phase checkpoints with artifact hashes, explicit session cancellation, duplicate-cancel refusal, and cancelled-session controller boundaries;
 - runner receipt parsing, token/cost aggregation across resume segments, and observed token-budget stops before the next model call;
 - unified trajectory steps for attributed context, paired model calls, state transitions, and author authority;
-- table-driven deterministic controller policy, repeated raw/RAG/full/ablation benchmarking, prompt-answer isolation, and seven bounded failure-injection scenarios;
+- table-driven deterministic controller policy, repeated raw/RAG/full/ablation benchmarking, positive/negative controls, blind-review packet isolation, prompt-answer isolation, and seven bounded failure-injection scenarios;
 - model config and context packs;
 - structured quantity/time/object fact ledgers, state-aware scene-by-scene chapter assembly, evidence-routed selective scene rewriting, and hard model-call budget stops;
 - clean Markdown, metadata, manifest, EPUB export, and EPUB audit;

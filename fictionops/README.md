@@ -273,7 +273,7 @@ python -m pip wheel ./fictionops -w fictionops/dist --no-deps --no-build-isolati
 python -c "import os, pathlib, setuptools.build_meta as b; os.chdir('fictionops'); pathlib.Path('dist').mkdir(exist_ok=True); print(b.build_sdist('dist'))"
 ```
 
-The test suite currently covers 62 CLI commands and 158 regression tests, including the unified agent entry, persistent issue identity and author decisions, high-risk semantic fixtures, phase/hash checkpoints, auditable cancellation, typed memory, causal simulation, story-fact ledgers, state-aware scene drafting, selective rewriting, hard execution budgets, grounded adversarial review, closed-loop revision/writing, and hash-guarded acceptance.
+The test suite currently covers 62 CLI commands and 159 regression tests, including the unified agent entry, persistent issue identity and author decisions, high-risk semantic fixtures, positive/negative benchmark controls, blind-review packet isolation, phase/hash checkpoints, auditable cancellation, typed memory, causal simulation, story-fact ledgers, state-aware scene drafting, selective rewriting, hard execution budgets, grounded adversarial review, closed-loop revision/writing, and hash-guarded acceptance.
 
 ## Positioning
 

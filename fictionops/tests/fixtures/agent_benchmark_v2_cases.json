@@ -1,0 +1,115 @@
+{
+  "schema": "fictionops.agent_benchmark_cases.v2",
+  "cases": [
+    {
+      "case_id": "memory_continuity_missing_hand",
+      "prompt_id": "B01",
+      "risk": "continuity",
+      "chapter_excerpt": "鹿煜抬起左手，将绳结在掌心绕了两圈，随后攀上湿滑的城墙。",
+      "project_context": "人物状态表：鹿煜在前一卷失去左手，伤口已经愈合；此后所有攀爬和持械动作都由右手、牙齿或同伴配合完成。",
+      "expected_category": "continuity",
+      "accepted_categories": ["physical continuity", "character continuity", "state contradiction", "memory continuity"],
+      "false_positive_guard": "不要因为动作困难而否定它；真正的问题只在既定身体状态冲突。",
+      "review": {"issues": [{"category": "continuity", "evidence": "鹿煜抬起左手", "problem": "The action contradicts the established loss of his left hand.", "suggested_action": "Rewrite the climb using his right hand, teeth, or assistance."}]}
+    },
+    {
+      "case_id": "memory_information_sword_before_discovery",
+      "prompt_id": "B02",
+      "risk": "information_boundaries",
+      "chapter_excerpt": "守卫退了半步。他知道少年只要伸手，三步外那柄剑就会自行飞进掌中。",
+      "project_context": "信息释放表：此场景发生在第一次隔空拔剑之前。此时守卫、少年本人及读者都不知道剑会回应牵引；少年只有无法证实的隐约感觉。",
+      "expected_category": "information_boundaries",
+      "accepted_categories": ["information boundary", "premature reveal", "knowledge boundary", "narrative consistency", "叙事一致性", "时序矛盾"],
+      "false_positive_guard": "守卫可以警惕剑或少年，但不能确知尚未发生、无人验证的能力。",
+      "review": {"issues": [{"category": "information_boundaries", "evidence": "他知道少年只要伸手，三步外那柄剑就会自行飞进掌中", "problem": "The guard knows an ability that has not yet been discovered.", "suggested_action": "Keep only unease or speculation."}]}
+    },
+    {
+      "case_id": "memory_relationship_premature_teacher",
+      "prompt_id": "B03",
+      "risk": "character",
+      "chapter_excerpt": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+      "project_context": "关系阶段：南渡失散时宁岚只是救助流民的人，殷允先是被救助者，之后才依次成为有用者、信任者，终局附近才接过衣钵。双方不采用简单师生关系。",
+      "expected_category": "character",
+      "accepted_categories": ["relationship progression", "character relationship", "premature relationship", "premature relationship establishment", "character relationship timeline", "character relationship consistency"],
+      "false_positive_guard": "可以表现向往和感激，但当前阶段不应出现正式师生名分或衣钵承诺。",
+      "review": {"issues": [{"category": "character", "evidence": "行了弟子礼：老师", "problem": "The relationship skips from rescue directly to formal discipleship.", "suggested_action": "Keep gratitude while withholding the teacher-disciple frame."}]}
+    },
+    {
+      "case_id": "memory_foreshadowing_alias_revealed_early",
+      "prompt_id": "B04",
+      "risk": "foreshadowing",
+      "chapter_excerpt": "守门人展开通缉榜，朝人群喊道：简峤，你的本名和旧籍都在这里。",
+      "project_context": "长线承诺：简峤的假名必须保留到第三本结尾才揭晓。本场位于第二本中段，守门人只可能掌握假名和模糊画像。",
+      "expected_category": "foreshadowing",
+      "accepted_categories": ["premature reveal", "long arc", "identity reveal", "memory foreshadowing alias revealed early", "information boundaries", "canon consistency"],
+      "false_positive_guard": "追捕本身可以发生；不能提前坐实本名与旧籍。",
+      "review": {"issues": [{"category": "foreshadowing", "evidence": "你的本名和旧籍都在这里", "problem": "The scene resolves an identity mystery one book too early.", "suggested_action": "Let the notice carry only the alias and uncertain description."}]}
+    },
+    {
+      "case_id": "local_explanatory_narration",
+      "prompt_id": "B05",
+      "risk": "prose_and_reader_experience",
+      "chapter_excerpt": "她把烧剩的半张纸收进袖里。她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+      "project_context": "本章应让物件和动作形成回声，答案只开一条缝，不由旁白完整结算父亲的双重意图。",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": ["over explanation", "explanatory narration", "lack of ambiguity", "narrative logic", "information boundaries", "叙事结算过度"],
+      "false_positive_guard": "人物可以形成局部猜测，但旁白不应把两个动机都认证为事实。",
+      "review": {"issues": [{"category": "prose_and_reader_experience", "evidence": "是为了毁去证据；留下另一半，是为了让她日后找到答案", "problem": "The narration closes both sides of an intended ambiguity.", "suggested_action": "Keep the paper and her partial recognition without certifying both motives."}]}
+    },
+    {
+      "case_id": "local_template_repetition",
+      "prompt_id": "B06",
+      "risk": "prose_and_reader_experience",
+      "chapter_excerpt": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话。灯像眼，桌像井，窗像一块冻住的水。",
+      "project_context": "相邻两段已经连续使用排除式旁白、三项排比和明喻，本段需要继续压迫感但应改变承载方式。",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": ["prose repetition", "prose rhythm", "template repetition", "repetition", "prose/reader experience", "stylistic repetition"],
+      "false_positive_guard": "保留最有功能的一组重复，不做机械同义词替换。",
+      "review": {"issues": [{"category": "prose_and_reader_experience", "evidence": "不是雨，不是风，不是脚步。没有人开门，没有人抬头，没有人说话", "problem": "Three adjacent template families carry the same pressure.", "suggested_action": "Keep one rhythmic anchor and move the rest into action or silence."}]}
+    },
+    {
+      "case_id": "negative_functional_ritual_repetition",
+      "prompt_id": "B07",
+      "risk": "negative_control",
+      "chapter_excerpt": "归土。司祭撒下第一把灰。归土。死者的母亲松开手。归土。城门外的人群终于应了一声。",
+      "project_context": "这是葬礼全章唯一一次三叠复唱；每次复唱都对应不同人物动作，并让私人死亡变成公共回应。",
+      "expected_issue": false,
+      "expected_category": "",
+      "false_positive_guard": "重复具有仪式、递进和结构功能，应当保留，不能只凭词频判为模板化。",
+      "review": {"issues": []}
+    },
+    {
+      "case_id": "negative_concrete_child_intelligence",
+      "prompt_id": "B08",
+      "risk": "negative_control",
+      "chapter_excerpt": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+      "project_context": "她十二岁，是粮商女儿；聪明、爱抢话，从价钱、饥饿、货物和父亲脸色理解生意，没有官署文书训练。",
+      "expected_issue": false,
+      "expected_category": "",
+      "false_positive_guard": "少女可以聪明。这里的认知材料具体、来自生活经验，不应因年龄而降智。",
+      "review": {"issues": []}
+    },
+    {
+      "case_id": "negative_perspectival_myth_versions",
+      "prompt_id": "B09",
+      "risk": "negative_control",
+      "chapter_excerpt": "黎蒙老人说白鱼上岸便是灾。归途教徒摇头，说白鱼只是来接走不肯腐烂的魂。商人听完，把两种说法都记进了账册边角。",
+      "project_context": "神话真相不向正篇人物完整公开；不同地区和势力必须保有彼此矛盾、各有政治功能的民间版本。",
+      "expected_issue": false,
+      "expected_category": "",
+      "false_positive_guard": "版本矛盾是有意的知识边界和世界观厚度，不是连续性错误。",
+      "review": {"issues": []}
+    },
+    {
+      "case_id": "negative_regional_colloquial_voice",
+      "prompt_id": "B10",
+      "risk": "negative_control",
+      "chapter_excerpt": "寒泽汉子咬开酒塞：城里那套绕口话我不会。你要船，就拿盐来；没盐，拿命也不顶数。",
+      "project_context": "寒泽底层船民说话短、实、重交换和生存经验；不使用斡都朝堂式文书推敲。",
+      "expected_issue": false,
+      "expected_category": "",
+      "false_positive_guard": "口语、省略和直接交换逻辑符合地域与身份，不应统一润色成文雅书面语。",
+      "review": {"issues": []}
+    }
+  ]
+}

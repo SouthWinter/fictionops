@@ -1,6 +1,6 @@
 # FictionOps Agent 研究面试案例
 
-最新真实对照实验见 [`evidence/deepseek-baseline-pilot.zh-CN.md`](evidence/deepseek-baseline-pilot.zh-CN.md)：18 次 DeepSeek 调用中，三组检出率均饱和，`full` 将可核验引证率从 `raw` 的 83.3% 提高到 100%，同时暴露了样例过易与评测标签脆弱两个限制。
+最新真实对照实验见 [`evidence/deepseek-benchmark-v2.zh-CN.md`](evidence/deepseek-benchmark-v2.zh-CN.md)：正式 30 次 DeepSeek 调用中，raw recall 为 16.7%，RAG/full 为 100%；full 的可核验引证率达到 100%，但负例误报率仍有 75%，暴露出 Agent 的过度审阅问题。早期 18 次 pilot 见 [`evidence/deepseek-baseline-pilot.zh-CN.md`](evidence/deepseek-baseline-pilot.zh-CN.md)。
 
 ## 一句话
 

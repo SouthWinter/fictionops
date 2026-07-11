@@ -11,14 +11,18 @@ from typing import Any
 from .agent_exec import parse_runner_receipt, runner_environment
 
 
-BASELINE_SCHEMA = "fictionops.agent_review_baseline.v1"
+BASELINE_SCHEMA = "fictionops.agent_review_baseline.v2"
+FIXTURE_SCHEMAS = {
+    "fictionops.agent_high_risk_review_cases.v1",
+    "fictionops.agent_benchmark_cases.v2",
+}
 MODES = ("raw", "rag", "workflow")
 CONDITIONS = ("raw", "rag", "full", "workflow", "no_memory", "no_guard", "no_contract")
 
 
 def load_cases(path: Path) -> list[dict[str, Any]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("schema") != "fictionops.agent_high_risk_review_cases.v1":
+    if payload.get("schema") not in FIXTURE_SCHEMAS:
         raise ValueError("unsupported high-risk fixture schema")
     return [item for item in payload.get("cases") or [] if isinstance(item, dict)]
 
@@ -27,9 +31,10 @@ def baseline_prompt(case: dict[str, Any], mode: str, *, run_index: int = 1) -> s
     if mode not in CONDITIONS:
         raise ValueError(f"unsupported baseline condition: {mode}")
     full = mode in {"full", "workflow"}
+    prompt_id = str(case.get("prompt_id") or case.get("case_id") or "")
     lines = [
         "# FictionOps Anonymous Review Baseline",
-        f"CASE_ID: {case.get('case_id')}",
+        f"CASE_ID: {prompt_id}",
         f"MODE: {mode}",
         f"RUN_INDEX: {run_index}",
         "## Request",
@@ -39,7 +44,7 @@ def baseline_prompt(case: dict[str, Any], mode: str, *, run_index: int = 1) -> s
                 "schema": "fictionops.agent_research_baseline_request.v1",
                 "role": "reviewer",
                 "task": "benchmark-review",
-                "case_id": case.get("case_id"),
+                "case_id": prompt_id,
                 "condition": mode,
                 "run_index": run_index,
             },
@@ -82,7 +87,7 @@ def parse_review(text: str) -> dict[str, Any]:
 
 
 def normalize_category(value: object) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
+    return re.sub(r"[^\w]+", "_", str(value or "").strip().lower(), flags=re.UNICODE).strip("_")
 
 
 def evidence_fragments(value: object) -> list[str]:
@@ -101,6 +106,7 @@ def evidence_fragments(value: object) -> list[str]:
 def score_review(case: dict[str, Any], mode: str, review: dict[str, Any], telemetry: dict[str, Any] | None) -> dict[str, Any]:
     issues = [item for item in review.get("issues") or [] if isinstance(item, dict)]
     expected = str(case.get("expected_category") or "")
+    expected_issue = bool(case.get("expected_issue", bool(expected)))
     accepted = {normalize_category(expected)}
     accepted.update(normalize_category(value) for value in case.get("accepted_categories") or [])
     matched = [item for item in issues if normalize_category(item.get("category")) in accepted]
@@ -112,13 +118,27 @@ def score_review(case: dict[str, Any], mode: str, review: dict[str, Any], teleme
     grounded_issue_count = sum(
         any(fragment in source for fragment in fragments for source in sources) for fragments in matched_evidence
     )
+    target_detected = bool(matched)
+    prediction_positive = bool(issues)
+    classification = (
+        "true_positive"
+        if expected_issue and target_detected
+        else "false_negative"
+        if expected_issue
+        else "false_positive"
+        if prediction_positive
+        else "true_negative"
+    )
     return {
         "case_id": case.get("case_id"),
         "mode": mode,
         "expected_category": expected,
         "accepted_categories": sorted(accepted),
         "matched_categories": [str(item.get("category") or "") for item in matched],
-        "detected": bool(matched),
+        "expected_issue": expected_issue,
+        "prediction_positive": prediction_positive,
+        "classification": classification,
+        "detected": target_detected,
         "evidence_grounded": grounded_issue_count > 0,
         "matched_issue_count": len(matched),
         "grounded_issue_count": grounded_issue_count,
@@ -164,12 +184,19 @@ def run_baselines(
                 review = parse_review(completed.stdout)
                 row = score_review(case, mode, review, parse_runner_receipt(completed.stderr))
                 row["run_index"] = run_index
+                row["prompt_id"] = str(case.get("prompt_id") or case.get("case_id") or "")
                 row["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
                 row["review"] = review
                 rows.append(row)
     aggregate: dict[str, Any] = {}
     for mode in selected_conditions:
         selected = [row for row in rows if row["mode"] == mode]
+        true_positives = sum(row["classification"] == "true_positive" for row in selected)
+        false_negatives = sum(row["classification"] == "false_negative" for row in selected)
+        false_positives = sum(row["classification"] == "false_positive" for row in selected)
+        true_negatives = sum(row["classification"] == "true_negative" for row in selected)
+        positive_cases = true_positives + false_negatives
+        negative_cases = false_positives + true_negatives
         input_tokens = sum(int(((row.get("telemetry") or {}).get("usage") or {}).get("input_tokens") or 0) for row in selected)
         output_tokens = sum(int(((row.get("telemetry") or {}).get("usage") or {}).get("output_tokens") or 0) for row in selected)
         costs: dict[str, float] = {}
@@ -180,8 +207,18 @@ def run_baselines(
                 costs[currency] = costs.get(currency, 0.0) + float(cost.get("total") or 0)
         aggregate[mode] = {
             "cases": len(selected),
-            "detection_rate": sum(bool(row["detected"]) for row in selected) / len(selected) if selected else 0.0,
-            "grounded_rate": sum(bool(row["evidence_grounded"]) for row in selected) / len(selected) if selected else 0.0,
+            "positive_cases": positive_cases,
+            "negative_cases": negative_cases,
+            "true_positives": true_positives,
+            "false_negatives": false_negatives,
+            "false_positives": false_positives,
+            "true_negatives": true_negatives,
+            "precision": true_positives / (true_positives + false_positives) if true_positives + false_positives else 0.0,
+            "recall": true_positives / positive_cases if positive_cases else 0.0,
+            "accuracy": (true_positives + true_negatives) / len(selected) if selected else 0.0,
+            "false_positive_rate": false_positives / negative_cases if negative_cases else 0.0,
+            "detection_rate": true_positives / positive_cases if positive_cases else 0.0,
+            "grounded_rate": sum(bool(row["evidence_grounded"]) for row in selected if row["expected_issue"]) / positive_cases if positive_cases else 0.0,
             "extra_issue_count": sum(int(row["extra_issue_count"]) for row in selected),
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
@@ -197,6 +234,53 @@ def run_baselines(
     }
 
 
+def build_blind_review_artifacts(
+    payload: dict[str, Any], fixtures: Path
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    cases = {str(case.get("case_id")): case for case in load_cases(fixtures)}
+    samples: list[dict[str, Any]] = []
+    keys: list[dict[str, Any]] = []
+    for row in payload.get("rows") or []:
+        case_id = str(row.get("case_id") or "")
+        case = cases[case_id]
+        identity = f"{case_id}|{row.get('mode')}|{row.get('run_index')}|{row.get('prompt_sha256')}"
+        sample_id = "sample-" + hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+        samples.append(
+            {
+                "sample_id": sample_id,
+                "chapter_excerpt": str(case.get("chapter_excerpt") or ""),
+                "authoritative_context": str(case.get("project_context") or ""),
+                "preservation_guard": str(case.get("false_positive_guard") or ""),
+                "model_review": row.get("review") or {"issues": []},
+                "annotation": {
+                    "verdict": None,
+                    "evidence_grounded": None,
+                    "material_issue_count": None,
+                    "false_positive_count": None,
+                    "notes": "",
+                },
+            }
+        )
+        keys.append(
+            {
+                "sample_id": sample_id,
+                "case_id": case_id,
+                "condition": row.get("mode"),
+                "run_index": row.get("run_index"),
+                "prompt_sha256": row.get("prompt_sha256"),
+            }
+        )
+    samples.sort(key=lambda item: hashlib.sha256(str(item["sample_id"]).encode("utf-8")).hexdigest())
+    keys.sort(key=lambda item: str(item["sample_id"]))
+    packet = {
+        "schema": "fictionops.agent_blind_review_packet.v1",
+        "instructions": "Judge only the supplied source material and model review. Do not infer the hidden condition. Use verdict accept, partial, or reject.",
+        "samples": samples,
+    }
+    key = {"schema": "fictionops.agent_blind_review_key.v1", "samples": keys}
+    return packet, key
+
+
 def render_baselines(payload: dict[str, Any], output_format: str) -> str:
     if output_format == "json":
         return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
@@ -208,13 +292,14 @@ def render_baselines(payload: dict[str, Any], output_format: str) -> str:
         f"- Fixtures: `{payload['fixtures']}`",
         f"- Runs per case: {payload['runs_per_case']}",
         "",
-        "| Condition | Samples | Detection | Grounded | Extra issues | Input tokens | Output tokens | Cost |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Condition | Samples | Precision | Recall | Accuracy | FPR | Grounded | Extra issues | Input tokens | Output tokens | Cost |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for condition in payload["conditions"]:
         item = payload["aggregate"][condition]
         lines.append(
-            f"| `{condition}` | {item['cases']} | {item['detection_rate']:.3f} | {item['grounded_rate']:.3f} | "
+            f"| `{condition}` | {item['cases']} | {item['precision']:.3f} | {item['recall']:.3f} | "
+            f"{item['accuracy']:.3f} | {item['false_positive_rate']:.3f} | {item['grounded_rate']:.3f} | "
             f"{item['extra_issue_count']} | {item['input_tokens']} | {item['output_tokens']} | "
             f"`{json.dumps(item['cost_by_currency'], ensure_ascii=False)}` |"
         )
@@ -228,6 +313,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--timeout-seconds", type=int, default=300)
     parser.add_argument("--conditions", default="raw,rag,full", help="Comma-separated conditions: raw,rag,full,no_memory,no_guard,no_contract.")
     parser.add_argument("--runs", type=int, default=1)
+    parser.add_argument("--blind-out", type=Path)
+    parser.add_argument("--blind-key-out", type=Path)
     parser.add_argument("--runner", nargs=argparse.REMAINDER, required=True)
     args = parser.parse_args(argv)
     payload = run_baselines(
@@ -241,6 +328,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(rendered, encoding="utf-8", newline="\n")
+    if bool(args.blind_out) != bool(args.blind_key_out):
+        raise ValueError("--blind-out and --blind-key-out must be provided together")
+    if args.blind_out and args.blind_key_out:
+        packet, key = build_blind_review_artifacts(payload, args.fixtures)
+        args.blind_out.parent.mkdir(parents=True, exist_ok=True)
+        args.blind_key_out.parent.mkdir(parents=True, exist_ok=True)
+        args.blind_out.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+        args.blind_key_out.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(rendered, end="")
     return 0
 

@@ -152,7 +152,12 @@ from fictionops.agent_issue_ledger import (  # noqa: E402
     transition_issue,
 )
 from fictionops.agent_revision_runtime import merge_semantic_verification  # noqa: E402
-from fictionops.agent_research_baseline import baseline_prompt, run_baselines, score_review  # noqa: E402
+from fictionops.agent_research_baseline import (  # noqa: E402
+    baseline_prompt,
+    build_blind_review_artifacts,
+    run_baselines,
+    score_review,
+)
 from fictionops.agent_policy import select_agent_policy  # noqa: E402
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
@@ -6498,7 +6503,7 @@ class FictionOpsCliTests(unittest.TestCase):
         self.assertTrue(alias_score["evidence_grounded"])
         with tempfile.TemporaryDirectory() as tmp:
             runner = Path(tmp) / "baseline_runner.py"
-            expected = {case["case_id"]: case["review"] for case in cases}
+            expected = {case.get("prompt_id", case["case_id"]): case["review"] for case in cases}
             runner.write_text(
                 "import json, re, sys\n"
                 f"expected = {expected!r}\n"
@@ -6511,7 +6516,7 @@ class FictionOpsCliTests(unittest.TestCase):
                 ROOT / "tests" / "fixtures" / "agent_high_risk_review_cases.json",
                 runner=[sys.executable, str(runner)],
             )
-            self.assertEqual(baseline["schema"], "fictionops.agent_review_baseline.v1")
+            self.assertEqual(baseline["schema"], "fictionops.agent_review_baseline.v2")
             self.assertEqual(len(baseline["rows"]), 9)
             self.assertEqual(baseline["rows"][0]["review"], cases[0]["review"])
             self.assertEqual(len(baseline["rows"][0]["prompt_sha256"]), 64)
@@ -6537,6 +6542,69 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(cli_payload["conditions"], ["raw", "full", "no_memory"])
             self.assertEqual(cli_payload["runs_per_case"], 2)
             self.assertEqual(len(cli_payload["rows"]), 18)
+
+    def test_benchmark_v2_scores_negative_controls_and_builds_blind_packet(self) -> None:
+        fixture_path = ROOT / "tests" / "fixtures" / "agent_benchmark_v2_cases.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        cases = fixture["cases"]
+        self.assertEqual(len(cases), 10)
+        self.assertEqual(sum(bool(case.get("expected_issue", bool(case.get("expected_category")))) for case in cases), 6)
+        opaque_prompt = baseline_prompt(cases[0], "raw")
+        self.assertIn("CASE_ID: B01", opaque_prompt)
+        self.assertNotIn(cases[0]["case_id"], opaque_prompt)
+        with tempfile.TemporaryDirectory() as tmp:
+            runner = Path(tmp) / "benchmark_v2_runner.py"
+            expected = {case.get("prompt_id", case["case_id"]): case["review"] for case in cases}
+            runner.write_text(
+                "import json, re, sys\n"
+                f"expected = {expected!r}\n"
+                "payload = sys.stdin.buffer.read().decode('utf-8')\n"
+                "case_id = re.search(r'^CASE_ID: (.+)$', payload, re.MULTILINE).group(1).strip()\n"
+                "print(json.dumps(expected[case_id], ensure_ascii=False))\n",
+                encoding="utf-8",
+            )
+            report = run_baselines(
+                fixture_path,
+                runner=[sys.executable, str(runner)],
+                conditions=["raw", "full"],
+            )
+            for condition in ("raw", "full"):
+                metrics = report["aggregate"][condition]
+                self.assertEqual(metrics["positive_cases"], 6)
+                self.assertEqual(metrics["negative_cases"], 4)
+                self.assertEqual(metrics["precision"], 1.0)
+                self.assertEqual(metrics["recall"], 1.0)
+                self.assertEqual(metrics["accuracy"], 1.0)
+                self.assertEqual(metrics["false_positive_rate"], 0.0)
+            packet, key = build_blind_review_artifacts(report, fixture_path)
+            self.assertEqual(len(packet["samples"]), 20)
+            self.assertEqual(len(key["samples"]), 20)
+            self.assertEqual(len({sample["sample_id"] for sample in packet["samples"]}), 20)
+            self.assertNotIn("condition", packet["samples"][0])
+            self.assertIn("condition", key["samples"][0])
+
+            blind_path = Path(tmp) / "blind.json"
+            key_path = Path(tmp) / "blind-key.json"
+            completed = self.run_cli(
+                "agent",
+                "benchmark",
+                str(fixture_path),
+                "--conditions",
+                "raw,full",
+                "--format",
+                "json",
+                "--blind-out",
+                str(blind_path),
+                "--blind-key-out",
+                str(key_path),
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            self.assertEqual(completed.returncode, 0)
+            self.assertTrue(blind_path.exists())
+            self.assertTrue(key_path.exists())
+            self.assertEqual(len(json.loads(blind_path.read_text(encoding="utf-8"))["samples"]), 20)
 
     def test_semantic_pass_cannot_override_missing_required_metric_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

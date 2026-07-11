@@ -25,17 +25,19 @@ def main() -> int:
     parser.add_argument("evidence", type=Path)
     args = parser.parse_args()
     payload = sys.stdin.buffer.read().decode("utf-8")
-    case_id = prompt_value(payload, "CASE_ID")
+    prompt_id = prompt_value(payload, "CASE_ID")
     mode = prompt_value(payload, "MODE")
     run_index = int(prompt_value(payload, "RUN_INDEX"))
     evidence = json.loads(args.evidence.read_text(encoding="utf-8"))
     matches = [
         row
         for row in evidence.get("rows") or []
-        if row.get("case_id") == case_id and row.get("mode") == mode and int(row.get("run_index") or 0) == run_index
+        if (row.get("prompt_id") or row.get("case_id")) == prompt_id
+        and row.get("mode") == mode
+        and int(row.get("run_index") or 0) == run_index
     ]
     if len(matches) != 1:
-        raise ValueError(f"expected one replay row for {case_id}/{mode}/run-{run_index}; found {len(matches)}")
+        raise ValueError(f"expected one replay row for {prompt_id}/{mode}/run-{run_index}; found {len(matches)}")
     row = matches[0]
     if isinstance(row.get("telemetry"), dict):
         print(RECEIPT_PREFIX + json.dumps(row["telemetry"], ensure_ascii=False, separators=(",", ":")), file=sys.stderr)

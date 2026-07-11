@@ -819,7 +819,7 @@
 
 `agent continue` 的下一动作由纯函数 controller policy 根据 state、evidence、budget 与 authority 选择；输出包含 action、risk、authority 和 executable，模型不能自行取得作者权限。写章与修订 run 同时追加 `trajectory.jsonl`，统一记录上下文来源/权威/选择理由、模型调用与 telemetry、证据、状态迁移和作者/controller 权限。
 
-`agent benchmark` 可在同一 runner 上重复运行 `raw/rag/full/no_memory/no_guard/no_contract`，fixture 标准答案不会进入 prompt；`agent failure-lab` 在临时工作区注入源文件、checkpoint 产物、预算、receipt、reviewer 证据和故事契约故障，并报告发现点、恢复率与受保护哈希。
+`agent benchmark` 可在同一 runner 上重复运行 `raw/rag/full/no_memory/no_guard/no_contract`，fixture 标准答案不会进入 prompt。Benchmark v2 同时使用正例和 preservation 负例，报告 precision、recall、accuracy、false-positive rate 与 grounded evidence；`--blind-out` 和 `--blind-key-out` 分开写入匿名人工评审包与条件映射。`agent failure-lab` 在临时工作区注入源文件、checkpoint 产物、预算、receipt、reviewer 证据和故事契约故障，并报告发现点、恢复率与受保护哈希。
 
 ### `fictionops agent-memory`
 

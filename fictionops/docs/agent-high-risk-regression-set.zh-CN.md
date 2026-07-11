@@ -1,5 +1,14 @@
 # Agent 高风险章节回归集
 
+## Benchmark v2
+
+`tests/fixtures/agent_benchmark_v2_cases.json` 在原有三类显性正例之外，增加了两种决定性样例：
+
+- memory-only 正例：片段单独阅读成立，只有检索人物状态、信息释放、关系阶段或长线承诺后才能发现冲突；
+- preservation 负例：仪式性重复、具体化的少女聪明、视角化神话版本和地域口语都应保留，用来测量机械审读的误报。
+
+v2 报告使用 TP/FN/FP/TN、precision、recall、accuracy、false-positive rate 和 grounded evidence。`--blind-out` 与 `--blind-key-out` 可生成条件匿名的人工评审包及单独映射 key；公开评审包不包含 condition、case id 或预期标签。
+
 `tests/fixtures/agent_high_risk_review_cases.json` 保存三类匿名最小案例：
 
 - 信息边界：外部动作允许出现，但旁白不能直接泄露不可见意图；
