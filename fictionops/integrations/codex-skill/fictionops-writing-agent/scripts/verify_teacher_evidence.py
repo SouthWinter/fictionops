@@ -8,6 +8,18 @@ import re
 from pathlib import Path
 
 
+REQUIRED_TEXT_FIELDS = (
+    "task_id",
+    "category",
+    "scope",
+    "problem",
+    "strongest_counterevidence",
+    "countercheck_effect",
+    "resolution_reason",
+    "suggested_action",
+)
+
+
 def normalized(text: str) -> str:
     return re.sub(r"\s+", "", text)
 
@@ -21,8 +33,32 @@ def verify(source_path: Path, decision_path: Path) -> dict[str, object]:
     source = source_bytes.decode("utf-8-sig")
     decision = json.loads(decision_path.read_text(encoding="utf-8-sig"))
     errors: list[str] = []
+    if decision.get("schema") != "fictionops.teacher_decision.v1":
+        errors.append("schema must equal fictionops.teacher_decision.v1")
+    if decision.get("decision") not in {"uphold", "withdraw", "insufficient"}:
+        errors.append("decision must be uphold, withdraw, or insufficient")
+    if decision.get("severity") not in {"P0", "P1", "P2", "P3", "P4", "P5"}:
+        errors.append("severity must be one of P0, P1, P2, P3, P4, or P5")
+    if "finding" in decision:
+        errors.append("nested finding is forbidden; required decision fields must be top-level")
     if "evidence" in decision:
         errors.append("legacy evidence field is forbidden; use typed evidence fields only")
+
+    for field in REQUIRED_TEXT_FIELDS:
+        if not isinstance(decision.get(field), str) or not decision[field].strip():
+            errors.append(f"{field} must be a non-empty string")
+
+    confidence = decision.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not 0 <= confidence <= 1:
+        errors.append("confidence must be a number from 0 to 1")
+
+    preserve_constraints = decision.get("preserve_constraints")
+    if (
+        not isinstance(preserve_constraints, list)
+        or not preserve_constraints
+        or any(not isinstance(item, str) or not item.strip() for item in preserve_constraints)
+    ):
+        errors.append("preserve_constraints must be a non-empty array of strings")
 
     evidence = decision.get("manuscript_evidence")
     if not isinstance(evidence, list) or not evidence:
@@ -64,6 +100,7 @@ def verify(source_path: Path, decision_path: Path) -> dict[str, object]:
         "field": "manuscript_evidence",
         "evidence_count": len(matches),
         "authority_evidence_count": len(authority_evidence) if isinstance(authority_evidence, list) else 0,
+        "contract": "fictionops.teacher_decision.v1",
         "errors": errors,
         "matches": matches,
     }

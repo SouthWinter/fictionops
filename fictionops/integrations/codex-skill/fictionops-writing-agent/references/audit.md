@@ -10,6 +10,8 @@
 6. Repeated prose templates, over-regularity, and reader-experience friction.
 7. Packaging and release issues.
 
+Before finalizing a P3-P5 finding, explicitly check whether any P0-P2 candidate is better grounded and more consequential. A local prose issue cannot be the requested single strongest finding while a verified viewpoint, knowledge, causality, or character-contract violation remains open.
+
 ## Match Evidence Scale
 
 - Use an exact line for a local wording claim.
@@ -41,6 +43,13 @@ Use `needs_counterevidence` when the disproof evidence is absent. Do not rewrite
 - Counterevidence verification for disputed model findings.
 
 Treat deterministic counts as evidence, not literary verdicts.
+
+## Respect Chapter Affordances
+
+- In a high-pressure first action, a character may make a wrong, non-instrumental, irreversible move when perceived options collapse. Do not require the character to know the move will rescue someone, open an exit, or solve the trap. Verify perceived option collapse, not mature utility calculation.
+- In translation or captivity, procedural precision still needs a visible source. Distinguish rough inference from unexplained knowledge of a complete cross-station workflow.
+- In a relationship-bearing misdirection chapter, repeated objects or interpretations may be doing necessary credibility work. Check viewpoint and knowledge contracts before selecting a local restraint complaint, then preserve the repetitions that make the alternative outcome believable.
+- Treat a chapter affordance as counterevidence, not automatic immunity. Uphold only the residual claim that remains independently grounded after the affordance is applied.
 
 ## Keep Evidence Typed
 

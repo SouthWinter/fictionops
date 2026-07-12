@@ -1,0 +1,27 @@
+{
+  "schema": "fictionops.codex_skill_generalization_evidence.v1",
+  "cases": [
+    {
+      "case": "action_first_killing",
+      "initial": {"verdict": "withdraw", "score": 9.5},
+      "revised": {"verdict": "uphold", "score": 14.0}
+    },
+    {
+      "case": "translation_information",
+      "initial": {"verdict": "uphold", "score": 12.5},
+      "revised": {"verdict": "uphold", "score": 14.0}
+    },
+    {
+      "case": "relationship_misdirection",
+      "initial": {"verdict": "withdraw", "score": 11.0},
+      "revised": {"verdict": "uphold", "score": 15.0}
+    }
+  ],
+  "initial_mean_score": 11.0,
+  "revised_mean_score": 14.3333,
+  "initial_upheld": 1,
+  "revised_upheld": 3,
+  "samples_per_case_per_condition": 1,
+  "manuscript_edited": false,
+  "claim_boundary": "Three-case model-reviewed forward test; not literary ground truth or statistical generalization."
+}

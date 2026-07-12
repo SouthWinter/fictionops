@@ -27,16 +27,29 @@ For a review decision, keep evidence types separate:
 
 ```json
 {
+  "schema": "fictionops.teacher_decision.v1",
+  "task_id": "stable-task-id",
+  "decision": "uphold",
+  "category": "prose_reader_experience",
+  "severity": "P4",
+  "scope": "one bounded location and claim",
+  "problem": "the surviving defect",
   "manuscript_evidence": ["verbatim target text without added quote marks"],
   "authority_evidence": [
     {"source": "path/to/authority.md", "support": "rule or state used in judgment"}
   ],
+  "strongest_counterevidence": "the strongest reason the finding may be wrong",
+  "countercheck_effect": "how that reason changed the verdict, scope, or confidence",
+  "resolution_reason": "why the residual claim survives or is withdrawn",
+  "preserve_constraints": ["material that a later repair must not damage"],
+  "suggested_action": "a bounded future action or no action for withdraw",
+  "confidence": 0.8,
   "manuscript_edited": false,
   "teacher_ground_truth": false
 }
 ```
 
-Do not also emit a legacy `evidence` field. Duplicate or mixed evidence fields make downstream scoring ambiguous. `authority_evidence` may paraphrase its support, but every item must identify its source; `manuscript_evidence` must remain verbatim.
+Use this exact top-level shape for the required fields. Use `P0` through `P5` for `severity`. Do not nest the decision under `finding`, rename `suggested_action`, or duplicate evidence at multiple levels. Do not emit legacy `evidence`. `authority_evidence` may paraphrase its support, but every item must identify its source; `manuscript_evidence` must remain verbatim.
 
 Before finalizing the decision:
 

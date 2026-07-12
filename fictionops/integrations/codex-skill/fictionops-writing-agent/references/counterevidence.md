@@ -16,6 +16,7 @@ Use this workflow when a reviewer finding is plausible but not sufficiently grou
    - `uphold`: the defect remains after new evidence.
    - `withdraw`: new evidence disproves or closes the alleged gap, or the repair violates an active guard.
    - `still_insufficient`: the requested evidence remains missing or indirect.
+   - If counterevidence defeats a necessary premise of the narrowed claim, use `withdraw`. Scope reduction and lower confidence cannot preserve a claim whose premise no longer holds.
 5. Require at least one exact quotation from the model-visible evidence window for a resolved verdict.
 6. Apply only machine state to the ledger. Do not edit prose during escalation or re-verification.
 
@@ -33,3 +34,4 @@ Use this workflow when a reviewer finding is plausible but not sufficiently grou
 - Do not treat a scope-limiting guard as proof that the quoted prose is correct.
 - Do not call evidence that supplies a missing source an `uphold`; it closes that original gap and therefore supports `withdraw`.
 - Do not reuse hidden benchmark labels as issue-level truth.
+- Do not demand instrumental efficacy from an impulsive or coerced action unless the chapter contract says the character is planning instrumentally. A wrong action can still be causally credible.

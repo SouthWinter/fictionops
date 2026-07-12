@@ -26,7 +26,7 @@ Use FictionOps as the state, evidence, and authority harness. Act as a capable r
 3. **Plan:** state the intended state transition and acceptance checks. Keep alternatives when the choice is uncertain.
 4. **Execute:** prefer `fictionops agent write|revise|resume|continue` over reconstructing lower-level calls. Put `--runner` last.
 5. **Verify:** inspect candidate, diff, issue lifecycle, deterministic gates, semantic verification, and runner telemetry. For structured review or teacher output, separate manuscript quotations from authority support and run `scripts/verify_teacher_evidence.py` before accepting the finding. Never infer correctness from model confidence.
-6. **Countercheck:** test the strongest plausible reason not to revise. Route insufficient evidence through counterevidence instead of forcing a verdict.
+6. **Countercheck:** test the strongest plausible reason not to revise. If it defeats the surviving claim's necessary premise, withdraw instead of merely narrowing scope or lowering confidence. Route genuinely missing evidence through counterevidence instead of forcing a verdict.
 7. **Stop:** stop at stale state, exhausted budget, unsupported recovery, unresolved canon, or author-owned acceptance.
 8. **Record:** preserve `trajectory.jsonl`, context manifests, receipts, diffs, verification artifacts, and the human decision. When acting as teacher, add the decision summary required by `references/teacher-mode.md`.
 
