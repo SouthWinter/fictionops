@@ -28,6 +28,8 @@ fictionops-writing-agent/
     counterevidence.md
     dogfood-metrics.md
     teacher-mode.md
+  scripts/
+    verify_teacher_evidence.py
 ```
 
 To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_HOME/skills/`, restart Codex, then invoke `$fictionops-writing-agent` in a FictionOps project checkout. The skill delegates to the installed FictionOps CLI and does not fork the runtime.
@@ -39,3 +41,4 @@ To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_
 - The skill should stage outputs first and let the user accept, reject, or revise them.
 - The skill may use echo runners only for CI, smoke tests, or debugging.
 - Teacher mode preserves observations, source authority, alternatives, counterevidence, state transitions, and stop reasons. Hidden controls and expected labels must remain outside student prompts.
+- Teacher review decisions keep manuscript quotations separate from authority support and must pass `verify_teacher_evidence.py` before they are treated as valid comparison artifacts.

@@ -23,6 +23,28 @@ Preserve FictionOps runtime artifacts and summarize each consequential decision 
 
 Use `trajectory.jsonl`, context manifests, runner receipts, diffs, verifier reports, and issue history as the factual backbone. Clearly mark any retrospective explanation added by Codex.
 
+For a review decision, keep evidence types separate:
+
+```json
+{
+  "manuscript_evidence": ["verbatim target text without added quote marks"],
+  "authority_evidence": [
+    {"source": "path/to/authority.md", "support": "rule or state used in judgment"}
+  ],
+  "manuscript_edited": false,
+  "teacher_ground_truth": false
+}
+```
+
+Do not also emit a legacy `evidence` field. Duplicate or mixed evidence fields make downstream scoring ambiguous. `authority_evidence` may paraphrase its support, but every item must identify its source; `manuscript_evidence` must remain verbatim.
+
+Before finalizing the decision:
+
+1. Run `scripts/verify_teacher_evidence.py <frozen-source> <decision.json>`.
+2. Require every `manuscript_evidence` item to match after whitespace normalization only, require typed `authority_evidence`, and reject a legacy `evidence` field.
+3. Record the verifier artifact or result in `trajectory.jsonl` under the verification layer.
+4. If verification fails, stop and correct the evidence source or downgrade the claim. Never strip punctuation automatically to make a quote pass.
+
 ## Teach Decisions, Not Prose
 
 Compare teacher and student on:

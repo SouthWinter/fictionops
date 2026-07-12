@@ -41,3 +41,11 @@ Use `needs_counterevidence` when the disproof evidence is absent. Do not rewrite
 - Counterevidence verification for disputed model findings.
 
 Treat deterministic counts as evidence, not literary verdicts.
+
+## Keep Evidence Typed
+
+- Put verbatim target-text excerpts in `manuscript_evidence`.
+- Put rules, canon, outline, character memory, and later echoes in `authority_evidence`, with their source paths.
+- Do not add decorative quotation marks to excerpts. Preserve source characters exactly; only Markdown whitespace may be normalized during verification.
+- Run `scripts/verify_teacher_evidence.py <source> <decision>` for structured teacher or comparison findings. A failed quotation check blocks promotion of the finding; it does not authorize silently repairing the quote.
+- Keep `problem`, `counterevidence`, and `resolution_reason` outside both evidence arrays. Evidence is observed material, not the reviewer conclusion.

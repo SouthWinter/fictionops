@@ -15,6 +15,7 @@
 - Added a reproducible raw-vs-RAG-vs-workflow review baseline harness over the anonymous high-risk fixtures.
 - Added a validated installable Codex skill and a versioned `fictionops.api` v1 facade shared by the HTTP adapter and canonical runtime.
 - Upgraded the Codex skill into a governed writing-teacher policy with explicit task routing, authority ranking, counterevidence handling, teacher trajectory requirements, student-diagnosis layers, and held-out evaluation safeguards.
+- Added typed teacher evidence, strict frozen-source quotation verification, legacy mixed-field rejection, and forward-tested review-boundary metadata to the Codex skill.
 - Added phase checkpoints with source/artifact hashes, explicit auditable session cancellation, and checkpoint-aware `agent resume` for safe write/revision phases without replaying completed model calls.
 - Added revision resume from `verification_ready` and a read-only `agent status` author workbench for project-wide sessions, issues, usage, and cost.
 - Added a unified attributed `trajectory.jsonl`, an explicit pure controller policy, repeated raw/RAG/full/ablation experiments, and a seven-scenario failure-injection lab with protected-hash checks.

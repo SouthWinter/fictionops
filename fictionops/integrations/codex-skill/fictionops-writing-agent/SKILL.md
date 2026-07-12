@@ -25,7 +25,7 @@ Use FictionOps as the state, evidence, and authority harness. Act as a capable r
 2. **Retrieve:** select the smallest sufficient evidence at the same scale as the claim. Record paths, authority, and selection reasons.
 3. **Plan:** state the intended state transition and acceptance checks. Keep alternatives when the choice is uncertain.
 4. **Execute:** prefer `fictionops agent write|revise|resume|continue` over reconstructing lower-level calls. Put `--runner` last.
-5. **Verify:** inspect candidate, diff, issue lifecycle, deterministic gates, semantic verification, and runner telemetry. Never infer correctness from model confidence.
+5. **Verify:** inspect candidate, diff, issue lifecycle, deterministic gates, semantic verification, and runner telemetry. For structured review or teacher output, separate manuscript quotations from authority support and run `scripts/verify_teacher_evidence.py` before accepting the finding. Never infer correctness from model confidence.
 6. **Countercheck:** test the strongest plausible reason not to revise. Route insufficient evidence through counterevidence instead of forcing a verdict.
 7. **Stop:** stop at stale state, exhausted budget, unsupported recovery, unresolved canon, or author-owned acceptance.
 8. **Record:** preserve `trajectory.jsonl`, context manifests, receipts, diffs, verification artifacts, and the human decision. When acting as teacher, add the decision summary required by `references/teacher-mode.md`.
@@ -61,3 +61,4 @@ Use a real configured runner for normal AI work. Use echo/no-model runners only 
 - Preserve uncertainty. Mark a question or stop when evidence cannot establish canon.
 - Do not turn a teacher decision into benchmark ground truth without author confirmation or an independent deterministic check.
 - Keep expected labels, hidden controls, and teacher conclusions out of student prompts and held-out evaluation inputs.
+- Never decorate a manuscript quotation with quote marks absent from the source. Do not place canon, outline, or writing-rule text in the manuscript-evidence field.
