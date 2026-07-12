@@ -65,6 +65,19 @@
     "real_chapter_unchanged": true,
     "acceptance_file_written": false
   },
+  "optimized_verifier_replay": {
+    "verification_mode": "delta_only_model",
+    "prompt_chars": 4694,
+    "input_tokens_before": 12351,
+    "input_tokens_after": 1861,
+    "input_token_reduction_percent": 84.93,
+    "output_tokens_before": 444,
+    "output_tokens_after": 266,
+    "verdict_preserved": true,
+    "candidate_evidence_grounded": true,
+    "dry_run_repassed": true,
+    "real_chapter_unchanged": true
+  },
   "safety": {
     "api_key_recorded": false,
     "real_manuscript_edited": false

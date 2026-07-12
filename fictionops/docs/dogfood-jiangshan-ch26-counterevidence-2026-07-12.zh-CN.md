@@ -31,3 +31,15 @@
 - 对 byte-identical retry 明确停止，不允许廉价 API 造成无限空转。
 
 公开聚合见 [`deepseek-jiangshan-ch26-counterevidence-v1.json`](evidence/deepseek-jiangshan-ch26-counterevidence-v1.json)。
+
+## 成本优化重放
+
+实现 deterministic-first 与 delta-only verifier 后，对同一最终候选再次调用同一 DeepSeek 模型：
+
+- 输入 token：`12351 -> 1861`，下降 `84.93%`；
+- 输出 token：`444 -> 266`；
+- prompt 字符数：`4694`；
+- verdict 仍为 grounded `ready_for_approval`；
+- dry-run、沙箱 source 和真实第26章哈希仍全部不变。
+
+对于含新增句界重复的失败候选，新版本在 API 调用前即返回 `deterministic_preflight/model_call_count=0`。因此原轨迹中多次让 verifier 阅读整章的成本，不会在同类后续运行中重现。

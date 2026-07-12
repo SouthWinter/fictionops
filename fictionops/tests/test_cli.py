@@ -7124,23 +7124,15 @@ class FictionOpsCliTests(unittest.TestCase):
                 f"print(json.dumps({{'schema':'fictionops.counterevidence_candidate_verification.v1','decisions':[{{'issue_id':'{issue_id}','resolved':True,'candidate_evidence':['He raised his right hand.'],'reason':'fixed'}}],'unrelated_changes':[],'active_author_guards_preserved':True,'new_canon_added':False,'overall_pass':True,'summary':'bounded fix'}}))\n",
                 encoding="utf-8",
             )
-            failed_verification = {
-                "schema": "fictionops.counterevidence_candidate_verification.v1",
-                "ready_for_approval": False,
-                "status": "needs_revision_attention",
-                "candidate_sha256": hashlib.sha256(candidate_file.read_bytes()).hexdigest(),
-                "local_prose_regressions": [
-                    {
-                        "kind": "new_sentence_boundary_repetition",
-                        "phrase": "right hand",
-                        "forbidden_sequence": "right hand. right hand",
-                        "evidence": "He raised his right hand. right hand stayed raised.",
-                    }
-                ],
-            }
-            (bundle / "counterevidence_verification.json").write_text(
-                json.dumps(failed_verification, indent=2) + "\n", encoding="utf-8"
+            preflight = self.run_cli(
+                "agent", "counterevidence", "verify-revision", str(bundle), "--format", "json"
             )
+            self.assertEqual(preflight.returncode, 0, preflight.stderr)
+            preflight_payload = json.loads(preflight.stdout)
+            self.assertEqual(preflight_payload["verification_mode"], "deterministic_preflight")
+            self.assertEqual(preflight_payload["model_call_count"], 0)
+            self.assertFalse(preflight_payload["ready_for_approval"])
+            self.assertEqual(preflight_payload["local_prose_regressions"][0]["phrase"], "right hand")
             repair_route = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
             self.assertEqual(repair_route["selected_action"], "repair_counterevidence_candidate")
             repairer = project / "repairer.py"
@@ -7187,6 +7179,8 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(verified.returncode, 0, verified.stderr)
             verification = json.loads(verified.stdout)
             self.assertTrue(verification["ready_for_approval"])
+            self.assertEqual(verification["verification_mode"], "delta_only_model")
+            self.assertEqual(verification["model_call_count"], 1)
             self.assertTrue(verification["bounded_change_scope"]["passed"])
             self.assertTrue(verification["decisions"][0]["evidence_grounded"])
             self.assertTrue(Path(verification["attempt"]["raw_file"]).is_file())

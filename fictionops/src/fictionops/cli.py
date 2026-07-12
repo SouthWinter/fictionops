@@ -204,7 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_verify.add_argument("--timeout-seconds", type=int, default=300)
     agent_counterevidence_verify.add_argument("--force", action="store_true")
     agent_counterevidence_verify.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    agent_counterevidence_verify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="Independent verifier runner command; place it last.")
+    agent_counterevidence_verify.add_argument("--runner", nargs=argparse.REMAINDER, help="Independent verifier runner command; required only after deterministic preflight passes; place it last.")
     agent_counterevidence_accept = agent_counterevidence_subparsers.add_parser("accept-revision", help="Atomically apply an independently verified bounded revision.")
     agent_counterevidence_accept.add_argument("bundle_dir")
     agent_counterevidence_accept.add_argument("--dry-run", action="store_true")

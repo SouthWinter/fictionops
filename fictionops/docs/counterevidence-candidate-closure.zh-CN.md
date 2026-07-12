@@ -10,7 +10,7 @@ fictionops agent counterevidence accept-revision <bundle>
 
 ## 独立验证
 
-verifier 只接收 issue contract、原文、候选与统一 diff，不重新做全章找错。每个 issue 必须返回候选中的逐字证据。最终通过同时要求：
+verifier 只接收 issue contract 与完整统一 diff，不重新做全章找错，也不重复接收原章和候选全文。每个 issue 必须返回候选新增行中的逐字证据。最终通过同时要求：
 
 - 每个 contracted issue 已解决且候选证据可逐字定位；
 - 没有无关改动；
@@ -18,6 +18,8 @@ verifier 只接收 issue contract、原文、候选与统一 diff，不重新做
 - 没有新增正史；
 - 标题不变，改动行数和字符比例处于窄修订上限；
 - bundle、contract 与原章自准备后均未漂移。
+
+执行顺序是确定性预检优先。标题、改动范围或新增句界重复任一失败时，直接生成 `deterministic_preflight` 报告，模型调用数为0。预检通过后，模型只接收 contract 和完整 diff；未变化的原章/候选文本不再重复发送。
 
 模型的 `overall_pass` 不能覆盖任一确定性失败。
 

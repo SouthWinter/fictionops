@@ -110,7 +110,7 @@ def _bounded_change_metrics(source: str, candidate: str, issue_count: int) -> di
 
 def _new_local_repetition_regressions(source: str, candidate: str) -> list[dict[str, str]]:
     pattern = re.compile(
-        r"(?P<phrase>[\u4e00-\u9fff]{2,10}|[A-Za-z]+(?:\s+[A-Za-z]+){0,3})[。！？!?；;，,]\s*(?P=phrase)",
+        r"(?P<phrase>[\u4e00-\u9fff]{2,10}|[A-Za-z]+(?:\s+[A-Za-z]+){0,3})[。！？.!?；;，,]\s*(?P=phrase)",
         flags=re.IGNORECASE,
     )
 
@@ -136,7 +136,7 @@ def _new_local_repetition_regressions(source: str, candidate: str) -> list[dict[
     ]
 
 
-def _verification_prompt(contract: dict[str, Any], source: str, candidate: str, diff: str) -> str:
+def _verification_prompt(contract: dict[str, Any], diff: str) -> str:
     issue_ids = [str(item.get("issue_id") or "") for item in contract.get("issues") or [] if isinstance(item, dict)]
     request = {
         "schema": "fictionops.agent_run_request.v1",
@@ -167,12 +167,10 @@ def _verification_prompt(contract: dict[str, Any], source: str, candidate: str, 
         [
             "# FictionOps Independent Counterevidence Candidate Verification",
             "## Request\n```json\n" + json.dumps(request, ensure_ascii=False, indent=2) + "\n```",
-            "Judge only whether the staged candidate satisfies the listed issue contracts without unrelated edits. Do not rewrite prose. Do not invent defects.",
-            "Every candidate_evidence quote must occur exactly in the candidate. Return one decision for every allowed issue id and no other id. overall_pass may be true only when all issues are resolved, unrelated_changes is empty, all active author guards are preserved, and no new canon was added.",
+            "Judge only whether the staged candidate satisfies the listed issue contracts without unrelated edits. The unified diff is the complete change surface; unchanged chapter text is intentionally omitted. Do not rewrite prose. Do not invent defects.",
+            "Every candidate_evidence quote must occur exactly on an added diff line. Return one decision for every allowed issue id and no other id. overall_pass may be true only when all issues are resolved, unrelated_changes is empty, all active author guards are preserved, and no new canon was added.",
             "## Contract\n```json\n" + json.dumps(contract, ensure_ascii=False, indent=2) + "\n```",
-            "## Source\n" + source,
-            "## Candidate\n" + candidate,
-            "## Unified Diff\n```diff\n" + diff + "\n```",
+            "## Complete Change Surface\n```diff\n" + diff + "\n```",
             "## Output Contract\nReturn exactly one JSON object and no Markdown fence:\n" + json.dumps(output, ensure_ascii=False, indent=2),
         ]
     ).rstrip() + "\n"
@@ -211,8 +209,6 @@ def verify_counterevidence_candidate(
     timeout_seconds: int = 300,
     force: bool = False,
 ) -> dict[str, Any]:
-    if not runner:
-        raise ValueError("counterevidence candidate verification requires an independent runner")
     if timeout_seconds <= 0:
         raise ValueError("counterevidence candidate verification timeout must be positive")
     manifest, contract, source_file, candidate_file = _load_candidate_bundle(bundle_dir)
@@ -228,7 +224,50 @@ def verify_counterevidence_candidate(
         raise ValueError("candidate must contain a change for at least one contracted issue")
     change_scope = _bounded_change_metrics(source, candidate, len(issue_ids))
     local_prose_regressions = _new_local_repetition_regressions(source, candidate)
-    prompt = _verification_prompt(contract, source, candidate, diff)
+    common = {
+        "schema": COUNTEREVIDENCE_CANDIDATE_VERIFICATION_SCHEMA,
+        "bundle_dir": str(bundle_dir),
+        "bundle_manifest_sha256": _sha256(bundle_dir / "bundle_manifest.json"),
+        "contract_sha256": _sha256(bundle_dir / "issue_contract.json"),
+        "source_file": str(source_file),
+        "source_sha256": _sha256(source_file),
+        "candidate_file": str(candidate_file),
+        "candidate_sha256": _sha256(candidate_file),
+        "issue_ids": issue_ids,
+        "bounded_change_scope": change_scope,
+        "local_prose_regressions": local_prose_regressions,
+        "diff": diff,
+        "manuscript_edited": False,
+    }
+    if not change_scope["passed"] or local_prose_regressions:
+        reasons = []
+        if not change_scope["passed"]:
+            reasons.append("candidate exceeds the bounded deterministic change envelope")
+        if local_prose_regressions:
+            reasons.append("candidate introduces a local prose regression")
+        report = {
+            **common,
+            "verification_mode": "deterministic_preflight",
+            "model_call_count": 0,
+            "decisions": [],
+            "unrelated_changes": [],
+            "active_author_guards_preserved": None,
+            "new_canon_added": None,
+            "model_overall_pass": None,
+            "deterministic_grounding_pass": False,
+            "status": "needs_revision_attention",
+            "ready_for_approval": False,
+            "summary": "; ".join(reasons),
+            "prompt_sha256": None,
+            "attempt": None,
+            "telemetry": None,
+            "verified_at": utc_now(),
+        }
+        _write_json(verification_file, report)
+        return report
+    if not runner:
+        raise ValueError("counterevidence candidate verification requires an independent runner after deterministic preflight passes")
+    prompt = _verification_prompt(contract, diff)
     completed = subprocess.run(
         runner,
         input=prompt,
@@ -265,28 +304,20 @@ def verify_counterevidence_candidate(
     )
     ready = bool(model["overall_pass"]) and deterministic_pass
     report = {
-        "schema": COUNTEREVIDENCE_CANDIDATE_VERIFICATION_SCHEMA,
-        "bundle_dir": str(bundle_dir),
-        "bundle_manifest_sha256": _sha256(bundle_dir / "bundle_manifest.json"),
-        "contract_sha256": _sha256(bundle_dir / "issue_contract.json"),
-        "source_file": str(source_file),
-        "source_sha256": _sha256(source_file),
-        "candidate_file": str(candidate_file),
-        "candidate_sha256": _sha256(candidate_file),
-        "issue_ids": issue_ids,
+        **common,
+        "verification_mode": "delta_only_model",
+        "model_call_count": 1,
         "decisions": grounded_decisions,
         "unrelated_changes": model["unrelated_changes"],
         "active_author_guards_preserved": model["active_author_guards_preserved"],
         "new_canon_added": model["new_canon_added"],
         "model_overall_pass": model["overall_pass"],
         "deterministic_grounding_pass": deterministic_pass,
-        "bounded_change_scope": change_scope,
-        "local_prose_regressions": local_prose_regressions,
         "status": "ready_for_approval" if ready else "needs_revision_attention",
         "ready_for_approval": ready,
         "summary": model.get("summary"),
-        "diff": diff,
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "prompt_chars": len(prompt),
         "attempt": {
             "number": attempt_number,
             "raw_file": str(raw_file),
@@ -296,7 +327,6 @@ def verify_counterevidence_candidate(
         },
         "telemetry": parse_runner_receipt(completed.stderr),
         "verified_at": utc_now(),
-        "manuscript_edited": False,
     }
     _write_json(verification_file, report)
     return report

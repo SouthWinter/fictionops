@@ -832,7 +832,7 @@
 
 `agent counterevidence prepare-revision RUN_DIR` 会重新核对 application 与 queue 的对应关系、原章哈希及 ledger 当前状态，再生成兼容既有 `agent-exec` 的最小修订包。包中只含 grounded `open` uphold、精确修订证据、active author guards 和未改原章；withdrawn、blocked、已解决及作者保护 issue 均被排除，也不会重跑全章综合审读。
 
-`agent counterevidence verify-revision BUNDLE --runner ...` 让独立 runner 只判断 contract 内的修复，并要求候选引文逐字落地、没有无关改动、active author guards 未被破坏、没有新增正史、原章未变化，且改动量处于确定性的窄修订上限。它只写 verification artifact，不修改正文或 ledger。
+`agent counterevidence verify-revision BUNDLE [--runner ...]` 先确定性检查标题、窄修订范围和新增局部重复。预检失败时写入 `model_call_count=0`，无需 runner；只有预检通过才把 issue contract 与完整 unified diff 交给独立模型，不再重复传入原章和候选全文。候选引文逐字落地、无关改动为空、active author guards 未破坏、没有新增正史及哈希未漂移仍是强制条件。命令只写 verification artifact，不修改正文或 ledger。
 
 `agent counterevidence accept-revision BUNDLE` 是显式作者边界。命令重新核对 bundle、contract、source、candidate 哈希及 ledger 中仍为 grounded open 的状态；`--dry-run` 只预检，正式执行才原子应用已验证候选，并记录 `addressed -> verified -> accepted` 状态轨迹。
 
