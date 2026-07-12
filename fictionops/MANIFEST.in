@@ -6,6 +6,7 @@ include CONTRIBUTING.md
 include CONTRIBUTING.zh-CN.md
 
 recursive-include docs *.md *.svg
+recursive-include docs/evidence *.json *.jsonl
 recursive-include examples *
 recursive-include integrations *
 recursive-include templates *.md *.yml

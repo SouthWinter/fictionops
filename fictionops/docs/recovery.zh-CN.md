@@ -180,6 +180,14 @@ fictionops agent-next my-novel --book book_01 --format json
 
 ## 什么时候必须停下
 
+模型调用因预算、进程中断或可恢复 runner 故障停止后，先检查 run 目录中的 `session.json`、`checkpoint.json` 和 `model_budget.json`。若 checkpoint 标记为 `resumable`，且源文件与关键产物都未改变，可以运行：
+
+```powershell
+fictionops agent resume <run-dir> --format json --runner <runner-command>
+```
+
+`--runner` 必须放在最后。恢复会新建一个预算分段，并把旧分段归档为 `model_budget.segmentN.json`；累计调用数仍保留。若源文件、章节发动机或 checkpoint 产物哈希不匹配，命令会拒绝恢复，此时不要用 `--force` 绕过，应重新审查变更并创建新 session。当前只支持写章的 `context_ready/causal_ready/plan_ready/draft_ready` 和修订的 `context_ready/review_ready`。
+
 以下情况停止自动恢复，交给人类复核：
 
 - 下一步会修改正文、正史、凭据或真实发布上传；

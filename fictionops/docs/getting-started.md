@@ -34,7 +34,7 @@ Use this when a long project already has drafts, outlines, notes, or scattered c
 
 ## Path C: Model/API Integration
 
-FictionOps core does not call a model. It prepares task bundles and receives staged output. Connect a model through an external runner:
+The unified FictionOps agent delegates model calls to an external runner and keeps outputs staged. The lower-level core can still prepare task bundles without calling a model:
 
 ```bash
 fictionops setup-ai my-novel --provider deepseek --model deepseek-chat

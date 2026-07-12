@@ -4,7 +4,7 @@ Use this brief when explaining FictionOps in an agent research or applied AI eng
 
 ## 60-Second Pitch
 
-FictionOps is an AgentOps-style workflow harness for long-form fiction projects. It is not a one-click novel generator and it is not an autonomous author. The core problem is long-horizon project maintenance: a large story has evolving outlines, canon, character memory, information boundaries, revision history, model handoffs, and publish artifacts.
+FictionOps is a stateful agent for long-form fiction projects. It is not a one-click novel generator: a deterministic controller coordinates durable project memory, model API runners, causal and scene planning, independent review, verification, budgets, and human approval. The core problem is long-horizon project maintenance.
 
 FictionOps turns that into a file-based workflow with CLI audits, scoped context packs, staged agent outputs, revision plans, gates, and release artifacts. The model or API runner can propose bounded outputs, but FictionOps keeps source authority with the human: outputs go to an inbox, audits surface risks, and gates decide whether the project is ready for the next step.
 
@@ -12,7 +12,7 @@ I dogfooded it on a private million-character-scale novel project. The run repai
 
 ## What To Emphasize
 
-- This is a workflow harness, not a writing model.
+- This is an agent system, not a newly trained writing model; the workflow harness is its reproducible engineering substrate.
 - The research problem is long-horizon agent control under persistent external state.
 - The domain is fiction, but the technical pattern generalizes to complex projects with evolving memory and human review.
 - The main contribution is not automatic prose generation; it is scoped context, staged output, auditability, recovery, and gates.
@@ -57,7 +57,7 @@ The important safety contract is that model output is staged, not directly appli
 
 ### Is FictionOps an agent?
 
-FictionOps core is not an agent. It is a workflow harness. Connected to an external runner that calls a model API, it becomes an API-backed AI workflow. Connected to a controller that reads project state, chooses safe next steps, invokes runners, and stops at gates, the whole setup becomes an agentic workflow.
+Yes. `fictionops agent write|revise|accept|continue` now connects the controller, API runner, durable memory, tools, verification, budgets, and stop conditions. It is a stateful agent, but not an autonomous author with authority to accept manuscript or canon changes.
 
 ### Why use fiction as the domain?
 

@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: FictionOps API Agent Contract
-  version: 0.1.0-draft
-  description: Draft HTTP contract for external AI agents using FictionOps as a writing workflow harness.
+  version: 1.0.0
+  description: Versioned HTTP contract for external AI agents using the canonical FictionOps writing runtime.
 servers:
   - url: http://localhost:8765
 paths:

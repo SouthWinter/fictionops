@@ -1,0 +1,103 @@
+{
+  "schema": "fictionops.real_chapter_counterevidence_dogfood.v1",
+  "date": "2026-07-12",
+  "chapter": "book01_ch026",
+  "source_sha256": "3c2cff24708ccf9d0ba2d760615dcf6ed2801682915c13824289a8b0cb7225b4",
+  "provider": "deepseek",
+  "requested_model": "deepseek-chat",
+  "observed_model": "deepseek-v4-flash",
+  "scope": {
+    "issue_count": 1,
+    "target_quotes": [
+      "不是因为凶。",
+      "不是怕脏。是怕这东西真的已经成了自己手的一部分。"
+    ],
+    "excluded_families": [
+      "cold_words",
+      "sudden_markers",
+      "necessary_identification",
+      "dialogue_negation"
+    ]
+  },
+  "trajectory": {
+    "first_reverification": {
+      "model_verdict": "withdraw",
+      "effective_verdict": "still_insufficient",
+      "grounding_override": true,
+      "total_tokens": 11920
+    },
+    "scoped_reverification": {
+      "verdict": "uphold",
+      "confidence": "high",
+      "evidence_grounded": true,
+      "total_tokens": 11530
+    },
+    "full_chapter_revision_calls": 4,
+    "full_chapter_revision_total_tokens": 55637,
+    "verification_calls": 4,
+    "verification_total_tokens": 50784,
+    "local_repair": {
+      "repair_count": 1,
+      "input_tokens": 5691,
+      "output_tokens": 98,
+      "total_tokens": 5789
+    },
+    "total_model_calls": 11,
+    "total_tokens": 135660
+  },
+  "candidate": {
+    "final_sha256": "90a19f7b67c189c36f9e17a85898718d64bb6e2b31c278db5ffdda3ca07b05ea",
+    "changed_lines": 6,
+    "changed_chars": 18,
+    "change_ratio": 0.002753,
+    "local_prose_regressions": [],
+    "verification_status": "ready_for_approval"
+  },
+  "controller": {
+    "selected_action": "review_counterevidence_candidate",
+    "requires_human": true,
+    "stop_reason": "human_authority_required"
+  },
+  "dry_run": {
+    "passed": true,
+    "applied": false,
+    "sandbox_source_unchanged": true,
+    "real_chapter_unchanged": true,
+    "acceptance_file_written": false
+  },
+  "optimized_verifier_replay": {
+    "verification_mode": "delta_only_model",
+    "prompt_chars": 4694,
+    "input_tokens_before": 12351,
+    "input_tokens_after": 1861,
+    "input_token_reduction_percent": 84.93,
+    "output_tokens_before": 444,
+    "output_tokens_after": 266,
+    "verdict_preserved": true,
+    "candidate_evidence_grounded": true,
+    "dry_run_repassed": true,
+    "real_chapter_unchanged": true
+  },
+  "optimized_reverification_replay": {
+    "evidence_window_strategy": "bounded_claim_windows",
+    "source_chars_before": 13205,
+    "included_chars": 387,
+    "character_reduction_percent": 97.07,
+    "prompt_chars": 4443,
+    "input_tokens_before": 11313,
+    "input_tokens_after": 1757,
+    "input_token_reduction_percent": 84.47,
+    "output_tokens_before": 217,
+    "output_tokens_after": 789,
+    "verdict_preserved": true,
+    "effective_verdict": "uphold",
+    "confidence": "high",
+    "evidence_grounded": true,
+    "model_call_count": 1,
+    "real_chapter_unchanged": true
+  },
+  "safety": {
+    "api_key_recorded": false,
+    "real_manuscript_edited": false
+  }
+}

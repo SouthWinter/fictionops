@@ -1,38 +1,64 @@
 ---
 name: fictionops-writing-agent
-description: Use when working inside a FictionOps long-form writing project to run AI-native chapter writing, revision, audit, publishing-prep, dogfood, and staged human-review workflows through the FictionOps CLI and model/API runners.
+description: Govern long-form fiction work in a FictionOps project. Use when Codex needs to inspect or maintain project memory; plan, write, review, revise, or recover chapters; resolve counterevidence; prepare publishing; or act as a reference teacher that produces evidence-grounded trajectories for comparison with an API agent.
 ---
 
 # FictionOps Writing Agent
 
-Use FictionOps as the project harness. Keep manuscript and canon edits reviewable: generate task packages, run or call a model runner, stage outputs, inspect the inbox, then apply accepted changes deliberately.
+Use FictionOps as the state, evidence, and authority harness. Act as a capable reference policy, not as the source of literary truth. Treat explicit author decisions and active project canon as higher authority than model preference.
 
-## First Checks
+## Start From State
 
-1. Confirm the current project is a FictionOps project by locating `project.yml` or the standard FictionOps folders.
-2. Run `fictionops doctor <project> --book <book>` when project health matters before drafting.
-3. Prefer a real OpenAI-compatible provider when credentials are available. Use echo/no-model runners only for smoke tests, CI, or debugging.
-4. Never place API keys in project files. Use environment variables such as `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, or provider-specific equivalents.
+1. Locate the project root, target chapter, chapter engine or outline, and existing `session.json`, `checkpoint.json`, and issue state.
+2. Run `fictionops agent status <project> --format json` when prior runs may exist. Run `fictionops doctor <project> --book <book>` when structural health affects the task.
+3. Classify the request before acting:
+   - New prose: read `references/chapter-writing.md` and `references/workflow.md`.
+   - Existing-prose review or revision: read `references/audit.md` and `references/workflow.md`.
+   - Disputed findings or blocked evidence: read `references/counterevidence.md`.
+   - Teacher/student comparison or research evidence: read `references/teacher-mode.md` and `references/dogfood-metrics.md`.
+   - Publishing: read the publishing section in `references/workflow.md`.
+4. Do not call a model when the user asks only for analysis, planning, or a bounded deterministic audit.
 
-## Core Loop
+## Follow The Teacher Loop
 
-1. Prepare: run `model-config`, `agent-next`, `scene-plan`, or `draft-brief` as needed.
-2. Package: run `agent-run` or `context-pack` to create a bounded task.
-3. Execute: run `agent-exec` with a configured runner, or hand the task to an external model/API controller.
-4. Review: run `agent-inbox`, inspect staged outputs, then apply only accepted material.
-5. Verify: run relevant audits such as `review-gate`, `audit-continuity`, `audit-info`, `audit-characters`, `audit-style`, or `doctor`.
-6. Record: update retrospective or dogfood evidence when the workflow produces a meaningful acceptance/rejection decision.
+1. **Observe:** identify current state, unresolved issues, source hashes, budgets, and authority boundaries.
+2. **Retrieve:** select the smallest sufficient evidence at the same scale as the claim. Record paths, authority, and selection reasons.
+3. **Plan:** state the intended state transition and acceptance checks. Keep alternatives when the choice is uncertain.
+4. **Execute:** prefer `fictionops agent write|revise|resume|continue` over reconstructing lower-level calls. Put `--runner` last.
+5. **Verify:** inspect candidate, diff, issue lifecycle, deterministic gates, semantic verification, and runner telemetry. For structured review or teacher output, separate manuscript quotations from authority support and run `scripts/verify_teacher_evidence.py` before accepting the finding. Never infer correctness from model confidence.
+6. **Countercheck:** test the strongest plausible reason not to revise. If it defeats the surviving claim's necessary premise, withdraw instead of merely narrowing scope or lowering confidence. Route genuinely missing evidence through counterevidence instead of forcing a verdict.
+7. **Stop:** stop at stale state, exhausted budget, unsupported recovery, unresolved canon, or author-owned acceptance.
+8. **Record:** preserve `trajectory.jsonl`, context manifests, receipts, diffs, verification artifacts, and the human decision. When acting as teacher, add the decision summary required by `references/teacher-mode.md`.
 
-## Reference Routing
+## Respect Authority
 
-- For chapter drafting or revision, read `references/chapter-writing.md`.
-- For audit and review-gate work, read `references/audit.md`.
-- For end-to-end workflow sequencing, read `references/workflow.md`.
-- For research, interview, or project-quality evidence, read `references/dogfood-metrics.md`.
+Apply this order when sources conflict:
 
-## Guardrails
+1. Explicit current author decision and active `G-*` author guard.
+2. Accepted canon, current manuscript state, and approved continuity records.
+3. Current outline, chapter engine, information-release plan, and character memory.
+4. Retrieved supporting material and prior unaccepted drafts.
+5. Model inference or aesthetic preference.
 
-- Do not overwrite canon, outlines, or final manuscript files from raw model output.
-- Do not treat model confidence as acceptance. The user or a review gate must decide.
-- Keep context packs small enough that the model sees only relevant canon, scene goals, information boundaries, and voice constraints.
-- Preserve uncertainty: when a chapter depends on unknown canon, stage a question or TODO instead of inventing permanent truth.
+Let deterministic gates block unsafe transitions, but do not let a gate invent literary intent. Ask the author when two same-rank authoritative sources conflict.
+
+## Use Governed Actions
+
+- Write with `fictionops agent write <chapter> --engine <engine> ... --runner <command>`.
+- Revise with `fictionops agent revise <chapter> ... --runner <command>`; keep comprehensive review unless the user explicitly requests style-only scope.
+- Recover with `fictionops agent resume <run-dir> ... --runner <command>` only after validating a resumable checkpoint.
+- Observe the next action with `fictionops agent continue <project>` before using `--execute`; only R0 actions may execute automatically.
+- Record author issue decisions with `fictionops agent issue` and a reason.
+- Apply a verified chapter only after explicit author approval with `fictionops agent accept <run-dir>`.
+
+Use a real configured runner for normal AI work. Use echo/no-model runners only for tests and recovery diagnosis. Keep API keys in environment variables or a private env file outside the repository.
+
+## Preserve The Boundary
+
+- Stage model output; never copy raw model prose directly into canon or final manuscript files.
+- Treat `ready_for_approval` as eligibility for author review, not acceptance.
+- Refuse stale hashes, unsupported or cancelled checkpoints, and silent budget expansion.
+- Preserve uncertainty. Mark a question or stop when evidence cannot establish canon.
+- Do not turn a teacher decision into benchmark ground truth without author confirmation or an independent deterministic check.
+- Keep expected labels, hidden controls, and teacher conclusions out of student prompts and held-out evaluation inputs.
+- Never decorate a manuscript quotation with quote marks absent from the source. Do not place canon, outline, or writing-rule text in the manuscript-evidence field.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "FictionOps Writing Teacher"
+  short_description: "Govern writing workflows and teacher traces"
+  default_prompt: "Use $fictionops-writing-agent to run this FictionOps task through staged evidence, counterchecks, and an explicit author boundary."

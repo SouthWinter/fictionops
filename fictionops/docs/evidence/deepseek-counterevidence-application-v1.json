@@ -1,0 +1,39 @@
+{
+    "schema":  "fictionops.counterevidence_application.v1",
+    "run_dir":  "controlled application run",
+    "chapter_file":  "tests/fixtures/escalated_reverification_control_chapter.md",
+    "source_sha256":  "2e9381e6c24d78c6f0fc0a7d6b3287481e814f292449b0157625ba710fe530ae",
+    "reverification_file":  "docs/evidence/deepseek-escalated-reverification-v1.json",
+    "reverification_sha256":  "d5ea43eacfcedaf8d9fed06220af5dca7b024ac74cf7cc75c95e265703de251b",
+    "packet_sha256":  "ef1be52a490f9c94b61c5e6932fff997c1d2ad4090d1186d3b73ccbb35ac06b5",
+    "escalation_sha256":  "a6d905e2a45ae2fe7f4237b2bd98771b10c786f5f7bc5ffad9ec90ea8fcadcc5",
+    "dry_run":  false,
+    "applied":  true,
+    "action_count":  1,
+    "upheld_issue_ids":  [
+
+                         ],
+    "withdrawn_issue_ids":  [
+                                "iss_sem_932f97dd8657cf3e"
+                            ],
+    "blocked_issue_ids":  [
+
+                          ],
+    "actions":  [
+                    {
+                        "issue_id":  "iss_sem_932f97dd8657cf3e",
+                        "sample_ids":  [
+                                           "controlled-chapter-function-01"
+                                       ],
+                        "verdict":  "withdraw",
+                        "prior_status":  "open",
+                        "status":  "model_withdrawn",
+                        "action":  "updated"
+                    }
+                ],
+    "author_authority_preserved":  true,
+    "manuscript_edited":  false,
+    "applied_at":  "2026-07-11T15:24:17Z",
+    "ledger_file":  "controlled project .fictionops/issues.json",
+    "reviser_queue_file":  "controlled run counterevidence_reviser_queue.json"
+}

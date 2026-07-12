@@ -1,0 +1,91 @@
+{
+  "schema": "fictionops.evidence_window_research_evidence.v1",
+  "date": "2026-07-12",
+  "provider": "deepseek",
+  "model": "deepseek-v4-flash",
+  "temperature": 0,
+  "fixtures": "tests/fixtures/evidence_window_benchmark_cases.json",
+  "fixture_case_count": 5,
+  "scopes": [
+    "bounded_prose",
+    "adjacent_paragraphs",
+    "knowledge_source",
+    "character_memory",
+    "full_chapter"
+  ],
+  "v1_before_verdict_orientation_fix": {
+    "model_calls": 10,
+    "runs_per_case": 1,
+    "full_context_accuracy": 0.8,
+    "window_accuracy": 0.8,
+    "verdict_agreement_rate": 0.6,
+    "window_grounded_resolution_rate": 1.0,
+    "window_evidence_recall_rate": 1.0,
+    "input_tokens_before": 8464,
+    "input_tokens_after": 6932,
+    "input_token_reduction_percent": 18.1,
+    "evidence_chars_before": 2436,
+    "evidence_chars_after": 1476,
+    "evidence_character_reduction_percent": 39.41,
+    "disagreements": [
+      {
+        "case_id": "EW01-bounded-prose",
+        "full_context": "withdraw",
+        "window": "uphold",
+        "expected": "uphold"
+      },
+      {
+        "case_id": "EW03-knowledge-source",
+        "full_context": "withdraw",
+        "window": "uphold",
+        "expected": "withdraw",
+        "failure": "The reason said the missing source was supplied, but the model mislabeled the resolved finding as uphold."
+      }
+    ]
+  },
+  "intervention": {
+    "type": "generic_verdict_orientation_contract",
+    "rule": "The verdict refers to whether the original defect remains after escalation. Evidence that closes an alleged knowledge, character, or intent gap requires withdraw. A scope-limiting guard does not prove the quoted prose is correct.",
+    "case_specific_answer_added": false
+  },
+  "v2_after_verdict_orientation_fix": {
+    "model_calls": 10,
+    "runs_per_case": 1,
+    "full_context_accuracy": 1.0,
+    "window_accuracy": 1.0,
+    "verdict_agreement_rate": 1.0,
+    "window_grounded_resolution_rate": 1.0,
+    "window_evidence_recall_rate": 1.0,
+    "input_tokens_before": 8789,
+    "input_tokens_after": 7257,
+    "input_token_reduction_percent": 17.43,
+    "total_tokens_before": 12049,
+    "total_tokens_after": 10742,
+    "total_token_reduction_percent": 10.85,
+    "evidence_chars_before": 2436,
+    "evidence_chars_after": 1476,
+    "evidence_character_reduction_percent": 39.41,
+    "by_scope_input_token_reduction_percent": {
+      "bounded_prose": 15.62,
+      "adjacent_paragraphs": 9.76,
+      "knowledge_source": 22.54,
+      "character_memory": 12.14,
+      "full_chapter": 26.23
+    }
+  },
+  "limitations": [
+    "One provider and one model were tested.",
+    "Each case-condition pair was run once, so no confidence interval is claimed.",
+    "The five fixtures are anonymous controlled cases, not a representative corpus of all long-form fiction findings.",
+    "The same fixtures informed the generic contract repair after v1, so v2 needs future held-out confirmation."
+  ],
+  "private_raw_reports": [
+    "~/.fictionops/evidence/evidence-window-benchmark-deepseek-v1.json",
+    "~/.fictionops/evidence/evidence-window-benchmark-deepseek-v2.json"
+  ],
+  "safety": {
+    "expected_verdict_sent_to_model": false,
+    "manuscript_edited": false,
+    "api_key_recorded": false
+  }
+}

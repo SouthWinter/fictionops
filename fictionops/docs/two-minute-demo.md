@@ -28,7 +28,7 @@ The commands below use `fictionops` for readability.
 
 Say:
 
-> FictionOps is not an autonomous novelist. It is a file-based workflow harness for long fiction: canon, outlines, information boundaries, task bundles, staged model output, audits, and publishing gates.
+> FictionOps is a stateful agent for long fiction: a file-based controller for canon, outlines, information boundaries, model calls, staged candidates, verification budgets, and publishing gates, without taking manuscript authority from the author.
 
 Show:
 

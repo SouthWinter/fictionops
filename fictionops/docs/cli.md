@@ -1,6 +1,6 @@
 # FictionOps CLI Guide
 
-FictionOps is a local, file-based toolkit for long-form fiction projects. The CLI creates and audits ordinary Markdown, YAML, JSON, and EPUB files. It does not call a model by itself.
+FictionOps is a local, file-based stateful agent and toolkit for long-form fiction projects. `fictionops agent ...` delegates model calls to an explicit runner; lower-level CLI commands remain deterministic and can run without a model.
 
 The Chinese CLI guide remains the most detailed reference: [cli.zh-CN.md](cli.zh-CN.md). This English guide covers the core workflow, command groups, and safety boundaries.
 

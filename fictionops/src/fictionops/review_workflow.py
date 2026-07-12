@@ -19,6 +19,7 @@ class ReviewWorkflowMetric:
     severity: str
     problem_family: str
     interpretation: str
+    details: dict[str, object] | None = None
 
 
 @dataclass
@@ -79,11 +80,11 @@ WATCH_GROUPS: dict[str, dict[str, object]] = {
         "interpretation": "缺席/沉默句式可能形成否定滤镜；检查是否反复预设反应再否定。",
     },
     "simile": {
-        "label": "像",
-        "pattern": r"像",
+        "label": "显式比喻标记",
+        "pattern": r"好像|好似|仿佛|仿若|犹如|宛如|如同|似的|(?<![神塑画肖偶雕图])像(?!样)",
         "threshold": 5.0,
         "family": "simile_translation",
-        "interpretation": "比喻可能在替角色翻译陌生经验；检查是否削弱直接在场感。",
+        "interpretation": "显式比喻标记过密或被单一词垄断，会形成统一滤镜；先判断是否需要比喻，再按视角口吻、句子重量和节奏选择直写、隐喻或合适标记，禁止机械同义词轮换。",
     },
     "sudden": {
         "label": "忽然",
@@ -169,12 +170,13 @@ def collect_evidence_lines(text: str, *, top_lines: int) -> list[ReviewWorkflowE
         for key, config in WATCH_GROUPS.items():
             label = str(config["label"])
             pattern = str(config["pattern"])
-            if re.search(pattern, line):
+            match = re.search(pattern, line)
+            if match:
                 family = str(config["family"])
                 evidence.append(
                     ReviewWorkflowEvidenceLine(
                         line=line_number,
-                        term=label,
+                        term=match.group(0) if family == "simile_translation" else label,
                         text=short_line(line),
                         family=family,
                         suggested_action=line_suggestion(label, family, line),
@@ -188,9 +190,21 @@ def build_metrics(text: str, chars: int) -> list[ReviewWorkflowMetric]:
     metrics: list[ReviewWorkflowMetric] = []
     denominator = max(chars, 1)
     for key, config in WATCH_GROUPS.items():
-        count = count_pattern(text, str(config["pattern"]))
+        pattern = str(config["pattern"])
+        matches = re.findall(pattern, text)
+        count = len(matches)
         per_1000 = round(count * 1000 / denominator, 2)
         threshold = float(config["threshold"])
+        details: dict[str, object] | None = None
+        if key == "simile":
+            marker_counts = Counter(matches)
+            dominant_marker, dominant_count = marker_counts.most_common(1)[0] if marker_counts else (None, 0)
+            details = {
+                "marker_counts": dict(marker_counts),
+                "dominant_marker": dominant_marker,
+                "dominant_share": round(dominant_count / max(count, 1), 3),
+                "semantic_review_required_for": ["implicit_metaphor", "literal_likeness", "register_fit", "image_precision"],
+            }
         metrics.append(
             ReviewWorkflowMetric(
                 key=key,
@@ -201,6 +215,7 @@ def build_metrics(text: str, chars: int) -> list[ReviewWorkflowMetric]:
                 severity=severity_for(per_1000, threshold),
                 problem_family=str(config["family"]),
                 interpretation=str(config["interpretation"]),
+                details=details,
             )
         )
     double_count = len(DOUBLE_NEGATION.findall(text))
@@ -247,7 +262,7 @@ def build_agent_tasks(issues: list[ReviewWorkflowIssue]) -> list[dict[str, str]]
         tasks.append(
             {
                 "role": "style-auditor",
-                "goal": "Classify repeated negation/simile patterns into keep, micro-revise, and replace-with-scene buckets.",
+                "goal": "Classify repeated negation and metaphor patterns into keep, direct scene, implicit metaphor, voice-fit explicit simile, and remove buckets; detect synonym rotation rather than rewarding it.",
                 "human_boundary": "Return staged review only; do not rewrite the manuscript.",
             }
         )
@@ -291,7 +306,13 @@ def build_revision_queue(metrics: list[ReviewWorkflowMetric], issues: list[Revie
     if "absence_filter" in families:
         queue.append("Convert low-value `没有...` lines into positive action, silence, gaze, or object state where possible.")
     if "simile_translation" in families:
-        queue.append("Cut or simplify similes that explain an already visible action; reserve similes for core images.")
+        queue.extend(
+            [
+                "Classify explicit markers as literal likeness, hedge, or true simile; audit implicit metaphors semantically because regex cannot see them.",
+                "Do not rotate `像/好似/仿佛/仿若/犹如/宛如` mechanically. First choose direct scene, action, implicit metaphor, or explicit simile; then choose a marker that fits viewpoint voice and sentence weight.",
+                "Reserve formal markers such as `犹如/宛如/仿若` for voices and passages that can carry their register; colloquial or young viewpoints usually need plainer syntax.",
+            ]
+        )
     if "sensory_default" in families:
         queue.append("Annotate cold/heat field uses by function and replace psychological shortcuts with viewpoint-specific materials.")
     if "turn_signal_overuse" in families:

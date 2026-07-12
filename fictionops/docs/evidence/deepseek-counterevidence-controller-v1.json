@@ -1,0 +1,37 @@
+{
+    "schema":  "fictionops.counterevidence_controller_dogfood.v1",
+    "source_application":  "docs/evidence/deepseek-counterevidence-application-v1.json",
+    "counterevidence":  {
+                            "issue_count":  1,
+                            "open_count":  0,
+                            "evidence_blocked_count":  0,
+                            "model_withdrawn_count":  1,
+                            "open_issue_ids":  [
+
+                                               ],
+                            "evidence_blocked_issue_ids":  [
+
+                                                           ],
+                            "model_withdrawn_issue_ids":  [
+                                                              "iss_sem_932f97dd8657cf3e"
+                                                          ]
+                        },
+    "selected_action":  "review_model_withdrawals",
+    "reason":  "1 model-withdrawn issue(s) await optional author confirmation; no automatic revision is justified.",
+    "risk":  "R3",
+    "requires_human":  true,
+    "executable":  false,
+    "executed":  false,
+    "stop_reason":  "human_authority_required",
+    "status_author_actions":  {
+                                  "ready_for_approval":  0,
+                                  "needs_revision_attention":  0,
+                                  "resumable":  0,
+                                  "review_model_withdrawals":  1,
+                                  "evidence_blocked":  0,
+                                  "counterevidence_reviser_queue":  0
+                              },
+    "issue_status_counts":  {
+                                "model_withdrawn":  1
+                            }
+}

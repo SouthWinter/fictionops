@@ -1,6 +1,6 @@
 # Codex Skill Adapter
 
-This directory contains a draft Codex Skill for running FictionOps inside Codex.
+This directory contains the installable Codex Skill adapter for running FictionOps inside Codex.
 
 It is not a fork of FictionOps. The skill should call the FictionOps CLI and use the same project files, staged agent runs, inbox reviews, and audit gates as the generic workflow.
 
@@ -10,6 +10,7 @@ It is not a fork of FictionOps. The skill should call the FictionOps CLI and use
 - Create chapter briefs, call model/API runners, receive staged drafts, and run review gates.
 - Audit continuity, information release, character memory, prose patterns, and release readiness.
 - Record dogfood metrics for real AI-assisted writing work.
+- Act as a reference teacher whose evidence and decision trajectory can be compared with an API agent without treating Codex output as ground truth.
 
 ## Install Shape
 
@@ -18,14 +19,20 @@ The reusable skill lives in:
 ```text
 fictionops-writing-agent/
   SKILL.md
+  agents/
+    openai.yaml
   references/
     workflow.md
     chapter-writing.md
     audit.md
+    counterevidence.md
     dogfood-metrics.md
+    teacher-mode.md
+  scripts/
+    verify_teacher_evidence.py
 ```
 
-To use it in a local Codex setup, copy `fictionops-writing-agent/` into a Codex skills directory, then point Codex at a FictionOps project checkout.
+To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_HOME/skills/`, restart Codex, then invoke `$fictionops-writing-agent` in a FictionOps project checkout. The skill delegates to the installed FictionOps CLI and does not fork the runtime.
 
 ## Design Notes
 
@@ -33,3 +40,5 @@ To use it in a local Codex setup, copy `fictionops-writing-agent/` into a Codex 
 - The skill should never require an API key to be stored in the repository.
 - The skill should stage outputs first and let the user accept, reject, or revise them.
 - The skill may use echo runners only for CI, smoke tests, or debugging.
+- Teacher mode preserves observations, source authority, alternatives, counterevidence, state transitions, and stop reasons. Hidden controls and expected labels must remain outside student prompts.
+- Teacher review decisions keep manuscript quotations separate from authority support and must pass `verify_teacher_evidence.py` before they are treated as valid comparison artifacts.

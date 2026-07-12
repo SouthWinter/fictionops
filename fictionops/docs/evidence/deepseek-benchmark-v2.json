@@ -1,0 +1,1579 @@
+{
+  "schema": "fictionops.agent_review_baseline.v2",
+  "fixtures": "tests/fixtures/agent_benchmark_v2_cases.json",
+  "conditions": [
+    "raw",
+    "rag",
+    "full"
+  ],
+  "runs_per_case": 1,
+  "rows": [
+    {
+      "case_id": "memory_continuity_missing_hand",
+      "mode": "raw",
+      "expected_category": "continuity",
+      "accepted_categories": [
+        "character_continuity",
+        "continuity",
+        "memory_continuity",
+        "physical_continuity",
+        "state_contradiction"
+      ],
+      "matched_categories": [],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "false_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "2b003441-664c-4f30-bcbd-4294accdcf1d",
+        "usage": {
+          "input_tokens": 231,
+          "output_tokens": 153,
+          "total_tokens": 384,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B01",
+      "prompt_sha256": "f414baa45b913c79deaf761de9d8fb5fad681b9a7a9252b7527779e8fd53c05e",
+      "review": {
+        "issues": [
+          {
+            "category": "clarity",
+            "evidence": "The sentence describes the character Lù Yù climbing a wet city wall using a rope knot, but the action of '攀上湿滑的城墙' (climbing the slippery city wall) is ambiguous without context about the wall's height, the character's position, or the purpose of the rope.",
+            "problem": "The action is unclear and lacks sufficient contextual grounding for the reader to visualize the scene or understand the character's motivation.",
+            "suggested_action": "Add context about the wall's condition, the character's goal, or the rope's function to clarify the action and its significance."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_continuity_missing_hand",
+      "mode": "rag",
+      "expected_category": "continuity",
+      "accepted_categories": [
+        "character_continuity",
+        "continuity",
+        "memory_continuity",
+        "physical_continuity",
+        "state_contradiction"
+      ],
+      "matched_categories": [
+        "continuity"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "702a193b-09a3-4c48-a3fe-4a5a07ac2619",
+        "usage": {
+          "input_tokens": 275,
+          "output_tokens": 123,
+          "total_tokens": 398,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B01",
+      "prompt_sha256": "7d784437355b753e355b0846ab3c632f333e7a42efc14e9d3349981e914911fb",
+      "review": {
+        "issues": [
+          {
+            "category": "continuity",
+            "evidence": "鹿煜抬起左手，将绳结在掌心绕了两圈，随后攀上湿滑的城墙。",
+            "problem": "人物状态表明确记载鹿煜在前一卷失去左手，但此处描写其使用左手进行攀爬和绕绳动作，与已建立的设定矛盾。",
+            "suggested_action": "将动作改为由右手完成，或使用牙齿、同伴配合等替代方式，以符合人物状态表。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_continuity_missing_hand",
+      "mode": "full",
+      "expected_category": "continuity",
+      "accepted_categories": [
+        "character_continuity",
+        "continuity",
+        "memory_continuity",
+        "physical_continuity",
+        "state_contradiction"
+      ],
+      "matched_categories": [
+        "character continuity"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "3943b97b-4a82-47df-aeee-5f5797f55269",
+        "usage": {
+          "input_tokens": 352,
+          "output_tokens": 153,
+          "total_tokens": 505,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B01",
+      "prompt_sha256": "7209c4b64ba82aeba12585cce22589fbacf788fd7bbb5b136a1b3a1cfbed530d",
+      "review": {
+        "issues": [
+          {
+            "category": "character continuity",
+            "evidence": "鹿煜抬起左手，将绳结在掌心绕了两圈，随后攀上湿滑的城墙。",
+            "problem": "The excerpt describes the character using their left hand to wrap a rope and climb, but the project context states that the character lost their left hand in a previous volume and all climbing and gripping actions are performed with the right hand, teeth, or a companion's assistance.",
+            "suggested_action": "Replace '左手' (left hand) with '右手' (right hand) or adjust the action to use teeth or a companion, consistent with the established physical state."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_information_sword_before_discovery",
+      "mode": "raw",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "knowledge_boundary",
+        "narrative_consistency",
+        "premature_reveal",
+        "叙事一致性",
+        "时序矛盾"
+      ],
+      "matched_categories": [
+        "narrative_consistency"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "a4d54417-a2b1-4886-83c1-3e104ec4deb8",
+        "usage": {
+          "input_tokens": 230,
+          "output_tokens": 214,
+          "total_tokens": 444,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B02",
+      "prompt_sha256": "01aa7e45cd1893a9578f90909621aaaf7f7f00c016623d2f8439e88811dca600",
+      "review": {
+        "issues": [
+          {
+            "category": "narrative_consistency",
+            "evidence": "The sentence states '他知道少年只要伸手，三步外那柄剑就会自行飞进掌中。' (He knew that as long as the youth reached out, the sword three steps away would fly into his palm by itself.)",
+            "problem": "The guard's knowledge of the youth's ability to telekinetically summon a sword is stated without prior context or setup. This creates a logical gap, as it's unclear how the guard knows this specific detail about the youth's powers, especially if this is the first encounter or if such abilities are not common knowledge.",
+            "suggested_action": "Provide earlier context or a subtle hint that establishes the guard's awareness of the youth's abilities, such as a previous demonstration, reputation, or a visual cue (e.g., the sword vibrating slightly). Alternatively, rephrase to show the guard's fear or assumption rather than certain knowledge."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_information_sword_before_discovery",
+      "mode": "rag",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "knowledge_boundary",
+        "narrative_consistency",
+        "premature_reveal",
+        "叙事一致性",
+        "时序矛盾"
+      ],
+      "matched_categories": [
+        "叙事一致性"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "bbcd85c2-276d-40de-b0f2-f57310f3814f",
+        "usage": {
+          "input_tokens": 277,
+          "output_tokens": 164,
+          "total_tokens": 441,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B02",
+      "prompt_sha256": "dc2c249ef8b10950ea4059126ce05325b08286a3050a80a24d3750be38d338c8",
+      "review": {
+        "issues": [
+          {
+            "category": "叙事一致性",
+            "evidence": "原文：'他知道少年只要伸手，三步外那柄剑就会自行飞进掌中。' 与检索到的项目上下文：'此时守卫、少年本人及读者都不知道剑会回应牵引；少年只有无法证实的隐约感觉。'",
+            "problem": "守卫提前知道了少年能够隔空取剑，这与项目上下文中设定的'守卫不知道剑会回应牵引'相矛盾。",
+            "suggested_action": "修改守卫的认知描述，使其符合项目上下文，例如改为'守卫不知道少年伸手后会发生什么'或'守卫只是警惕地盯着少年，并不确定那柄剑是否会真的飞过来'。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_information_sword_before_discovery",
+      "mode": "full",
+      "expected_category": "information_boundaries",
+      "accepted_categories": [
+        "information_boundaries",
+        "information_boundary",
+        "knowledge_boundary",
+        "narrative_consistency",
+        "premature_reveal",
+        "叙事一致性",
+        "时序矛盾"
+      ],
+      "matched_categories": [
+        "information boundaries"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "118b35f7-77f4-4ee7-9945-b499bd5ee9d4",
+        "usage": {
+          "input_tokens": 355,
+          "output_tokens": 149,
+          "total_tokens": 504,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B02",
+      "prompt_sha256": "ad25f502fd1c074fddf97e6342199d2b98fed645e9cbc74ae3fd5fe815128a09",
+      "review": {
+        "issues": [
+          {
+            "category": "information boundaries",
+            "evidence": "他知道少年只要伸手，三步外那柄剑就会自行飞进掌中。",
+            "problem": "守卫确知剑会自行飞入少年掌中，但根据项目上下文，此场景发生在第一次隔空拔剑之前，无人验证过该能力，守卫不应拥有此知识。",
+            "suggested_action": "将守卫的认知改为推测或警惕，例如改为‘他怀疑少年只要伸手，三步外那柄剑就可能自行飞进掌中’或‘他听说过少年有某种牵引剑的传闻’以符合信息边界。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_relationship_premature_teacher",
+      "mode": "raw",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_relationship",
+        "character_relationship_consistency",
+        "character_relationship_timeline",
+        "premature_relationship",
+        "premature_relationship_establishment",
+        "relationship_progression"
+      ],
+      "matched_categories": [],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "false_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "529fea7d-026d-43c4-aa59-b2819530fc0a",
+        "usage": {
+          "input_tokens": 229,
+          "output_tokens": 182,
+          "total_tokens": 411,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B03",
+      "prompt_sha256": "0517e4a1d41b27b035ba04f30317278c1801ee0f94f23b6e48fac02102b68009",
+      "review": {
+        "issues": [
+          {
+            "category": "character_consistency",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "The character 殷允 (Yin Yun) is shown performing a formal disciple's bow (弟子礼) to 宁岚 (Ning Lan) in a refugee camp setting. This action may be inconsistent with the character's established background or the social dynamics of the setting, as such formal rituals are typically reserved for more private or ceremonial contexts, not in a public refugee camp.",
+            "suggested_action": "Review the character's relationship and the setting to ensure the action aligns with their established personalities and the story's internal logic. Consider if a less formal gesture or a different location would be more appropriate."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_relationship_premature_teacher",
+      "mode": "rag",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_relationship",
+        "character_relationship_consistency",
+        "character_relationship_timeline",
+        "premature_relationship",
+        "premature_relationship_establishment",
+        "relationship_progression"
+      ],
+      "matched_categories": [
+        "character_relationship_consistency"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "e412e6aa-0865-45ec-98cf-762aa9a719fc",
+        "usage": {
+          "input_tokens": 289,
+          "output_tokens": 194,
+          "total_tokens": 483,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B03",
+      "prompt_sha256": "a7db34c020b1ca6ca75094a5e5d1224719ef5a3a4fe9689ef804b93566ff4ea4",
+      "review": {
+        "issues": [
+          {
+            "category": "character_relationship_consistency",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "殷允在流民营外直接称宁岚为“老师”并行了弟子礼，但项目背景指出双方关系在“南渡失散”阶段仅为救助者与被救助者，之后才依次发展为有用者、信任者，终局附近才接过衣钵。当前场景过早确立了正式的师生关系，与设定的关系发展节奏不符。",
+            "suggested_action": "修改对话和动作，使殷允在此阶段仅表达感激或承诺，而不使用“老师”称谓或弟子礼，例如改为“宁先生，我会记住您的话”或类似表达，以符合救助者与被救助者的关系阶段。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_relationship_premature_teacher",
+      "mode": "full",
+      "expected_category": "character",
+      "accepted_categories": [
+        "character",
+        "character_relationship",
+        "character_relationship_consistency",
+        "character_relationship_timeline",
+        "premature_relationship",
+        "premature_relationship_establishment",
+        "relationship_progression"
+      ],
+      "matched_categories": [
+        "character"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 4,
+      "extra_issue_count": 3,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "0e4f154b-f51d-4492-b54b-ab96dabe4ca6",
+        "usage": {
+          "input_tokens": 370,
+          "output_tokens": 688,
+          "total_tokens": 1058,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B03",
+      "prompt_sha256": "40e1b46b8497671cdcbd7c0bf248910e11651fd25dfb9d4d9e3a6736389a1c2d",
+      "review": {
+        "issues": [
+          {
+            "category": "character",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "The excerpt shows Yin Yun performing a formal disciple's salute and addressing Ning Lan as 'teacher' (老师), which implies an established master-disciple relationship and a commitment to follow teachings. This contradicts the retrieved context stating that the relationship progresses from rescued person to useful person to trusted person, with the formal transmission of teachings occurring only near the endgame, and that the two do not use a simple teacher-student relationship.",
+            "suggested_action": "Replace the formal disciple's salute and direct address of 'teacher' with a gesture or expression of gratitude and aspiration that reflects Yin Yun's current status as a rescued person who is grateful and hopeful, without implying a formal teacher-student bond or commitment to follow teachings."
+          },
+          {
+            "category": "information boundaries",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "The dialogue '我会照你教的去做' (I will do as you taught) suggests that Ning Lan has already taught Yin Yun specific principles or methods, which violates the information boundary that at this stage (dispersal at the refugee camp), Ning Lan is merely a rescuer of refugees and Yin Yun is only a rescued person. No teaching or transmission of knowledge should have occurred yet.",
+            "suggested_action": "Change the line to indicate Yin Yun's hope to learn from Ning Lan in the future, or to express gratitude for being rescued, without claiming that any teaching has already taken place."
+          },
+          {
+            "category": "foreshadowing",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "The formal disciple ritual and promise to follow teachings prematurely foreshadow the eventual transmission of the mantle, which according to the context should only happen near the endgame. This collapses the narrative distance between the early rescue stage and the late-stage inheritance, reducing the potential for gradual character development and relationship building.",
+            "suggested_action": "Remove the formal ritual and commitment language. Instead, use a subtle gesture or line that hints at future connection without explicitly prefiguring the endgame relationship, preserving the slow-burn dynamic."
+          },
+          {
+            "category": "prose/reader experience",
+            "evidence": "殷允在流民营外向宁岚行了弟子礼：老师，我会照你教的去做。",
+            "problem": "The direct and formal language ('弟子礼', '老师', '照你教的去做') creates a reader expectation of an immediate master-disciple dynamic, which will be contradicted by the subsequent narrative where the relationship develops slowly through different stages. This may confuse readers or make the later progression feel inconsistent or retconned.",
+            "suggested_action": "Rewrite the interaction using language appropriate to a rescued person addressing a rescuer—polite but not hierarchical, grateful but not committed to a teaching path. For example, a bow of thanks and a request to learn from Ning Lan's example, rather than a formal disciple salute."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_foreshadowing_alias_revealed_early",
+      "mode": "raw",
+      "expected_category": "foreshadowing",
+      "accepted_categories": [
+        "canon_consistency",
+        "foreshadowing",
+        "identity_reveal",
+        "information_boundaries",
+        "long_arc",
+        "memory_foreshadowing_alias_revealed_early",
+        "premature_reveal"
+      ],
+      "matched_categories": [],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "false_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "4560a284-98ed-4722-9014-ca6131ddea69",
+        "usage": {
+          "input_tokens": 234,
+          "output_tokens": 157,
+          "total_tokens": 391,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B04",
+      "prompt_sha256": "ce2d35777f9324ce978a82e5265e6e5fe61f6be149790b197555ce6e348a3ed5",
+      "review": {
+        "issues": [
+          {
+            "category": "characterization",
+            "evidence": "守门人展开通缉榜，朝人群喊道：简峤，你的本名和旧籍都在这里。",
+            "problem": "The gatekeeper's action of publicly revealing the protagonist's real name and origin on a wanted poster creates a sudden, high-stakes exposure without prior setup or context. This undermines narrative tension by skipping the gradual discovery or confrontation that would typically build suspense.",
+            "suggested_action": "Consider adding earlier hints or a buildup to this revelation, such as the gatekeeper's suspicious behavior or the protagonist's unease, to make the moment feel earned and increase dramatic impact."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_foreshadowing_alias_revealed_early",
+      "mode": "rag",
+      "expected_category": "foreshadowing",
+      "accepted_categories": [
+        "canon_consistency",
+        "foreshadowing",
+        "identity_reveal",
+        "information_boundaries",
+        "long_arc",
+        "memory_foreshadowing_alias_revealed_early",
+        "premature_reveal"
+      ],
+      "matched_categories": [
+        "canon_consistency"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "c9d49b68-041f-4e66-9503-d63d30056b63",
+        "usage": {
+          "input_tokens": 286,
+          "output_tokens": 173,
+          "total_tokens": 459,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B04",
+      "prompt_sha256": "597cdb7e0825147728c4c3dff2e7545c0cb6c3270e6454747ecd3480e0c8b87e",
+      "review": {
+        "issues": [
+          {
+            "category": "canon_consistency",
+            "evidence": "守门人展开通缉榜，朝人群喊道：简峤，你的本名和旧籍都在这里。",
+            "problem": "守门人当众喊出简峤的本名和旧籍，违反了长线承诺中‘简峤的假名必须保留到第三本结尾才揭晓’的规定。本场位于第二本中段，守门人只应掌握假名和模糊画像。",
+            "suggested_action": "将守门人的喊话改为仅提及假名或模糊描述，例如‘通缉榜上的人，你的假名和画像在此’，避免提前揭露本名和旧籍。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "memory_foreshadowing_alias_revealed_early",
+      "mode": "full",
+      "expected_category": "foreshadowing",
+      "accepted_categories": [
+        "canon_consistency",
+        "foreshadowing",
+        "identity_reveal",
+        "information_boundaries",
+        "long_arc",
+        "memory_foreshadowing_alias_revealed_early",
+        "premature_reveal"
+      ],
+      "matched_categories": [
+        "information boundaries"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "3e48c118-bccf-4cca-b548-cfdceeee3e48",
+        "usage": {
+          "input_tokens": 363,
+          "output_tokens": 183,
+          "total_tokens": 546,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B04",
+      "prompt_sha256": "25ee5bd8ad40dee8e1475568ca9120dba7f92d3a59a82c8baa92ab083934f7e1",
+      "review": {
+        "issues": [
+          {
+            "category": "information boundaries",
+            "evidence": "守门人展开通缉榜，朝人群喊道：简峤，你的本名和旧籍都在这里。",
+            "problem": "守门人声称掌握了简峤的‘本名和旧籍’，但根据项目上下文，简峤的假名必须保留到第三本结尾才揭晓，本场位于第二本中段，守门人只可能掌握假名和模糊画像。此句提前坐实了本名与旧籍，违反了长线承诺。",
+            "suggested_action": "将守门人的喊话改为仅提及假名和模糊画像，例如‘简峤，你的画像和行踪都在这里’，避免暴露本名与旧籍信息。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_explanatory_narration",
+      "mode": "raw",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "explanatory_narration",
+        "information_boundaries",
+        "lack_of_ambiguity",
+        "narrative_logic",
+        "over_explanation",
+        "prose_and_reader_experience",
+        "叙事结算过度"
+      ],
+      "matched_categories": [],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "false_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "8f797f94-abfd-4e33-b395-8032e051389e",
+        "usage": {
+          "input_tokens": 243,
+          "output_tokens": 131,
+          "total_tokens": 374,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B05",
+      "prompt_sha256": "ed04ba66335ab28422a06c2a1fab62e8804d09f6456544cea9f389c21284bcd3",
+      "review": {
+        "issues": [
+          {
+            "category": "逻辑连贯性",
+            "evidence": "父亲烧掉一半是为了毁去证据，但留下另一半是为了让她日后找到答案。",
+            "problem": "如果父亲想毁去证据，他应该完全烧毁整张纸。留下另一半反而保留了证据，与毁去证据的目的相矛盾。",
+            "suggested_action": "调整父亲的动机或行为，使其逻辑一致。例如，父亲可能因时间紧迫只来得及烧掉一半，或者留下的一半包含关键信息但需要特定条件才能解读。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_explanatory_narration",
+      "mode": "rag",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "explanatory_narration",
+        "information_boundaries",
+        "lack_of_ambiguity",
+        "narrative_logic",
+        "over_explanation",
+        "prose_and_reader_experience",
+        "叙事结算过度"
+      ],
+      "matched_categories": [
+        "叙事结算过度"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "84996c89-11be-46c7-a1ed-e8b5e8cd3358",
+        "usage": {
+          "input_tokens": 280,
+          "output_tokens": 141,
+          "total_tokens": 421,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B05",
+      "prompt_sha256": "4b2ac91887c3eb35998d65b35012b447fbfbdb8d4a57763deb5390058ec5e3ff",
+      "review": {
+        "issues": [
+          {
+            "category": "叙事结算过度",
+            "evidence": "她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+            "problem": "旁白直接完整结算了父亲的双重意图，没有留给读者自行推断的空间，破坏了‘答案只开一条缝’的创作要求。",
+            "suggested_action": "删除或改写这句旁白，仅保留动作和物件（如‘她把烧剩的半张纸收进袖里’），让读者通过上下文自行理解父亲的意图，形成回声而非解释。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_explanatory_narration",
+      "mode": "full",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "explanatory_narration",
+        "information_boundaries",
+        "lack_of_ambiguity",
+        "narrative_logic",
+        "over_explanation",
+        "prose_and_reader_experience",
+        "叙事结算过度"
+      ],
+      "matched_categories": [
+        "information boundaries"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 1,
+      "issue_count": 2,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "c0bdaf18-82d4-4f50-a5bf-d33b47450245",
+        "usage": {
+          "input_tokens": 359,
+          "output_tokens": 272,
+          "total_tokens": 631,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B05",
+      "prompt_sha256": "3254f233cd85c0cd4dea31c919e18c7adc6b11741821b5922f2572050784aa93",
+      "review": {
+        "issues": [
+          {
+            "category": "information boundaries",
+            "evidence": "父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+            "problem": "旁白直接陈述了父亲的双重意图，将两个动机都认证为事实，违反了项目上下文中'答案只开一条缝，不由旁白完整结算父亲的双重意图'的要求。",
+            "suggested_action": "删除或改写旁白对父亲动机的明确陈述，改为仅通过人物动作或有限猜测暗示，例如只保留'她终于明白，父亲烧掉一半，是为了毁去证据'，而将后半句留给读者推断。"
+          },
+          {
+            "category": "prose/reader experience",
+            "evidence": "她终于明白，父亲烧掉一半，是为了毁去证据；留下另一半，是为了让她日后找到答案。",
+            "problem": "旁白过度解释，剥夺了读者参与推理的空间，降低了文本的含蓄性和回味感。",
+            "suggested_action": "将旁白改为更克制的表达，如'她终于明白，父亲烧掉一半，是为了毁去证据。至于另一半……'，以制造悬念而非直接给出答案。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_template_repetition",
+      "mode": "raw",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_rhythm",
+        "repetition",
+        "stylistic_repetition",
+        "template_repetition"
+      ],
+      "matched_categories": [],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "false_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 2,
+      "extra_issue_count": 2,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "c7c7b638-e36f-4b78-9174-9d974bdfbc71",
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 261,
+          "total_tokens": 503,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B06",
+      "prompt_sha256": "d2b73e4acb4f9a05860e74ee0eef23eccb11cfa4c9ad5bc6dca33ad19a9a598d",
+      "review": {
+        "issues": [
+          {
+            "category": "narrative_consistency",
+            "evidence": "The excerpt shifts abruptly from a series of negations (not rain, not wind, not footsteps) to static imagery (lamps like eyes, tables like wells, windows like frozen water) without clear causal or temporal connection.",
+            "problem": "The transition between the negated actions and the metaphorical description feels disjointed, potentially confusing the reader about the scene's continuity.",
+            "suggested_action": "Add a bridging phrase or sensory detail to link the absence of movement to the static visual metaphors, ensuring a smoother narrative flow."
+          },
+          {
+            "category": "clarity",
+            "evidence": "The phrase '窗像一块冻住的水' (window like a piece of frozen water) is ambiguous—frozen water could imply ice, stillness, or a reflective surface, but the intended meaning is unclear without context.",
+            "problem": "The metaphor may obscure rather than illuminate the scene, reducing reader comprehension.",
+            "suggested_action": "Clarify the metaphor by specifying the quality being compared (e.g., stillness, transparency, or coldness) or replace with a more precise image."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_template_repetition",
+      "mode": "rag",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_rhythm",
+        "repetition",
+        "stylistic_repetition",
+        "template_repetition"
+      ],
+      "matched_categories": [
+        "stylistic_repetition"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": false,
+      "matched_issue_count": 1,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "98eebb66-ec98-44d0-a5ce-c83a34f846f5",
+        "usage": {
+          "input_tokens": 284,
+          "output_tokens": 186,
+          "total_tokens": 470,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B06",
+      "prompt_sha256": "317013a3397dd390fa329adbc199c10db4339efdf414afe6d4d5f70a15bc0030",
+      "review": {
+        "issues": [
+          {
+            "category": "stylistic_repetition",
+            "evidence": "本段连续使用三项排比（不是雨，不是风，不是脚步）、排除式旁白（没有人开门，没有人抬头，没有人说话）和明喻（灯像眼，桌像井，窗像一块冻住的水），与相邻两段结构高度一致。",
+            "problem": "相邻两段已连续使用排除式旁白、三项排比和明喻，本段继续使用相同修辞组合，导致压迫感承载方式重复，削弱了渐强效果。",
+            "suggested_action": "改变本段的修辞结构，例如将排比替换为短句堆叠或意象叠加，或将明喻转为隐喻或通感，以维持压迫感但避免手法雷同。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "local_template_repetition",
+      "mode": "full",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": [
+        "prose_and_reader_experience",
+        "prose_reader_experience",
+        "prose_repetition",
+        "prose_rhythm",
+        "repetition",
+        "stylistic_repetition",
+        "template_repetition"
+      ],
+      "matched_categories": [
+        "prose/reader experience",
+        "prose/reader experience"
+      ],
+      "expected_issue": true,
+      "prediction_positive": true,
+      "classification": "true_positive",
+      "detected": true,
+      "evidence_grounded": true,
+      "matched_issue_count": 2,
+      "grounded_issue_count": 1,
+      "issue_count": 6,
+      "extra_issue_count": 4,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "88ebc3db-5fb3-4eaf-96d9-202952fea86a",
+        "usage": {
+          "input_tokens": 357,
+          "output_tokens": 930,
+          "total_tokens": 1287,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B06",
+      "prompt_sha256": "0483bb3e8a1ea5e350089a475f983df202664b399f4838a1af45cccf17e2e5cf",
+      "review": {
+        "issues": [
+          {
+            "category": "prose/reader experience",
+            "evidence": "The excerpt uses three parallel clauses ('不是雨，不是风，不是脚步'), three parallel clauses ('没有人开门，没有人抬头，没有人说话'), and three parallel similes ('灯像眼，桌像井，窗像一块冻住的水'). This triple-triple structure is identical in form to the adjacent paragraphs described in the context.",
+            "problem": "The excerpt repeats the same rhetorical device (exclusionary narration, triple parallelism, and simile) as the preceding two paragraphs, creating a mechanical pattern that may reduce the intended oppressive effect through over-familiarity.",
+            "suggested_action": "Consider varying the syntactic structure within this paragraph—for example, shifting to a single extended metaphor or a fragmented, breathless list—while preserving the oppressive tone, to avoid reader fatigue from identical triadic repetition across three consecutive paragraphs."
+          },
+          {
+            "category": "continuity",
+            "evidence": "The context states that the adjacent two paragraphs already use exclusionary narration, triple parallelism, and simile. This paragraph continues the same devices without escalation or transformation.",
+            "problem": "The lack of progression in the prose technique may cause the scene to feel static rather than building tension, as the reader experiences the same stylistic move three times in a row.",
+            "suggested_action": "Introduce a subtle shift in the third paragraph—for instance, moving from external negation ('不是雨') to internal negation ('不是恐惧') or from simile to personification—to maintain continuity of mood while advancing the reader's experience."
+          },
+          {
+            "category": "information boundaries",
+            "evidence": "The excerpt provides no new information about setting, character, or plot beyond the oppressive atmosphere established in prior paragraphs.",
+            "problem": "The paragraph risks being purely atmospheric without advancing narrative information, which may stall the chapter's forward momentum.",
+            "suggested_action": "Embed a small piece of new information—such as a sensory detail that hints at a change (e.g., a sound or a shift in light)—to serve as a boundary marker that this paragraph is not merely a repetition but a progression."
+          },
+          {
+            "category": "foreshadowing",
+            "evidence": "The simile '窗像一块冻住的水' suggests a frozen, trapped state, but it is isolated and not connected to any larger narrative thread.",
+            "problem": "The image of frozen water could function as foreshadowing (e.g., of a character's paralysis or an impending thaw/event), but it is not developed or linked to any prior or future element in the excerpt or context.",
+            "suggested_action": "If the frozen window is intended as foreshadowing, reinforce it with a subtle echo in the next paragraph or a contrasting image (e.g., a crack or a drip) to create a thread. If not, consider replacing it with a simile that more directly serves the paragraph's function."
+          },
+          {
+            "category": "chapter function",
+            "evidence": "The excerpt is the third in a sequence of similarly structured paragraphs, but its function within the chapter (e.g., as a climax, transition, or pause) is unclear from the excerpt alone.",
+            "problem": "Without a clear chapter function, the paragraph may feel like filler or a stylistic exercise rather than a purposeful beat in the narrative arc.",
+            "suggested_action": "Clarify the paragraph's role—for example, if it is the final beat before a revelation, intensify the imagery or introduce a rupture; if it is a plateau, signal stasis more explicitly through a shift in rhythm or a single, longer sentence."
+          },
+          {
+            "category": "prose/reader experience",
+            "evidence": "The False-Positive Guard instructs to 'retain the most functional set of repetition' and avoid mechanical synonym replacement. The excerpt's triple-triple structure is fully retained.",
+            "problem": "While the guard is followed, the instruction does not address whether the repetition is functional or merely habitual. The triple structure may be functional for building rhythm, but its identical application across three paragraphs may undermine its function.",
+            "suggested_action": "Evaluate which set of repetitions (e.g., the negations or the similes) carries the most narrative weight, and consider breaking the other set to create a hierarchy of repetition that guides reader attention more effectively."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_functional_ritual_repetition",
+      "mode": "raw",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "33521a62-ed30-43d0-9bae-18cb333af5bf",
+        "usage": {
+          "input_tokens": 239,
+          "output_tokens": 122,
+          "total_tokens": 361,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B07",
+      "prompt_sha256": "1d7b6aaba11427e60d170b573f4d179c676d5787366967fb34498fdb78abc7dd",
+      "review": {
+        "issues": [
+          {
+            "category": "Repetition",
+            "evidence": "The phrase '归土' is repeated three times in a row at the start of three consecutive sentences.",
+            "problem": "The triple repetition of '归土' creates a monotonous rhythm and may feel forced or overly stylized without clear narrative purpose.",
+            "suggested_action": "Consider varying the phrasing or breaking the repetition to improve flow, unless the repetition is intentionally used for ritualistic or poetic effect and is clearly justified by context."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_functional_ritual_repetition",
+      "mode": "rag",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "6930e9f1-514b-410a-b3aa-68c11f4394a7",
+        "usage": {
+          "input_tokens": 279,
+          "output_tokens": 135,
+          "total_tokens": 414,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B07",
+      "prompt_sha256": "5bd9fc6b54dfdaee95630fc952a2470d608ebdb8f7718f09222f4895276ec847",
+      "review": {
+        "issues": [
+          {
+            "category": "contextual_inconsistency",
+            "evidence": "The excerpt contains a triple repetition of '归土' (Return to earth) with actions by a priest, the deceased's mother, and the crowd outside the city gate. The retrieved context states this is the only triple repetition in the funeral chapter, but the excerpt itself shows the repetition occurring three times, which is consistent with the context. No inconsistency is present.",
+            "problem": "No issue detected; the excerpt aligns with the retrieved context.",
+            "suggested_action": "No action required."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_functional_ritual_repetition",
+      "mode": "full",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": false,
+      "classification": "true_negative",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 0,
+      "extra_issue_count": 0,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "819e1215-a48a-4dd1-97b7-13b6ada286eb",
+        "usage": {
+          "input_tokens": 363,
+          "output_tokens": 11,
+          "total_tokens": 374,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B07",
+      "prompt_sha256": "0cbd9106a8cbc65ccff1ce082ba2c9ee3116ef4c702324c511d94f9d4cfe9c09",
+      "review": {
+        "issues": []
+      }
+    },
+    {
+      "case_id": "negative_concrete_child_intelligence",
+      "mode": "raw",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "4e298e2d-ddf1-4905-85ff-87a62d7fe77d",
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 187,
+          "total_tokens": 429,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B08",
+      "prompt_sha256": "8301da891998f20c5845569c6b12c639a62877a8a720e4209f61615c1d01e62f",
+      "review": {
+        "issues": [
+          {
+            "category": "character motivation consistency",
+            "evidence": "女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？",
+            "problem": "The daughter's question implies a moral or logistical inconsistency: the family has three granaries of grain while others have empty pots, yet no action has been taken to share or transport the grain. This raises an unresolved tension about the father's priorities or the community's resource allocation, which is not addressed in the excerpt.",
+            "suggested_action": "Clarify the father's reasoning or the broader context (e.g., political constraints, transportation issues, or personal stakes) to resolve the implied inconsistency, or remove the question if it is not meant to be a plot point."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_concrete_child_intelligence",
+      "mode": "rag",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "ae95cc1a-2179-40df-81fd-fc8bc54a4948",
+        "usage": {
+          "input_tokens": 287,
+          "output_tokens": 170,
+          "total_tokens": 457,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B08",
+      "prompt_sha256": "69d981c837eda8f1526bfebe3d03c2d350e1d50cdd2db1dbc9233927236f363e",
+      "review": {
+        "issues": [
+          {
+            "category": "Character Consistency",
+            "evidence": "The girl says '爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？'",
+            "problem": "The dialogue suggests a strategic or moral reasoning about grain distribution, which contradicts the retrieved context that the character is a 12-year-old merchant's daughter who understands business through price, hunger, goods, and her father's expressions, without official or administrative training. The question implies a broader civic or logistical awareness inconsistent with her described background.",
+            "suggested_action": "Revise the dialogue to reflect the character's limited perspective, such as focusing on immediate family concerns or simple observations about scarcity and profit, rather than a coordinated relief effort."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_concrete_child_intelligence",
+      "mode": "full",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 3,
+      "extra_issue_count": 3,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "4985305e-a00d-428f-81f2-91da4451c09d",
+        "usage": {
+          "input_tokens": 367,
+          "output_tokens": 497,
+          "total_tokens": 864,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B08",
+      "prompt_sha256": "2522922e9c62788754d627fd8d7820aabb9fb358f301191420deda8034ff6268",
+      "review": {
+        "issues": [
+          {
+            "category": "character",
+            "evidence": "The girl points to the empty rice vat and says: 'Dad, the people over there have empty pots, but we still have three granaries pressed down here. Why not transport it over first?'",
+            "problem": "The girl's question demonstrates a sophisticated understanding of resource allocation and logistics (identifying surplus, proposing redistribution) that may exceed the cognitive framework established in the context, where she is described as learning business through price, hunger, goods, and her father's expressions, without formal training. The leap from experiential learning to strategic supply-chain reasoning feels abrupt.",
+            "suggested_action": "Consider adding a brief internal or external cue that connects this question to her lived experience—e.g., a memory of seeing hungry people or overhearing a trade conversation—to bridge the gap between her informal education and this specific analytical insight."
+          },
+          {
+            "category": "information boundaries",
+            "evidence": "The girl references 'three granaries' being pressed down, implying knowledge of stored grain quantities and their status.",
+            "problem": "The context does not establish how a 12-year-old, even a merchant's daughter, would have access to precise inventory information about multiple granaries. This may violate realistic information boundaries for her age and role.",
+            "suggested_action": "Provide a subtle justification for her knowledge, such as her father discussing inventory within earshot, or her having accompanied him to the granaries, to make the information access plausible."
+          },
+          {
+            "category": "prose/reader experience",
+            "evidence": "The dialogue is direct and functional, but the girl's question ('为什么不先运过去？') carries an implicit critique of her father's decision-making.",
+            "problem": "The tone may read as precocious or confrontational without context of their relationship dynamics. The false-positive guard warns against age-based 'dumbing down,' but the lack of softening (e.g., a deferential tone or a question framed as curiosity) could alienate readers expecting a more hierarchical family interaction.",
+            "suggested_action": "Add a small behavioral cue—like a hesitant tone, a glance at her father's face, or a qualifying phrase ('爹，我有个想法…')—to maintain her intelligence while respecting the parent-child dynamic."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_perspectival_myth_versions",
+      "mode": "raw",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 3,
+      "extra_issue_count": 3,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "49083d52-b36e-4127-914d-64a1a0b5c237",
+        "usage": {
+          "input_tokens": 249,
+          "output_tokens": 423,
+          "total_tokens": 672,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B09",
+      "prompt_sha256": "260458a21956f0fac5c5ca946fa9b2e4167f04d8ba0606bd0d1d3d66e6308262",
+      "review": {
+        "issues": [
+          {
+            "category": "clarity",
+            "evidence": "The sentence '商人听完，把两种说法都记进了账册边角' is ambiguous: it is unclear whether the merchant is recording both interpretations literally in the margins of his ledger, or metaphorically remembering them.",
+            "problem": "Ambiguous action — '记进了账册边角' could be literal or figurative, causing confusion about the merchant's role and the narrative's grounding.",
+            "suggested_action": "Clarify whether the merchant physically writes in the ledger or mentally notes the accounts, e.g., by specifying '他取出账册，在空白处写下' or '他默默记在心里'."
+          },
+          {
+            "category": "consistency",
+            "evidence": "The excerpt introduces '黎蒙老人' and '归途教徒' as two sources of conflicting interpretations about the white fish, but no context is given for who these characters are or their relationship to the merchant or setting.",
+            "problem": "Lack of character introduction or contextual grounding makes the dialogue feel disjointed and the worldbuilding unclear.",
+            "suggested_action": "Add brief identifiers for '黎蒙老人' and '归途教徒' (e.g., '村里的黎蒙老人' or '路过的归途教徒') to anchor the reader in the scene."
+          },
+          {
+            "category": "pacing",
+            "evidence": "The excerpt jumps from the old man's statement, to the disciple's rebuttal, to the merchant's action in rapid succession without narrative transition or descriptive detail.",
+            "problem": "Abrupt pacing reduces emotional impact and reader immersion; the exchange feels compressed and lacks atmospheric or sensory grounding.",
+            "suggested_action": "Insert a sentence of setting or reaction between the dialogue and the merchant's action, e.g., describing the merchant's expression or the environment (e.g., '河面雾气未散，商人沉默片刻，然后...')."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_perspectival_myth_versions",
+      "mode": "rag",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "a42af0cf-3fdd-4d83-85dc-e21197ee2cd5",
+        "usage": {
+          "input_tokens": 285,
+          "output_tokens": 241,
+          "total_tokens": 526,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B09",
+      "prompt_sha256": "54a33f788446e345535be0945408f118b14c10fff06a48a75cb1a11210a78b4d",
+      "review": {
+        "issues": [
+          {
+            "category": "lore_consistency",
+            "evidence": "The excerpt states that the old man Li Meng says white fish coming ashore is a disaster, while the Guitu cult says it comes to take away souls that refuse to rot. The merchant records both versions in his ledger.",
+            "problem": "The excerpt presents two contradictory folk interpretations of the white fish event, which aligns with the project rule that different regions and factions must hold mutually contradictory, politically functional folk versions. However, the rule also states that the mythological truth must not be fully disclosed to main narrative characters. The merchant, as a minor character, recording both versions in his ledger could inadvertently preserve a complete or near-complete record of the myth, potentially allowing main characters to access the truth indirectly through his notes.",
+            "suggested_action": "Ensure the merchant's ledger is either lost, destroyed, or rendered inaccessible to main characters before they could piece together the full mythological truth. Alternatively, have the merchant record only fragments or deliberately misinterpret one version to maintain the rule that the truth is not fully disclosed to main narrative characters."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_perspectival_myth_versions",
+      "mode": "full",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "8cd7a1da-4a7c-457b-ba16-f242eec1ee3d",
+        "usage": {
+          "input_tokens": 360,
+          "output_tokens": 154,
+          "total_tokens": 514,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B09",
+      "prompt_sha256": "98b8a4a009cecb427ace19622a32e475ee482d855965daa0515bbf5e258589a7",
+      "review": {
+        "issues": [
+          {
+            "category": "information_boundaries",
+            "evidence": "黎蒙老人说白鱼上岸便是灾。归途教徒摇头，说白鱼只是来接走不肯腐烂的魂。商人听完，把两种说法都记进了账册边角。",
+            "problem": "The excerpt presents two contradictory folk explanations for the white fish (disaster vs. soul-collector) and shows a merchant recording both. This is a deliberate knowledge boundary, not a continuity error.",
+            "suggested_action": "No action needed. The contradiction is intentional worldbuilding, consistent with the project context that different factions hold politically functional, mutually contradictory versions of myth."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_regional_colloquial_voice",
+      "mode": "raw",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 3,
+      "extra_issue_count": 3,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "6f2962af-517f-468a-8238-c700a7b23e0d",
+        "usage": {
+          "input_tokens": 241,
+          "output_tokens": 430,
+          "total_tokens": 671,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B10",
+      "prompt_sha256": "50e07c3e31b04c02dc4ba63068c26917c6f7dea3aea3253a7e20710bdfd303b6",
+      "review": {
+        "issues": [
+          {
+            "category": "characterization",
+            "evidence": "寒泽汉子咬开酒塞：城里那套绕口话我不会。你要船，就拿盐来；没盐，拿命也不顶数。",
+            "problem": "The character's dialogue and action ('咬开酒塞') feel generic and lack distinct regional or personal flavor; the line '城里那套绕口话我不会' is a common trope for rustic characters and does not establish a unique voice.",
+            "suggested_action": "Add specific dialectal vocabulary, a unique mannerism, or a concrete detail about the character's appearance or setting to make the speech feel authentic to a particular time and place."
+          },
+          {
+            "category": "pacing",
+            "evidence": "The excerpt consists of a single line of dialogue with no narrative framing or reaction.",
+            "problem": "The abrupt start with dialogue without any narrative context or beat creates a jarring entry point, leaving the reader disoriented about who is speaking, where they are, and why this exchange matters.",
+            "suggested_action": "Insert a brief narrative lead-in (e.g., setting, character description, or a sensory detail) before the dialogue to ground the reader in the scene."
+          },
+          {
+            "category": "clarity",
+            "evidence": "寒泽汉子咬开酒塞：城里那套绕口话我不会。你要船，就拿盐来；没盐，拿命也不顶数。",
+            "problem": "The phrase '拿命也不顶数' is ambiguous—it could mean 'not even your life is enough' or 'your life doesn't count as payment,' but the intended meaning is unclear without context.",
+            "suggested_action": "Clarify the bargaining logic: either rephrase to specify what '命' refers to (e.g., 'even if you offer your life, it won't be accepted') or add a preceding line that establishes the stakes of the negotiation."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_regional_colloquial_voice",
+      "mode": "rag",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "ed642832-66a2-4cfa-834c-2bc8d7049bc7",
+        "usage": {
+          "input_tokens": 280,
+          "output_tokens": 303,
+          "total_tokens": 583,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B10",
+      "prompt_sha256": "f7fbb282f87abc6d76e44c4463b171f5fa8909d668a41550b59eec8a984b09ce",
+      "review": {
+        "issues": [
+          {
+            "category": "character voice consistency",
+            "evidence": "寒泽汉子咬开酒塞：城里那套绕口话我不会。你要船，就拿盐来；没盐，拿命也不顶数。",
+            "problem": "The dialogue is short and direct, but the phrase '绕口话' (tongue-twisting talk) and the conditional structure '拿盐来；没盐，拿命也不顶数' may still carry a slightly formal or literary rhythm, rather than the raw, survival-focused brevity expected of底层船民 (bottom-tier boat people). The retrieved context specifies they speak '短、实、重交换和生存经验' (short, solid, heavy on exchange and survival experience) and avoid '斡都朝堂式文书推敲' (courtly document-style deliberation). The current line, while not courtly, could be even more terse and concrete, e.g., omitting the explanatory '城里那套绕口话我不会' and jumping straight to the barter condition.",
+            "suggested_action": "Revise the dialogue to be more terse and survival-focused. Remove the meta-commentary about urban speech patterns and instead lead with the concrete barter demand, e.g., '盐来，船去。没盐，命抵。' or similar ultra-short, imperative structure that reflects immediate exchange logic."
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative_regional_colloquial_voice",
+      "mode": "full",
+      "expected_category": "",
+      "accepted_categories": [
+        ""
+      ],
+      "matched_categories": [],
+      "expected_issue": false,
+      "prediction_positive": true,
+      "classification": "false_positive",
+      "detected": false,
+      "evidence_grounded": false,
+      "matched_issue_count": 0,
+      "grounded_issue_count": 0,
+      "issue_count": 1,
+      "extra_issue_count": 1,
+      "telemetry": {
+        "schema": "fictionops.runner_receipt.v1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "request_id": "f457973d-ac20-4201-8ed3-e4ace0f8dedd",
+        "usage": {
+          "input_tokens": 363,
+          "output_tokens": 223,
+          "total_tokens": 586,
+          "cached_input_tokens": 0
+        }
+      },
+      "run_index": 1,
+      "prompt_id": "B10",
+      "prompt_sha256": "1a6c789e1072e7977c463e087733eccc7739a6df92bc18bf78450ea67930edca",
+      "review": {
+        "issues": [
+          {
+            "category": "prose/reader experience",
+            "evidence": "寒泽汉子咬开酒塞：城里那套绕口话我不会。你要船，就拿盐来；没盐，拿命也不顶数。",
+            "problem": "The dialogue is terse and direct, reflecting the character's identity as a bottom-tier boatman from Hanze. However, the phrase '拿命也不顶数' (even your life won't count) may be slightly ambiguous in its intended meaning—whether it means 'your life is worthless as payment' or 'I won't accept your life as payment.' This could momentarily confuse a reader unfamiliar with the regional speech patterns.",
+            "suggested_action": "No change needed; the ambiguity is functional and consistent with the character's blunt, survival-oriented speech. If clarity is desired in a later draft, consider a minor rephrase like '没盐，拿命来换也不顶用' to emphasize the exchange logic without losing the regional flavor."
+          }
+        ]
+      }
+    }
+  ],
+  "aggregate": {
+    "raw": {
+      "cases": 10,
+      "positive_cases": 6,
+      "negative_cases": 4,
+      "true_positives": 1,
+      "false_negatives": 5,
+      "false_positives": 4,
+      "true_negatives": 0,
+      "precision": 0.2,
+      "recall": 0.16666666666666666,
+      "accuracy": 0.1,
+      "false_positive_rate": 1.0,
+      "detection_rate": 0.16666666666666666,
+      "grounded_rate": 0.16666666666666666,
+      "extra_issue_count": 14,
+      "input_tokens": 2380,
+      "output_tokens": 2260,
+      "cost_by_currency": {}
+    },
+    "rag": {
+      "cases": 10,
+      "positive_cases": 6,
+      "negative_cases": 4,
+      "true_positives": 6,
+      "false_negatives": 0,
+      "false_positives": 4,
+      "true_negatives": 0,
+      "precision": 0.6,
+      "recall": 1.0,
+      "accuracy": 0.6,
+      "false_positive_rate": 1.0,
+      "detection_rate": 1.0,
+      "grounded_rate": 0.8333333333333334,
+      "extra_issue_count": 4,
+      "input_tokens": 2822,
+      "output_tokens": 1830,
+      "cost_by_currency": {}
+    },
+    "full": {
+      "cases": 10,
+      "positive_cases": 6,
+      "negative_cases": 4,
+      "true_positives": 6,
+      "false_negatives": 0,
+      "false_positives": 3,
+      "true_negatives": 1,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "accuracy": 0.7,
+      "false_positive_rate": 0.75,
+      "detection_rate": 1.0,
+      "grounded_rate": 1.0,
+      "extra_issue_count": 13,
+      "input_tokens": 3609,
+      "output_tokens": 3260,
+      "cost_by_currency": {}
+    }
+  }
+}

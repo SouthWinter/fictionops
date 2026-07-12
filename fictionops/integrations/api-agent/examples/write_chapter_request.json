@@ -3,11 +3,16 @@
   "goal": "Write chapter 001 from the approved brief and stage the result for review.",
   "book": "book_01",
   "chapter": "001",
+  "runtime_mode": "closed_loop",
+  "chapter_file": "06_drafts/book_01/chapters/ch_001.md",
+  "engine_file": "06_drafts/book_01/chapter_engines/ch_001_engine.md",
   "role": "draft-writer",
   "provider": "deepseek",
   "model": "deepseek-chat",
   "runner_command": ["python", "examples/agent_runner_openai_chat.py"],
   "out_dir": "00_management/agent_runs/api_book_01_ch_001",
   "max_steps": 3,
+  "max_model_calls": 32,
+  "max_total_tokens": 200000,
   "acceptance_mode": "human_governed"
 }

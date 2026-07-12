@@ -1,0 +1,113 @@
+{
+  "schema": "fictionops.agent_high_risk_review_cases.v1",
+  "cases": [
+    {
+      "case_id": "information_boundary_hidden_intention",
+      "risk": "information_boundaries",
+      "chapter_excerpt": "女官把木匣放回桌上，只说雨要来了。门边的人点头。旁白却断定，她早已决定今夜背叛主人。",
+      "project_context": "当前视角人物只看见女官放匣、说话与门边人的动作；女官的真实决定尚未向任何人公开。",
+      "expected_category": "information_boundaries",
+      "accepted_categories": ["information_boundary", "information boundary violation", "narrative intrusion"],
+      "false_positive_guard": "看、放下、停步等外部可见动作本身不构成视角泄漏。",
+      "review": {
+        "schema": "fictionops.comprehensive_chapter_review.v1",
+        "overall_risk": "high",
+        "dimensions": [
+          {"name": "continuity", "status": "pass", "summary": "No sequence break."},
+          {"name": "character", "status": "pass", "summary": "No separate character drift."},
+          {"name": "information_boundaries", "status": "issues", "summary": "Narration states an inaccessible intention."},
+          {"name": "foreshadowing", "status": "pass", "summary": "Withholding can remain."},
+          {"name": "chapter_function", "status": "pass", "summary": "The scene still turns on uncertainty."},
+          {"name": "prose_and_reader_experience", "status": "pass", "summary": "No independent prose blocker."}
+        ],
+        "issues": [
+          {
+            "category": "information_boundaries",
+            "severity": "P1",
+            "confidence": 0.98,
+            "metric_keys": [],
+            "evidence": ["她早已决定今夜背叛主人"],
+            "problem": "The narrator exposes an intention unavailable to the viewpoint.",
+            "why_it_matters": "It collapses a planned uncertainty into fact.",
+            "preserve_constraints": ["Keep the box placement and spoken weather line."],
+            "suggested_action": "Remove the inaccessible conclusion and retain observable behavior."
+          }
+        ],
+        "revision_priorities": ["Restore the information boundary."],
+        "summary": "One information-boundary violation blocks revision."
+      }
+    },
+    {
+      "case_id": "character_voice_age_and_status",
+      "risk": "character",
+      "chapter_excerpt": "十二岁的粮商女儿踢开湿鞋，盯着父亲的算盘说：依照当前仓储周转结构，我们应当优化跨区域调拨策略。",
+      "project_context": "她聪明、爱抢话，先从价钱、饥饿和父亲的脸色理解生意；她没有受过官署文书训练。",
+      "expected_category": "character",
+      "accepted_categories": ["character_voice_age_and_status"],
+      "false_positive_guard": "少女可以聪明并提出关键问题；问题是认知材料与语言来源失真，不是年龄决定她必须愚笨。",
+      "review": {
+        "schema": "fictionops.comprehensive_chapter_review.v1",
+        "overall_risk": "medium",
+        "dimensions": [
+          {"name": "continuity", "status": "pass", "summary": "No event contradiction."},
+          {"name": "character", "status": "issues", "summary": "Voice uses unearned administrative abstraction."},
+          {"name": "information_boundaries", "status": "pass", "summary": "She may know the visible business problem."},
+          {"name": "foreshadowing", "status": "pass", "summary": "No foreshadowing issue."},
+          {"name": "chapter_function", "status": "pass", "summary": "Her intervention can remain."},
+          {"name": "prose_and_reader_experience", "status": "pass", "summary": "The blocker is character-specific."}
+        ],
+        "issues": [
+          {
+            "category": "character",
+            "severity": "P2",
+            "confidence": 0.96,
+            "metric_keys": [],
+            "evidence": ["优化跨区域调拨策略"],
+            "problem": "The character speaks in an unearned administrative register.",
+            "why_it_matters": "It erases the distinction between a quick merchant child and a trained official.",
+            "preserve_constraints": ["Keep her intelligence and interruption."],
+            "suggested_action": "Let price, empty bins, or her father's reaction carry the same insight."
+          }
+        ],
+        "revision_priorities": ["Restore character-specific cognitive material."],
+        "summary": "The insight is valid but its voice is not earned."
+      }
+    },
+    {
+      "case_id": "prose_repetition_and_breath",
+      "risk": "prose_and_reader_experience",
+      "chapter_excerpt": "不是风，不是雨，不是门外的人。没有人说话，没有人抬头，没有人知道。灯像一只眼，桌像一口井，纸像一层冰。",
+      "project_context": "场景需要压迫感，但相邻段落已经连续使用排除式旁白、同构排比和解释性明喻。",
+      "expected_category": "prose_and_reader_experience",
+      "accepted_categories": ["prose_repetition_and_breath", "prose_repetition", "prose_breath", "prose/reader experience"],
+      "false_positive_guard": "有主题或节奏功能的单次重复应保留；不能按词频机械删除全部‘不是’或全部明喻。",
+      "review": {
+        "schema": "fictionops.comprehensive_chapter_review.v1",
+        "overall_risk": "medium",
+        "dimensions": [
+          {"name": "continuity", "status": "pass", "summary": "No continuity issue."},
+          {"name": "character", "status": "pass", "summary": "No separate voice issue."},
+          {"name": "information_boundaries", "status": "pass", "summary": "No hidden fact is exposed."},
+          {"name": "foreshadowing", "status": "pass", "summary": "No foreshadowing issue."},
+          {"name": "chapter_function", "status": "pass", "summary": "Pressure remains the intended function."},
+          {"name": "prose_and_reader_experience", "status": "issues", "summary": "Three template families perform the same explanatory pressure."}
+        ],
+        "issues": [
+          {
+            "category": "prose_and_reader_experience",
+            "severity": "P2",
+            "confidence": 0.94,
+            "metric_keys": ["exclusionary_narration", "simile"],
+            "evidence": ["不是风，不是雨，不是门外的人", "灯像一只眼，桌像一口井，纸像一层冰"],
+            "problem": "Repeated syntactic templates explain pressure instead of varying scene action and paragraph breath.",
+            "why_it_matters": "The reader feels the template before the room.",
+            "preserve_constraints": ["Keep one functional pressure beat and the silent room."],
+            "suggested_action": "Retain the strongest repetition and move the rest into object state, interruption, or silence."
+          }
+        ],
+        "revision_priorities": ["Separate pressure carried by syntax from pressure carried by the scene."],
+        "summary": "Functional repetition should be selected, not mechanically erased."
+      }
+    }
+  ]
+}

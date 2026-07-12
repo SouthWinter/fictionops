@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fictionops.example/schemas/agent_goal.schema.json",
+  "$id": "https://southwinter.github.io/fictionops/schemas/v1/agent_goal.schema.json",
   "title": "AgentGoal",
   "type": "object",
   "required": ["project_path", "goal", "role", "acceptance_mode"],
@@ -21,6 +21,21 @@
       "type": "string",
       "description": "Chapter identifier such as 001."
     },
+    "runtime_mode": {
+      "type": "string",
+      "enum": ["closed_loop", "bundle"],
+      "default": "closed_loop"
+    },
+    "chapter_file": {
+      "type": "string",
+      "description": "Chapter Markdown path used by the canonical closed-loop runtime."
+    },
+    "engine_file": {
+      "type": "string",
+      "description": "Required chapter engine path for closed-loop writing."
+    },
+    "outline_file": { "type": "string" },
+    "review_file": { "type": "string" },
     "role": {
       "type": "string",
       "description": "Agent role such as draft-writer, revision-editor, or continuity-auditor."
@@ -54,6 +69,13 @@
       "minimum": 1,
       "default": 300
     },
+    "max_model_calls": { "type": "integer", "minimum": 1 },
+    "max_runtime_seconds": { "type": "integer", "minimum": 1 },
+    "max_total_tokens": { "type": "integer", "minimum": 1 },
+    "max_cost": { "type": "number", "exclusiveMinimum": 0 },
+    "cost_currency": { "type": "string", "default": "USD" },
+    "review_scope": { "type": "string", "enum": ["style", "comprehensive"] },
+    "semantic_verify": { "type": "boolean", "default": true },
     "force": {
       "type": "boolean",
       "default": false

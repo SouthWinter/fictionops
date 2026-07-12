@@ -158,7 +158,19 @@ fictionops agent-inbox my-novel --output-name output.md --format json
 
 `agent-inbox` 只读检查。它会确认 `request.json`、安全策略、任务包文件和输出文件是否可用；如果输出缺失，状态为 `awaiting_output`；如果输出唯一且非空，状态为 `ready_for_review`；如果多个输出候选或 request 损坏，状态为 `needs_attention`。它不会调用模型，也不会把输出应用到正文或正史。
 
-### 2.6 用 `agent-next` 选择下一条安全命令
+### 2.6 用闭环命令完成旧章修订或新章写作
+
+普通 runner 接线确认后，真实章节优先使用闭环命令：
+
+```bash
+fictionops agent-revise-workflow path/to/old_chapter.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-write-workflow path/to/new_chapter.md --engine path/to/chapter_engine.md --outline path/to/book_outline.md --runner python /absolute/path/to/agent_runner_openai_chat.py --provider deepseek --model deepseek-chat
+fictionops agent-accept-revision path/to/run_dir --dry-run
+```
+
+旧章命令默认先读取项目上下文做六维审读，再修订、复检和定向重修。新章命令先把大纲/发动机编译为场景执行计划，再生成正文并做八维验收。两者只有在 `ready_for_approval` 时才能显式采纳；正史同步建议仍需作者逐项确认。
+
+### 2.7 用 `agent-next` 选择下一条安全命令
 
 外部 controller 如果需要机器可读的下一步，可以运行：
 

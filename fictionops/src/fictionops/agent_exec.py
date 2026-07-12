@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from dataclasses import asdict
 from pathlib import Path
@@ -11,6 +12,8 @@ from .models import AgentExecReport
 
 DEFAULT_AGENT_EXEC_OUTPUT = "output.md"
 AGENT_EXEC_RECEIPT = "execution.json"
+RUNNER_RECEIPT_PREFIX = "FICTIONOPS_RUNNER_RECEIPT:"
+RUNNER_RECEIPT_SCHEMA = "fictionops.runner_receipt.v1"
 
 
 def require_simple_output_name(output_name: str) -> str:
@@ -66,6 +69,45 @@ def build_runner_input(run_dir: Path, request: dict[str, object]) -> str:
     ]
     if draft_brief:
         lines.extend(["", "## Draft Brief", "", draft_brief.rstrip()])
+    verification_file = run_dir / "counterevidence_verification.json"
+    if request.get("task") == "bounded-revision" and verification_file.is_file():
+        try:
+            verification = json.loads(verification_file.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError:
+            verification = None
+        if isinstance(verification, dict) and not verification.get("ready_for_approval"):
+            previous_candidate_file = run_dir / DEFAULT_AGENT_EXEC_OUTPUT
+            previous_candidate = previous_candidate_file.read_text(encoding="utf-8-sig") if previous_candidate_file.is_file() else ""
+            feedback = {
+                "status": verification.get("status"),
+                "decisions": verification.get("decisions") or [],
+                "unrelated_changes": verification.get("unrelated_changes") or [],
+                "bounded_change_scope": verification.get("bounded_change_scope") or {},
+                "local_prose_regressions": verification.get("local_prose_regressions") or [],
+                "summary": verification.get("summary"),
+            }
+            forbidden_sequences = [
+                str(item.get("forbidden_sequence") or (f"{item.get('phrase')}。{item.get('phrase')}" if item.get("phrase") else ""))
+                for item in feedback["local_prose_regressions"]
+                if isinstance(item, dict) and (item.get("forbidden_sequence") or item.get("phrase"))
+            ]
+            lines.extend(
+                [
+                    "",
+                    "## Verification Feedback From Previous Candidate",
+                    "",
+                    "The previous staged candidate failed verification. Repair only the listed regression while preserving already-correct contracted changes.",
+                    "Use the previous candidate below as the revision base. Do not regenerate from the original source or repeat the rejected wording.",
+                    "The next candidate must differ from the previous candidate. Rewrite the smallest containing sentence so each repeated phrase occurs only once.",
+                    ("Forbidden exact sequences: " + json.dumps(forbidden_sequences, ensure_ascii=False)) if forbidden_sequences else "",
+                    "",
+                    "```json",
+                    json.dumps(feedback, ensure_ascii=False, indent=2),
+                    "```",
+                ]
+            )
+            if previous_candidate:
+                lines.extend(["", "### Previous Candidate To Repair", "", previous_candidate.rstrip()])
     lines.extend(
         [
             "",
@@ -100,6 +142,40 @@ def stderr_preview(text: str, limit: int = 600) -> str:
     return cleaned[:limit].rstrip() + "..."
 
 
+def parse_runner_receipt(stderr: str) -> dict[str, object] | None:
+    matches = [line[len(RUNNER_RECEIPT_PREFIX) :].strip() for line in stderr.splitlines() if line.startswith(RUNNER_RECEIPT_PREFIX)]
+    if not matches:
+        return None
+    if len(matches) > 1:
+        raise ValueError("agent runner emitted more than one FictionOps runner receipt")
+    try:
+        payload = json.loads(matches[0])
+    except json.JSONDecodeError as exc:
+        raise ValueError("agent runner emitted an invalid FictionOps runner receipt") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != RUNNER_RECEIPT_SCHEMA:
+        raise ValueError(f"agent runner receipt must declare schema {RUNNER_RECEIPT_SCHEMA}")
+    usage = payload.get("usage")
+    if usage is not None:
+        if not isinstance(usage, dict):
+            raise ValueError("agent runner receipt usage must be an object")
+        for key, value in usage.items():
+            if value is not None and (not isinstance(value, int) or isinstance(value, bool) or value < 0):
+                raise ValueError(f"agent runner receipt usage.{key} must be a non-negative integer")
+    cost = payload.get("cost")
+    if cost is not None:
+        if not isinstance(cost, dict):
+            raise ValueError("agent runner receipt cost must be an object")
+        currency = str(cost.get("currency") or "").strip()
+        if not currency:
+            raise ValueError("agent runner receipt cost.currency is required")
+        for key, value in cost.items():
+            if key == "currency" or value is None:
+                continue
+            if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"agent runner receipt cost.{key} must be a non-negative number")
+    return payload
+
+
 def agent_exec_safety() -> dict[str, object]:
     return {
         "calls_external_command": True,
@@ -130,6 +206,8 @@ def next_actions_for_agent_exec(report: AgentExecReport) -> list[str]:
         actions.append(f"Convert accepted findings into revision notes or run `fictionops revision-plan . --book {report.book}`.")
     elif report.task == "canon-sync":
         actions.append("Apply accepted canon changes manually, then rerun `fictionops doctor .`.")
+    elif report.task == "bounded-revision":
+        actions.append(f"Run `fictionops agent counterevidence verify-revision {report.run_dir} --runner ...` before any acceptance.")
     else:
         actions.append(f"Use the staged output to update project memory, then run `fictionops workflow-plan . --stage {report.task} --book {report.book}` if unsure.")
     return actions
@@ -161,6 +239,14 @@ def build_agent_exec(
         for path in (output_file, receipt_file):
             if path.exists():
                 raise FileExistsError(path)
+    if not dry_run and force and request.get("task") == "bounded-revision" and output_file.is_file():
+        attempts_dir = target / "revision_attempts"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+        attempt_number = len(list(attempts_dir.glob("attempt-*.output.md"))) + 1
+        attempt_stem = f"attempt-{attempt_number:03d}"
+        shutil.copy2(output_file, attempts_dir / f"{attempt_stem}.output.md")
+        if receipt_file.is_file():
+            shutil.copy2(receipt_file, attempts_dir / f"{attempt_stem}.execution.json")
 
     runner_input = build_runner_input(target, request)
     returncode: int | None = None
@@ -168,6 +254,8 @@ def build_agent_exec(
     stderr = ""
     executed = False
     written = False
+    previous_output_text = output_file.read_text(encoding="utf-8-sig") if force and output_file.is_file() else ""
+    telemetry: dict[str, object] | None = None
 
     if not dry_run:
         try:
@@ -193,6 +281,7 @@ def build_agent_exec(
             raise RuntimeError(f"agent runner exited with {completed.returncode}: {preview}")
         if not stdout.strip():
             raise ValueError("agent runner produced empty stdout; no staging output was written.")
+        telemetry = parse_runner_receipt(stderr)
         output_file.write_text(stdout.rstrip() + "\n", encoding="utf-8", newline="\n")
         receipt = {
             "schema": "fictionops.agent_exec_receipt.v1",
@@ -203,10 +292,13 @@ def build_agent_exec(
             "returncode": returncode,
             "stdout_chars": len(stdout.strip()),
             "stderr_chars": len(stderr.strip()),
+            "telemetry": telemetry,
             "safety": agent_exec_safety(),
         }
         receipt_file.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
         written = True
+        if request.get("task") == "bounded-revision" and previous_output_text and stdout.rstrip() + "\n" == previous_output_text:
+            raise RuntimeError("bounded revision retry produced a byte-identical candidate; no progress was made")
 
     report = AgentExecReport(
         target=str(target),
@@ -226,6 +318,7 @@ def build_agent_exec(
         stdout_chars=len(stdout.strip()),
         stderr_chars=len(stderr.strip()),
         stderr_preview=stderr_preview(stderr),
+        telemetry=telemetry,
         returncode=returncode,
         dry_run=dry_run,
         executed=executed,
