@@ -828,6 +828,8 @@
 
 `agent counterevidence reverify` 对 evidence-ready 的去重请求逐条调用独立模型，输出 `uphold/withdraw/still_insufficient`。每次调用前先编译 assertion-scoped evidence window：有精确引文和明确保留边界的 finding 只取得命中段及相邻段；人物/正史问题保留按 scope 检索的设定；真正依赖全章的判断只放入一份去重后的全章。Active author guards 始终保留。`--max-evidence-chars` 默认16000。报告记录窗口策略、压缩前后字符、prompt 大小、runner receipt 与 token；grounding 只承认模型在窗口中实际见过的逐字引文。每条畸形输出仍最多一次有界 schema repair。命令不修改正文，也不把模型输出升级为作者权限。
 
+`agent counterevidence benchmark-windows FIXTURES --runner ...` 在同一模型裁决契约下成对运行 `full_context/window`。隐藏的 expected verdict 与 control notes 不进入 prompt；报告整体及各 scope 的期望裁决准确率、grounded resolution、证据召回、裁决一致率、输入 token 与证据字符缩减。评测报告只形成证据，不修改正文或 issue 状态。
+
 `agent counterevidence apply` 核对 packet、escalation 与 revision source 哈希，并用 packet 加 retrieved evidence 重新计算 grounding 后，把 effective verdict 写入持久 issue ledger：`uphold -> open`、`withdraw -> model_withdrawn`、`still_insufficient -> evidence_blocked`。只有 open issue 进入生成的 reviser queue；作者已有的 accepted/rejected/waived 和既有 addressed/verified 结果不被覆盖。命令支持 dry-run、单 run 幂等、完整审计，且不修改正文。
 
 `agent counterevidence prepare-revision RUN_DIR` 会重新核对 application 与 queue 的对应关系、原章哈希及 ledger 当前状态，再生成兼容既有 `agent-exec` 的最小修订包。包中只含 grounded `open` uphold、精确修订证据、active author guards 和未改原章；withdrawn、blocked、已解决及作者保护 issue 均被排除，也不会重跑全章综合审读。

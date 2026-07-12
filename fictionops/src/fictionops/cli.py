@@ -186,6 +186,19 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_reverify.add_argument("--out", help="Optional re-verification report output path.")
     agent_counterevidence_reverify.add_argument("--format", choices=["markdown", "json"], default="markdown")
     agent_counterevidence_reverify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
+    agent_counterevidence_benchmark_windows = agent_counterevidence_subparsers.add_parser(
+        "benchmark-windows", help="Compare full-context and compiled evidence-window re-verification."
+    )
+    agent_counterevidence_benchmark_windows.add_argument("fixtures", help="Evidence-window benchmark fixture JSON.")
+    agent_counterevidence_benchmark_windows.add_argument("--conditions", default="full_context,window")
+    agent_counterevidence_benchmark_windows.add_argument("--runs", type=int, default=1)
+    agent_counterevidence_benchmark_windows.add_argument("--timeout-seconds", type=int, default=300)
+    agent_counterevidence_benchmark_windows.add_argument("--max-evidence-chars", type=int, default=16000)
+    agent_counterevidence_benchmark_windows.add_argument("--out", help="Optional benchmark report output path.")
+    agent_counterevidence_benchmark_windows.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_benchmark_windows.add_argument(
+        "--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last."
+    )
     agent_counterevidence_apply = agent_counterevidence_subparsers.add_parser("apply", help="Apply grounded re-verification states to the persistent issue ledger, never to prose.")
     agent_counterevidence_apply.add_argument("reverification", help="Escalated re-verification report JSON.")
     agent_counterevidence_apply.add_argument("--packet", required=True, help="Source counterevidence packet JSON.")
@@ -4182,6 +4195,26 @@ def handle_agent(args: argparse.Namespace) -> int:
                     max_evidence_chars=args.max_evidence_chars,
                 )
                 rendered = render_escalated_reverification(report, args.format)
+                if args.out:
+                    output = Path(args.out).expanduser().resolve()
+                    output.parent.mkdir(parents=True, exist_ok=True)
+                    output.write_text(rendered, encoding="utf-8", newline="\n")
+                print(rendered, end="")
+                return 0
+            if args.counterevidence_action == "benchmark-windows":
+                runner = list(args.runner or [])
+                if runner and runner[0] == "--":
+                    runner = runner[1:]
+                conditions = [item.strip() for item in args.conditions.split(",") if item.strip()]
+                report = run_evidence_window_benchmark(
+                    Path(args.fixtures),
+                    runner=runner,
+                    conditions=conditions,
+                    runs=args.runs,
+                    timeout_seconds=args.timeout_seconds,
+                    max_evidence_chars=args.max_evidence_chars,
+                )
+                rendered = render_evidence_window_benchmark(report, args.format)
                 if args.out:
                     output = Path(args.out).expanduser().resolve()
                     output.parent.mkdir(parents=True, exist_ok=True)

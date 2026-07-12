@@ -8,6 +8,7 @@ from .agent_counterevidence_revision import *
 from .agent_counterevidence_candidate import *
 from .agent_evidence_escalation import *
 from .agent_evidence_window import *
+from .agent_evidence_window_benchmark import *
 from .agent_failure_lab import *
 from .agent_connect import *
 from .agent_evaluation import *

@@ -488,6 +488,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 - 人工判为 `insufficient` 后不立即再次打扰作者：controller 先折叠完全重复 finding，再根据 problem 的实际断言范围请求全章、相邻段、人物知识来源、人物记忆或 author guard。只有取得匹配尺度的材料才进入 reverification；缺源必须显式停止。
 - Escalated re-verifier 对补证后的每个去重请求独立重判，并保存 model verdict 与 effective verdict。任何 `uphold/withdraw` 都必须有逐字落地的新证据，否则 controller 自动降回 `still_insufficient`；模型不能凭置信度跨越作者权限。
 - Re-verification 不再无差别重送 packet 全章和 escalation 全章。Evidence-window compiler 根据断言依赖编译模型可见材料：有唯一引文与作者保留边界的局部断言取相邻段窗口，人物/知识问题取检索设定，真实章级判断保留一份完整章节；grounding 与 prompt 共用同一窗口，报告压缩率和策略，避免模型借后处理阶段未见材料通过。
+- `benchmark-windows` 用相同模型、finding 与裁决 schema 成对比较 full context 和 evidence window，control label 不进入 prompt。首轮真实矩阵发现模型把“知识来源已由补证提供”解释正确却标成 `uphold`，由此补强通用 verdict orientation；v2 五类 case 全部成对一致且 grounded，同时输入 token 下降17.43%。失败的 v1 与修正后的 v2 都保留，防止只报告成功轨迹。
 - Grounded effective verdict 通过显式 apply 写入持久 ledger：`open` 可重新进入 reviser，`model_withdrawn` 与 `evidence_blocked` 保留历史但从 actionable view 排除。Apply 同时检查 packet/source hash、拒绝重复应用，并且永不覆盖作者已有决定。
 - `agent continue` 消费这些持久机器态：优先选择 grounded open reviser queue，其次 evidence retrieval，最后把 model withdrawals 聚合到作者边界；纯 policy 层保持可测试，`--execute` 不越过 R0。
 - `agent counterevidence prepare-revision` 将 grounded open queue 编译为兼容 `agent-exec` 的最小任务包，只暴露已核实 issue、精确证据、active author guards 与未改原章；它拒绝 stale source 和状态漂移，不重新触发 comprehensive reviewer。

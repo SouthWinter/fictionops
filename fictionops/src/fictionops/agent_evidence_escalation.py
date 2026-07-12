@@ -305,6 +305,9 @@ def escalated_reverification_prompt(
                 "Rejudge the original finding only. Use uphold when the escalated evidence materially supports the defect. "
                 "Use withdraw when the evidence or an active author guard disproves the defect or shows the proposed repair would violate intent. "
                 "Use still_insufficient when the requested evidence remains absent, indirect, or too narrow. "
+                "The verdict always refers to whether the original defect remains after escalation: evidence that supplies an allegedly missing "
+                "knowledge source, establishes an intentional character behavior, or otherwise closes the alleged gap requires withdraw, not uphold. "
+                "A guard that limits repair scope does not by itself prove that the quoted prose is correct; judge the guard's actual statement. "
                 "Do not rewrite prose. Do not infer missing facts. Model confidence is not author authority."
             ),
             "## Original Reviewer Finding\n```json\n" + json.dumps(sample.get("reviewer_finding") or {}, ensure_ascii=False, indent=2) + "\n```",

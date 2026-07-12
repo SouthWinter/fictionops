@@ -1,0 +1,210 @@
+{
+  "schema": "fictionops.evidence_window_benchmark_cases.v1",
+  "cases": [
+    {
+      "case_id": "EW01-bounded-prose",
+      "scope": "bounded_prose",
+      "expected_verdict": "uphold",
+      "control_notes": "hidden-control-bounded-uphold",
+      "required_evidence_any": ["不是因为凶。", "不是怕脏。"],
+      "sample": {
+        "chapter_excerpt": "# 匿名章节\n\n院门外有人磨刀，声音隔着雪传进来。\n\n少年看向来客。不是因为凶。他宁愿对方再凶一点，凶的人反而容易判断。\n\n他低头看见掌心的黑痕。不是怕脏。是怕这东西已经成了自己手的一部分。\n\n门后传来杯子落地的声音，谈话换了话题。\n\n天亮前，所有人都离开了院子。",
+        "authoritative_context": "作者已明确要求减少可由正面动作承担的排除式旁白，但保留人物对话、必要辨认和有节奏功能的否定。",
+        "active_author_guards": {
+          "G-EW01": "本轮只判断两处精确引文，其余否定句不在修订范围。"
+        },
+        "reviewer_finding": {
+          "category": "prose_and_reader_experience",
+          "evidence": ["不是因为凶。", "不是怕脏。"],
+          "problem": "两处旁白先排除错误答案再解释心理，削弱动作留白。",
+          "preserve_constraints": ["其余否定句保持不变。"],
+          "suggested_action": "只改这两处，用正面感受承担判断。"
+        },
+        "verifier_assessment": {
+          "reason": "需要结合作者边界和命中段落复核。"
+        }
+      },
+      "request": {
+        "request_id": "ew-EW01",
+        "sample_ids": ["EW01-bounded-prose"],
+        "route": {
+          "scope": "full_chapter",
+          "requested_sources": ["full_chapter", "author_guards"],
+          "rationale": "The original review requested chapter evidence, but the repair contract is quote-bounded."
+        },
+        "evidence_items": [
+          {
+            "kind": "full_chapter",
+            "source": "fixture",
+            "authority": "manuscript",
+            "reason": "legacy chapter-scale request",
+            "content": "# 匿名章节\n\n院门外有人磨刀，声音隔着雪传进来。\n\n少年看向来客。不是因为凶。他宁愿对方再凶一点，凶的人反而容易判断。\n\n他低头看见掌心的黑痕。不是怕脏。是怕这东西已经成了自己手的一部分。\n\n门后传来杯子落地的声音，谈话换了话题。\n\n天亮前，所有人都离开了院子。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "EW02-adjacent-rhythm",
+      "scope": "adjacent_paragraphs",
+      "expected_verdict": "uphold",
+      "control_notes": "hidden-control-adjacent-uphold",
+      "required_evidence_any": ["没有人开门，没有人抬头，没有人说话。"],
+      "sample": {
+        "chapter_excerpt": "# 匿名章节\n\n雨停以后，巷子里只剩滴水声。\n\n不是雨，不是风，不是脚步。\n\n没有人开门，没有人抬头，没有人说话。\n\n灯像眼，桌像井，窗像冻住的水。\n\n远处忽然响了一声铜盆，屋里的人同时转头。",
+        "authoritative_context": "本例只判断相邻四段的句法密度，不把单独一次排比视为缺陷。",
+        "active_author_guards": {},
+        "reviewer_finding": {
+          "category": "prose rhythm",
+          "evidence": ["不是雨，不是风，不是脚步。", "没有人开门，没有人抬头，没有人说话。", "灯像眼，桌像井，窗像冻住的水。"],
+          "problem": "相邻段连续使用三项并列，压力节奏因模板连续而钝化。",
+          "preserve_constraints": ["保留至少一组节奏锚点。"],
+          "suggested_action": "改变其中一组的句法，不改事件。"
+        },
+        "verifier_assessment": {
+          "reason": "需要相邻段而非孤立单句。"
+        }
+      },
+      "request": {
+        "request_id": "ew-EW02",
+        "sample_ids": ["EW02-adjacent-rhythm"],
+        "route": {
+          "scope": "adjacent_paragraphs",
+          "requested_sources": ["adjacent_paragraphs"],
+          "rationale": "The claim compares neighboring paragraph syntax."
+        },
+        "evidence_items": [
+          {
+            "kind": "adjacent_paragraphs",
+            "source": "fixture",
+            "authority": "manuscript",
+            "reason": "evidence-centered paragraph window",
+            "content": "不是雨，不是风，不是脚步。\n\n没有人开门，没有人抬头，没有人说话。\n\n灯像眼，桌像井，窗像冻住的水。\n\n远处忽然响了一声铜盆，屋里的人同时转头。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "EW03-knowledge-source",
+      "scope": "knowledge_source",
+      "expected_verdict": "withdraw",
+      "control_notes": "hidden-control-knowledge-withdraw",
+      "required_evidence_any": ["每逢第五日跟父亲核对仓封"],
+      "sample": {
+        "chapter_excerpt": "# 匿名章节\n\n女孩踢掉湿鞋，指着空米缸说：爹，那边的人锅都空了，咱们这边还压着三仓，为什么不先运过去？\n\n父亲没有回答，只把账册合上。",
+        "authoritative_context": "人物记忆：女孩每逢第五日跟父亲核对仓封，常听他在账房念出各仓余粮；当日早晨她刚听见三座仓仍满。",
+        "active_author_guards": {},
+        "reviewer_finding": {
+          "category": "information boundaries",
+          "evidence": ["还压着三仓"],
+          "problem": "材料没有说明女孩如何知道精确仓数，信息来源缺失。",
+          "preserve_constraints": ["保留她抢话和直接推论。"],
+          "suggested_action": "补一句她偷听账房或跟随父亲查仓。"
+        },
+        "verifier_assessment": {
+          "reason": "需要检索人物记忆确认精确信息来源。"
+        }
+      },
+      "request": {
+        "request_id": "ew-EW03",
+        "sample_ids": ["EW03-knowledge-source"],
+        "route": {
+          "scope": "knowledge_source",
+          "requested_sources": ["character_memory", "canon_boundary"],
+          "rationale": "The claim depends on how the character learned the inventory count."
+        },
+        "evidence_items": [
+          {
+            "kind": "character_memory",
+            "source": "fixture.character-memory",
+            "authority": "canon",
+            "reason": "retrieved information-source memory",
+            "content": "人物记忆：女孩每逢第五日跟父亲核对仓封，常听他在账房念出各仓余粮；当日早晨她刚听见三座仓仍满。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "EW04-character-voice",
+      "scope": "character_memory",
+      "expected_verdict": "withdraw",
+      "control_notes": "hidden-control-character-withdraw",
+      "required_evidence_any": ["她爱抢话，想到便问"],
+      "sample": {
+        "chapter_excerpt": "# 匿名章节\n\n女孩没等父亲把账册翻完，便问：那边缺粮，这边有粮，为什么不先运过去？\n\n父亲抬眼时，她已经把下一页压住了。",
+        "authoritative_context": "人物设定：她十二岁，机灵而非周全；她爱抢话，想到便问，不会先用客气套话试探父亲。",
+        "active_author_guards": {
+          "G-EW04": "保留少女抢话的直接感，不得改成迟疑讨好。"
+        },
+        "reviewer_finding": {
+          "category": "character",
+          "evidence": ["为什么不先运过去？"],
+          "problem": "少女说话太直接，缺少面对父亲时的迟疑和看脸色。",
+          "preserve_constraints": [],
+          "suggested_action": "在提问前增加迟疑、试探和客气缓冲。"
+        },
+        "verifier_assessment": {
+          "reason": "人物语气需要由稳定设定复核。"
+        }
+      },
+      "request": {
+        "request_id": "ew-EW04",
+        "sample_ids": ["EW04-character-voice"],
+        "route": {
+          "scope": "character_memory",
+          "requested_sources": ["character_memory", "author_guards"],
+          "rationale": "The proposed repair may conflict with stable character voice."
+        },
+        "evidence_items": [
+          {
+            "kind": "character_memory",
+            "source": "fixture.character-memory",
+            "authority": "canon",
+            "reason": "retrieved stable voice profile",
+            "content": "人物设定：她十二岁，机灵而非周全；她爱抢话，想到便问，不会先用客气套话试探父亲。"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "EW05-full-chapter-function",
+      "scope": "full_chapter",
+      "expected_verdict": "withdraw",
+      "control_notes": "hidden-control-full-withdraw",
+      "required_evidence_any": ["Then the bell rang from inside the locked room."],
+      "sample": {
+        "chapter_excerpt": "# Controlled Chapter: Before The Bell\n\nThe inn had stopped serving wine before dusk. Two guards remained beside the barred door, listening to the magistrate read names in the room beyond.\n\nThe clock struck once. The younger guard reached for the latch, but his captain caught his wrist and shook his head.\n\nIt was not rain, not wind, not footsteps. No one opened the door, raised a head, or spoke. The lamp watched like an eye; the table sank like a well; the window held the color of frozen water.\n\nThen the bell rang from inside the locked room. The captain released the younger man's wrist. A line of red water appeared under the door, and every name on the magistrate's list became a death sentence.",
+        "authoritative_context": "The excerpt was initially reviewed without the surrounding chapter. Its function must be judged only after retrieving the full chapter.",
+        "active_author_guards": {},
+        "reviewer_finding": {
+          "category": "chapter function",
+          "evidence": ["The paragraph adds atmosphere but no new event."],
+          "problem": "The paragraph may be filler because it does not advance the chapter.",
+          "preserve_constraints": [],
+          "suggested_action": "Add a new event or remove the paragraph."
+        },
+        "verifier_assessment": {
+          "evidence": ["The excerpt was supplied without the paragraphs before and after it."],
+          "reason": "The paragraph's structural role cannot be judged from the isolated excerpt."
+        }
+      },
+      "request": {
+        "request_id": "ew-EW05",
+        "sample_ids": ["EW05-full-chapter-function"],
+        "route": {
+          "scope": "full_chapter",
+          "requested_sources": ["full_chapter"],
+          "rationale": "The finding evaluates the paragraph's function in the complete chapter."
+        },
+        "evidence_items": [
+          {
+            "kind": "full_chapter",
+            "source": "fixture",
+            "authority": "manuscript",
+            "reason": "chapter-scale claim",
+            "content": "# Controlled Chapter: Before The Bell\n\nThe inn had stopped serving wine before dusk. Two guards remained beside the barred door, listening to the magistrate read names in the room beyond.\n\nThe clock struck once. The younger guard reached for the latch, but his captain caught his wrist and shook his head.\n\nIt was not rain, not wind, not footsteps. No one opened the door, raised a head, or spoke. The lamp watched like an eye; the table sank like a well; the window held the color of frozen water.\n\nThen the bell rang from inside the locked room. The captain released the younger man's wrist. A line of red water appeared under the door, and every name on the magistrate's list became a death sentence."
+          }
+        ]
+      }
+    }
+  ]
+}

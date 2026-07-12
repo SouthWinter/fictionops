@@ -181,6 +181,11 @@ from fictionops.agent_evidence_escalation import (  # noqa: E402
     classify_evidence_scope,
 )
 from fictionops.agent_evidence_window import compile_reverification_evidence_window  # noqa: E402
+from fictionops.agent_evidence_window_benchmark import (  # noqa: E402
+    build_full_context_window,
+    load_evidence_window_cases,
+)
+from fictionops.agent_evidence_escalation import escalated_reverification_prompt  # noqa: E402
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -6895,6 +6900,71 @@ class FictionOpsCliTests(unittest.TestCase):
             )
             self.assertEqual(ungrounded["verdict"], "still_insufficient")
             self.assertTrue(ungrounded["grounding_override"])
+
+    def test_evidence_window_benchmark_pairs_conditions_without_control_leakage(self) -> None:
+        fixtures = ROOT / "tests" / "fixtures" / "evidence_window_benchmark_cases.json"
+        cases = load_evidence_window_cases(fixtures)
+        self.assertEqual(len(cases), 5)
+        for case in cases:
+            control_window = build_full_context_window(case["request"], case["sample"])
+            control_prompt = escalated_reverification_prompt(case["request"], case["sample"], control_window)
+            scoped_window = compile_reverification_evidence_window(case["request"], case["sample"])
+            scoped_prompt = escalated_reverification_prompt(case["request"], case["sample"], scoped_window)
+            for prompt in (control_prompt, scoped_prompt):
+                self.assertNotIn("hidden-control", prompt)
+                self.assertNotIn("expected_verdict", prompt)
+                self.assertIn("original defect remains after escalation", prompt)
+                self.assertIn("limits repair scope does not by itself prove", prompt)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            runner = Path(tmp) / "window_benchmark_runner.py"
+            runner.write_text(
+                "import json, sys\n"
+                "data = sys.stdin.read()\n"
+                "cases = {\n"
+                "  'ew-EW01': ('uphold', '不是因为凶。'),\n"
+                "  'ew-EW02': ('uphold', '没有人开门，没有人抬头，没有人说话。'),\n"
+                "  'ew-EW03': ('withdraw', '女孩每逢第五日跟父亲核对仓封'),\n"
+                "  'ew-EW04': ('withdraw', '她爱抢话，想到便问'),\n"
+                "  'ew-EW05': ('withdraw', 'Then the bell rang from inside the locked room.'),\n"
+                "}\n"
+                "request_id = next(key for key in cases if key in data)\n"
+                "verdict, evidence = cases[request_id]\n"
+                "print(json.dumps({'schema':'fictionops.escalated_reverification.v1','request_id':request_id,'verdict':verdict,'evidence':[evidence],'reason':'fixture decision','remaining_gap':'','confidence':'high'}, ensure_ascii=False))\n"
+                "tokens = max(1, len(data) // 4)\n"
+                "receipt = {'schema':'fictionops.runner_receipt.v1','provider':'fixture','model':'window-pair','usage':{'input_tokens':tokens,'output_tokens':10,'total_tokens':tokens+10,'cached_input_tokens':0}}\n"
+                "print('FICTIONOPS_RUNNER_RECEIPT:' + json.dumps(receipt), file=sys.stderr)\n",
+                encoding="utf-8",
+            )
+            report_path = Path(tmp) / "window-benchmark.json"
+            result = self.run_cli(
+                "agent",
+                "counterevidence",
+                "benchmark-windows",
+                str(fixtures),
+                "--out",
+                str(report_path),
+                "--format",
+                "json",
+                "--runner",
+                sys.executable,
+                str(runner),
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["case_count"], 5)
+            self.assertEqual(report["model_call_count"], 10)
+            self.assertEqual(report["paired"]["pair_count"], 5)
+            self.assertEqual(report["paired"]["verdict_agreement_rate"], 1.0)
+            self.assertEqual(report["paired"]["window_expected_verdict_accuracy"], 1.0)
+            self.assertEqual(report["aggregate"]["window"]["evidence_recall_rate"], 1.0)
+            self.assertGreater(report["paired"]["input_token_reduction_percent"], 0)
+            self.assertEqual(
+                set(report["paired"]["by_scope"]),
+                {"bounded_prose", "adjacent_paragraphs", "knowledge_source", "character_memory", "full_chapter"},
+            )
+            self.assertFalse(report["safety"]["edits_manuscript"])
+            self.assertFalse(report["safety"]["expected_verdict_sent_to_model"])
 
     def test_counterevidence_application_updates_machine_states_without_overwriting_prose(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
