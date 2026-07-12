@@ -209,6 +209,11 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_accept.add_argument("bundle_dir")
     agent_counterevidence_accept.add_argument("--dry-run", action="store_true")
     agent_counterevidence_accept.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_repair = agent_counterevidence_subparsers.add_parser("repair-revision", help="Repair only local regressions reported by failed candidate verification.")
+    agent_counterevidence_repair.add_argument("bundle_dir")
+    agent_counterevidence_repair.add_argument("--timeout-seconds", type=int, default=300)
+    agent_counterevidence_repair.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    agent_counterevidence_repair.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="Local repair runner command; place it last.")
 
     agent_failure_parser = agent_subparsers.add_parser("failure-lab", help="Inject bounded agent failures and measure detection, recovery, and contamination.")
     agent_failure_parser.add_argument("--out", help="Optional report output path.")
@@ -4212,6 +4217,13 @@ def handle_agent(args: argparse.Namespace) -> int:
                 return 0
             if args.counterevidence_action == "accept-revision":
                 report = accept_counterevidence_candidate(Path(args.bundle_dir), dry_run=args.dry_run)
+                print(render_counterevidence_candidate(report, args.format), end="")
+                return 0
+            if args.counterevidence_action == "repair-revision":
+                runner = list(args.runner or [])
+                if runner and runner[0] == "--":
+                    runner = runner[1:]
+                report = repair_counterevidence_candidate(Path(args.bundle_dir), runner=runner, timeout_seconds=args.timeout_seconds)
                 print(render_counterevidence_candidate(report, args.format), end="")
                 return 0
             report = evaluate_counterevidence(Path(args.packet), Path(args.key))

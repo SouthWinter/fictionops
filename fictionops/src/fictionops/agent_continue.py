@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -153,9 +154,16 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
                     evidence.append(str(verification_file.resolve()))
                     try:
                         verification = json.loads(verification_file.read_text(encoding="utf-8-sig"))
-                        counterevidence_candidate_state = (
-                            "ready_for_approval" if isinstance(verification, dict) and verification.get("ready_for_approval") else "needs_revision_attention"
-                        )
+                        candidate_hash = hashlib.sha256(candidate_file.read_bytes()).hexdigest()
+                        if isinstance(verification, dict) and str(verification.get("candidate_sha256") or "") != candidate_hash:
+                            counterevidence_candidate_state = "awaiting_verification"
+                        else:
+                            if isinstance(verification, dict) and verification.get("ready_for_approval"):
+                                counterevidence_candidate_state = "ready_for_approval"
+                            elif isinstance(verification, dict) and verification.get("local_prose_regressions"):
+                                counterevidence_candidate_state = "repairable_regression"
+                            else:
+                                counterevidence_candidate_state = "needs_revision_attention"
                     except (OSError, json.JSONDecodeError):
                         counterevidence_candidate_state = "needs_revision_attention"
         elif application_files:
@@ -211,6 +219,8 @@ def build_agent_continue(path: Path, *, execute: bool = False) -> AgentContinueR
         suggested_command = f'fictionops agent counterevidence verify-revision "{counterevidence_bundle_dir}" --runner ...'
     elif action == "revise_counterevidence_candidate" and counterevidence_bundle_dir is not None:
         suggested_command = f'fictionops agent-exec "{counterevidence_bundle_dir}" --force --runner ...'
+    elif action == "repair_counterevidence_candidate" and counterevidence_bundle_dir is not None:
+        suggested_command = f'fictionops agent counterevidence repair-revision "{counterevidence_bundle_dir}" --runner ...'
     elif action == "review_counterevidence_candidate" and counterevidence_bundle_dir is not None:
         suggested_command = f'fictionops agent counterevidence accept-revision "{counterevidence_bundle_dir}" --dry-run'
     elif action == "retrieve_counterevidence":

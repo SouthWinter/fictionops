@@ -836,6 +836,8 @@
 
 `agent counterevidence accept-revision BUNDLE` 是显式作者边界。命令重新核对 bundle、contract、source、candidate 哈希及 ledger 中仍为 grounded open 的状态；`--dry-run` 只预检，正式执行才原子应用已验证候选，并记录 `addressed -> verified -> accepted` 状态轨迹。
 
+`agent counterevidence repair-revision BUNDLE --runner ...` 只在失败 verification 给出局部行文回归时使用。runner 返回唯一锚定的 `old_quote -> new_quote`，而不是重写全章；FictionOps 校验旧引文唯一命中、禁用序列、替换长度、剩余局部回归与窄修订上限后，只更新 staged candidate。整章重试会归档旧 candidate/execution，字节完全相同的结果直接以 no-progress 停止。
+
 `agent continue` 读取带 counterevidence provenance 的持久状态：grounded open 先选择 `prepare_counterevidence_revision`；已有 staged output 时转入 `verify_counterevidence_revision`；验证失败回到 `revise_counterevidence_candidate`；验证通过则停在作者权限的 `review_counterevidence_candidate`。evidence-blocked 选择 `retrieve_counterevidence`，仅剩 model-withdrawn 时选择作者权限的 `review_model_withdrawals`。既有候选、预算、失败、取消、canon-sync 与 stale-memory 优先级不变；`--execute` 不会自动执行这些 R1-R3 动作。
 
 ### `fictionops agent-memory`

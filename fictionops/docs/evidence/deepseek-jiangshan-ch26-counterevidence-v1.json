@@ -1,0 +1,72 @@
+{
+  "schema": "fictionops.real_chapter_counterevidence_dogfood.v1",
+  "date": "2026-07-12",
+  "chapter": "book01_ch026",
+  "source_sha256": "3c2cff24708ccf9d0ba2d760615dcf6ed2801682915c13824289a8b0cb7225b4",
+  "provider": "deepseek",
+  "requested_model": "deepseek-chat",
+  "observed_model": "deepseek-v4-flash",
+  "scope": {
+    "issue_count": 1,
+    "target_quotes": [
+      "不是因为凶。",
+      "不是怕脏。是怕这东西真的已经成了自己手的一部分。"
+    ],
+    "excluded_families": [
+      "cold_words",
+      "sudden_markers",
+      "necessary_identification",
+      "dialogue_negation"
+    ]
+  },
+  "trajectory": {
+    "first_reverification": {
+      "model_verdict": "withdraw",
+      "effective_verdict": "still_insufficient",
+      "grounding_override": true,
+      "total_tokens": 11920
+    },
+    "scoped_reverification": {
+      "verdict": "uphold",
+      "confidence": "high",
+      "evidence_grounded": true,
+      "total_tokens": 11530
+    },
+    "full_chapter_revision_calls": 4,
+    "full_chapter_revision_total_tokens": 55637,
+    "verification_calls": 4,
+    "verification_total_tokens": 50784,
+    "local_repair": {
+      "repair_count": 1,
+      "input_tokens": 5691,
+      "output_tokens": 98,
+      "total_tokens": 5789
+    },
+    "total_model_calls": 11,
+    "total_tokens": 135660
+  },
+  "candidate": {
+    "final_sha256": "90a19f7b67c189c36f9e17a85898718d64bb6e2b31c278db5ffdda3ca07b05ea",
+    "changed_lines": 6,
+    "changed_chars": 18,
+    "change_ratio": 0.002753,
+    "local_prose_regressions": [],
+    "verification_status": "ready_for_approval"
+  },
+  "controller": {
+    "selected_action": "review_counterevidence_candidate",
+    "requires_human": true,
+    "stop_reason": "human_authority_required"
+  },
+  "dry_run": {
+    "passed": true,
+    "applied": false,
+    "sandbox_source_unchanged": true,
+    "real_chapter_unchanged": true,
+    "acceptance_file_written": false
+  },
+  "safety": {
+    "api_key_recorded": false,
+    "real_manuscript_edited": false
+  }
+}

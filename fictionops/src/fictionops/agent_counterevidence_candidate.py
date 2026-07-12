@@ -3,6 +3,7 @@ from __future__ import annotations
 import difflib
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ from .agent_revision_accept import atomic_apply_text
 
 COUNTEREVIDENCE_CANDIDATE_VERIFICATION_SCHEMA = "fictionops.counterevidence_candidate_verification.v1"
 COUNTEREVIDENCE_CANDIDATE_ACCEPTANCE_SCHEMA = "fictionops.counterevidence_candidate_acceptance.v1"
+COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA = "fictionops.counterevidence_candidate_repair.v1"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -104,6 +106,34 @@ def _bounded_change_metrics(source: str, candidate: str, issue_count: int) -> di
         "title_preserved": source_title == candidate_title,
         "passed": changed_lines <= line_limit and change_ratio <= ratio_limit and source_title == candidate_title,
     }
+
+
+def _new_local_repetition_regressions(source: str, candidate: str) -> list[dict[str, str]]:
+    pattern = re.compile(
+        r"(?P<phrase>[\u4e00-\u9fff]{2,10}|[A-Za-z]+(?:\s+[A-Za-z]+){0,3})[。！？!?；;，,]\s*(?P=phrase)",
+        flags=re.IGNORECASE,
+    )
+
+    def matches(text: str) -> dict[str, str]:
+        found: dict[str, str] = {}
+        for match in pattern.finditer(text):
+            phrase = re.sub(r"\s+", " ", match.group("phrase")).casefold()
+            start, end = max(0, match.start() - 24), min(len(text), match.end() + 24)
+            found.setdefault(phrase, text[start:end].replace("\n", " "))
+        return found
+
+    before = matches(source)
+    after = matches(candidate)
+    return [
+        {
+            "kind": "new_sentence_boundary_repetition",
+            "phrase": phrase,
+            "forbidden_sequence": f"{phrase}。{phrase}",
+            "evidence": context,
+        }
+        for phrase, context in after.items()
+        if phrase not in before
+    ]
 
 
 def _verification_prompt(contract: dict[str, Any], source: str, candidate: str, diff: str) -> str:
@@ -197,6 +227,7 @@ def verify_counterevidence_candidate(
     if not issue_ids or not diff:
         raise ValueError("candidate must contain a change for at least one contracted issue")
     change_scope = _bounded_change_metrics(source, candidate, len(issue_ids))
+    local_prose_regressions = _new_local_repetition_regressions(source, candidate)
     prompt = _verification_prompt(contract, source, candidate, diff)
     completed = subprocess.run(
         runner,
@@ -230,6 +261,7 @@ def verify_counterevidence_candidate(
         and model["active_author_guards_preserved"]
         and not model["new_canon_added"]
         and change_scope["passed"]
+        and not local_prose_regressions
     )
     ready = bool(model["overall_pass"]) and deterministic_pass
     report = {
@@ -249,6 +281,7 @@ def verify_counterevidence_candidate(
         "model_overall_pass": model["overall_pass"],
         "deterministic_grounding_pass": deterministic_pass,
         "bounded_change_scope": change_scope,
+        "local_prose_regressions": local_prose_regressions,
         "status": "ready_for_approval" if ready else "needs_revision_attention",
         "ready_for_approval": ready,
         "summary": model.get("summary"),
@@ -266,6 +299,140 @@ def verify_counterevidence_candidate(
         "manuscript_edited": False,
     }
     _write_json(verification_file, report)
+    return report
+
+
+def _repair_prompt(candidate: str, regressions: list[dict[str, Any]]) -> str:
+    request = {
+        "schema": "fictionops.agent_run_request.v1",
+        "execution_mode": "repair_only",
+        "role": "bounded-candidate-local-repairer",
+        "task": "repair-verification-regression",
+        "provider": "configurable",
+        "model": "writer",
+    }
+    output = {
+        "schema": COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA,
+        "repairs": [{"old_quote": "exact unique quote from candidate", "new_quote": "natural replacement", "reason": "brief reason"}],
+    }
+    return "\n\n".join(
+        [
+            "# FictionOps Local Candidate Repair",
+            "## Request\n```json\n" + json.dumps(request, ensure_ascii=False, indent=2) + "\n```",
+            "Repair only the listed local prose regressions. Return one exact old_quote/new_quote replacement per regression. The old quote must occur exactly once in the candidate. Keep the replacement local and preserve meaning, viewpoint, facts, and all surrounding prose. Do not return a full chapter.",
+            "## Regressions\n```json\n" + json.dumps(regressions, ensure_ascii=False, indent=2) + "\n```",
+            "## Candidate\n" + candidate,
+            "## Output Contract\nReturn exactly one JSON object and no Markdown fence:\n" + json.dumps(output, ensure_ascii=False, indent=2),
+        ]
+    ).rstrip() + "\n"
+
+
+def _parse_repair(text: str, expected_count: int) -> dict[str, Any]:
+    cleaned = text.strip()
+    start, end = cleaned.find("{"), cleaned.rfind("}")
+    if start < 0 or end < start:
+        raise ValueError("candidate repairer did not return a JSON object")
+    payload = json.loads(cleaned[start : end + 1])
+    if not isinstance(payload, dict) or payload.get("schema") != COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA:
+        raise ValueError(f"candidate repairer must declare schema {COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA}")
+    repairs = payload.get("repairs")
+    if not isinstance(repairs, list) or len(repairs) != expected_count:
+        raise ValueError("candidate repairer must return exactly one repair per regression")
+    for item in repairs:
+        if not isinstance(item, dict):
+            raise ValueError("candidate repairs must be objects")
+        old_quote = str(item.get("old_quote") or "")
+        new_quote = str(item.get("new_quote") or "")
+        if not old_quote.strip() or not new_quote.strip() or old_quote == new_quote:
+            raise ValueError("candidate repair quotes must be nonempty and different")
+    return payload
+
+
+def repair_counterevidence_candidate(
+    bundle_dir: Path,
+    *,
+    runner: list[str],
+    timeout_seconds: int = 300,
+) -> dict[str, Any]:
+    if not runner:
+        raise ValueError("counterevidence candidate repair requires a runner")
+    if timeout_seconds <= 0:
+        raise ValueError("counterevidence candidate repair timeout must be positive")
+    _, contract, source_file, candidate_file = _load_candidate_bundle(bundle_dir)
+    bundle_dir = bundle_dir.expanduser().resolve()
+    verification_file = bundle_dir / "counterevidence_verification.json"
+    verification = _read_json(verification_file)
+    if verification.get("schema") != COUNTEREVIDENCE_CANDIDATE_VERIFICATION_SCHEMA or verification.get("ready_for_approval"):
+        raise ValueError("candidate repair requires a failed counterevidence verification")
+    if _sha256(candidate_file) != str(verification.get("candidate_sha256") or ""):
+        raise ValueError("candidate changed after failed verification; verify it again before repair")
+    regressions = [item for item in verification.get("local_prose_regressions") or [] if isinstance(item, dict)]
+    if not regressions:
+        raise ValueError("failed verification has no locally repairable prose regression")
+    candidate = candidate_file.read_text(encoding="utf-8-sig")
+    prompt = _repair_prompt(candidate, regressions)
+    completed = subprocess.run(
+        runner,
+        input=prompt,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        timeout=timeout_seconds,
+        env=runner_environment(),
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"candidate repairer failed with {completed.returncode}: {(completed.stderr or completed.stdout)[:600]}")
+    attempts_dir = bundle_dir / "repair_attempts"
+    attempts_dir.mkdir(parents=True, exist_ok=True)
+    attempt_number = len(list(attempts_dir.glob("attempt-*.raw.txt"))) + 1
+    stem = f"attempt-{attempt_number:03d}"
+    raw_file = attempts_dir / f"{stem}.raw.txt"
+    stderr_file = attempts_dir / f"{stem}.stderr.txt"
+    prior_file = attempts_dir / f"{stem}.candidate-before.md"
+    raw_file.write_text(completed.stdout, encoding="utf-8", newline="\n")
+    stderr_file.write_text(completed.stderr, encoding="utf-8", newline="\n")
+    prior_file.write_text(candidate, encoding="utf-8", newline="\n")
+    parsed = _parse_repair(completed.stdout, len(regressions))
+    repaired = candidate
+    applied_repairs: list[dict[str, Any]] = []
+    for item, regression in zip(parsed["repairs"], regressions):
+        old_quote = str(item["old_quote"])
+        new_quote = str(item["new_quote"])
+        if repaired.count(old_quote) != 1:
+            raise ValueError("candidate repair old_quote must occur exactly once")
+        forbidden = str(regression.get("forbidden_sequence") or "")
+        if forbidden and forbidden in new_quote:
+            raise ValueError("candidate repair preserves the forbidden local sequence")
+        if len(new_quote) > max(len(old_quote) * 2, len(old_quote) + 120):
+            raise ValueError("candidate repair replacement exceeds the local scope limit")
+        repaired = repaired.replace(old_quote, new_quote, 1)
+        applied_repairs.append({"old_quote": old_quote, "new_quote": new_quote, "reason": item.get("reason")})
+    source = source_file.read_text(encoding="utf-8-sig")
+    remaining = _new_local_repetition_regressions(source, repaired)
+    if remaining:
+        raise ValueError("candidate repair still contains a new local prose regression")
+    scope = _bounded_change_metrics(source, repaired, int(contract.get("issue_count") or 1))
+    if not scope["passed"]:
+        raise ValueError("candidate repair exceeds the bounded change scope")
+    candidate_file.write_text(repaired.rstrip() + "\n", encoding="utf-8", newline="\n")
+    report = {
+        "schema": COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA,
+        "bundle_dir": str(bundle_dir),
+        "candidate_sha256_before": hashlib.sha256(candidate.encode("utf-8")).hexdigest(),
+        "candidate_sha256_after": _sha256(candidate_file),
+        "repair_count": len(applied_repairs),
+        "repairs": applied_repairs,
+        "remaining_local_prose_regressions": remaining,
+        "bounded_change_scope": scope,
+        "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "raw_file": str(raw_file),
+        "raw_sha256": _sha256(raw_file),
+        "telemetry": parse_runner_receipt(completed.stderr),
+        "manuscript_edited": False,
+        "next_action": "verify_counterevidence_revision",
+    }
+    _write_json(bundle_dir / "counterevidence_repair.json", report)
     return report
 
 
@@ -327,4 +494,6 @@ def render_counterevidence_candidate(payload: dict[str, Any], output_format: str
         raise ValueError(f"unsupported counterevidence candidate output format: {output_format}")
     if payload.get("schema") == COUNTEREVIDENCE_CANDIDATE_VERIFICATION_SCHEMA:
         return f"# Counterevidence Candidate Verification\n\n- Status: `{payload['status']}`\n- Issues: {len(payload['issue_ids'])}\n- Manuscript edited: no\n"
+    if payload.get("schema") == COUNTEREVIDENCE_CANDIDATE_REPAIR_SCHEMA:
+        return f"# Counterevidence Candidate Repair\n\n- Repairs: {payload['repair_count']}\n- Manuscript edited: no\n- Next action: `{payload['next_action']}`\n"
     return f"# Counterevidence Candidate Acceptance\n\n- Dry run: {'yes' if payload['dry_run'] else 'no'}\n- Applied: {'yes' if payload['applied'] else 'no'}\n- Issues accepted: {len(payload['issue_ids'])}\n"

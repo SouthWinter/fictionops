@@ -51,6 +51,8 @@ def select_agent_policy(
             return AgentPolicyDecision(POLICY_SCHEMA, "review_counterevidence_candidate", "The bounded candidate passed independent verification; explicit author acceptance is required.", "R3", "author", False)
         if counterevidence_candidate_state == "needs_revision_attention":
             return AgentPolicyDecision(POLICY_SCHEMA, "revise_counterevidence_candidate", "The bounded candidate failed verification and must not be accepted.", "R2", "controller", False)
+        if counterevidence_candidate_state == "repairable_regression":
+            return AgentPolicyDecision(POLICY_SCHEMA, "repair_counterevidence_candidate", "The contracted fix is present, but a local prose regression requires bounded candidate repair.", "R2", "controller", False)
         if counterevidence_candidate_state == "awaiting_verification":
             return AgentPolicyDecision(POLICY_SCHEMA, "verify_counterevidence_revision", "A staged bounded candidate exists and requires independent contract verification.", "R2", "controller", False)
         return AgentPolicyDecision(

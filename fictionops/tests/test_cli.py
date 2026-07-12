@@ -174,6 +174,7 @@ from fictionops.agent_counterevidence_review import (  # noqa: E402
     build_counterevidence_from_run,
     evaluate_counterevidence,
 )
+from fictionops.agent_counterevidence_candidate import _new_local_repetition_regressions  # noqa: E402
 from fictionops.agent_evidence_escalation import (  # noqa: E402
     apply_reverification_grounding,
     build_evidence_escalation,
@@ -6272,6 +6273,7 @@ class FictionOpsCliTests(unittest.TestCase):
             ({"state": None, "counterevidence_open_count": 1}, "prepare_counterevidence_revision", "controller"),
             ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "awaiting_verification"}, "verify_counterevidence_revision", "controller"),
             ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "needs_revision_attention"}, "revise_counterevidence_candidate", "controller"),
+            ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "repairable_regression"}, "repair_counterevidence_candidate", "controller"),
             ({"state": None, "counterevidence_open_count": 1, "counterevidence_candidate_state": "ready_for_approval"}, "review_counterevidence_candidate", "author"),
             ({"state": None, "counterevidence_blocked_count": 1}, "retrieve_counterevidence", "controller"),
             ({"state": None, "counterevidence_withdrawn_count": 1}, "review_model_withdrawals", "author"),
@@ -7035,6 +7037,9 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("source chapter is stale", stale.stderr)
 
     def test_counterevidence_candidate_verification_and_acceptance_are_hash_guarded(self) -> None:
+        regressions = _new_local_repetition_regressions("他宁愿那人凶。", "他宁愿那人凶一点。凶一点反而好。")
+        self.assertEqual(regressions[0]["phrase"], "凶一点")
+        self.assertEqual(regressions[0]["forbidden_sequence"], "凶一点。凶一点")
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "candidate-project"
             (project / "00_management").mkdir(parents=True)
@@ -7099,7 +7104,9 @@ class FictionOpsCliTests(unittest.TestCase):
             }
             contract_file = bundle / "issue_contract.json"
             contract_file.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
-            (bundle / "output.md").write_text(candidate_text, encoding="utf-8", newline="\n")
+            bad_candidate_text = source_text.replace("raised his left hand", "raised his right hand. right hand stayed raised")
+            candidate_file = bundle / "output.md"
+            candidate_file.write_text(bad_candidate_text, encoding="utf-8", newline="\n")
             (bundle / "bundle_manifest.json").write_text(
                 json.dumps(
                     {
@@ -7117,6 +7124,36 @@ class FictionOpsCliTests(unittest.TestCase):
                 f"print(json.dumps({{'schema':'fictionops.counterevidence_candidate_verification.v1','decisions':[{{'issue_id':'{issue_id}','resolved':True,'candidate_evidence':['He raised his right hand.'],'reason':'fixed'}}],'unrelated_changes':[],'active_author_guards_preserved':True,'new_canon_added':False,'overall_pass':True,'summary':'bounded fix'}}))\n",
                 encoding="utf-8",
             )
+            failed_verification = {
+                "schema": "fictionops.counterevidence_candidate_verification.v1",
+                "ready_for_approval": False,
+                "status": "needs_revision_attention",
+                "candidate_sha256": hashlib.sha256(candidate_file.read_bytes()).hexdigest(),
+                "local_prose_regressions": [
+                    {
+                        "kind": "new_sentence_boundary_repetition",
+                        "phrase": "right hand",
+                        "forbidden_sequence": "right hand. right hand",
+                        "evidence": "He raised his right hand. right hand stayed raised.",
+                    }
+                ],
+            }
+            (bundle / "counterevidence_verification.json").write_text(
+                json.dumps(failed_verification, indent=2) + "\n", encoding="utf-8"
+            )
+            repair_route = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
+            self.assertEqual(repair_route["selected_action"], "repair_counterevidence_candidate")
+            repairer = project / "repairer.py"
+            repairer.write_text(
+                "import json\n"
+                "print(json.dumps({'schema':'fictionops.counterevidence_candidate_repair.v1','repairs':[{'old_quote':'He raised his right hand. right hand stayed raised.','new_quote':'He raised his right hand.','reason':'remove repetition'}]}))\n",
+                encoding="utf-8",
+            )
+            repaired = self.run_cli(
+                "agent", "counterevidence", "repair-revision", str(bundle), "--format", "json", "--runner", sys.executable, str(repairer), check=False
+            )
+            self.assertEqual(repaired.returncode, 0, repaired.stderr)
+            self.assertEqual(candidate_file.read_text(encoding="utf-8"), candidate_text)
             awaiting_verification = json.loads(self.run_cli("agent", "continue", str(project), "--format", "json").stdout)
             self.assertEqual(awaiting_verification["selected_action"], "verify_counterevidence_revision")
             guard_file = project / ".fictionops" / "author_guards.json"
@@ -7145,7 +7182,7 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertIn("author guards changed", guard_drift.stderr)
             guard_file.unlink()
             verified = self.run_cli(
-                "agent", "counterevidence", "verify-revision", str(bundle), "--format", "json", "--runner", sys.executable, str(verifier)
+                "agent", "counterevidence", "verify-revision", str(bundle), "--force", "--format", "json", "--runner", sys.executable, str(verifier)
             )
             self.assertEqual(verified.returncode, 0, verified.stderr)
             verification = json.loads(verified.stdout)
@@ -7157,7 +7194,6 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(awaiting_author["selected_action"], "review_counterevidence_candidate")
             self.assertTrue(awaiting_author["requires_human"])
             self.assertEqual(awaiting_author["stop_reason"], "human_authority_required")
-            candidate_file = bundle / "output.md"
             candidate_file.write_text(candidate_text + "drift\n", encoding="utf-8", newline="\n")
             drifted = self.run_cli("agent", "counterevidence", "accept-revision", str(bundle), "--dry-run", "--format", "json", check=False)
             self.assertNotEqual(drifted.returncode, 0)
@@ -7999,6 +8035,20 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(data["written"], True)
             self.assertEqual(data["safety"]["requires_human_apply"], True)
             self.assertIn("# CLI Output", (run_dir / "output.md").read_text(encoding="utf-8"))
+
+            bounded = target / "00_management" / "agent_runs" / "bounded_no_progress"
+            bounded.mkdir()
+            (bounded / "request.json").write_text(
+                json.dumps({"schema": "fictionops.agent_run_request.v1", "execution_mode": "prepare_only", "task": "bounded-revision"}),
+                encoding="utf-8",
+            )
+            (bounded / "prompt.md").write_text("Return the chapter.\n", encoding="utf-8")
+            (bounded / "context_pack.md").write_text("# Same candidate\n", encoding="utf-8")
+            same_runner = [sys.executable, "-c", "import sys; sys.stdin.read(); print('# Same candidate')"]
+            build_agent_exec(bounded, command=same_runner)
+            with self.assertRaisesRegex(RuntimeError, "no progress"):
+                build_agent_exec(bounded, command=same_runner, force=True)
+            self.assertTrue((bounded / "revision_attempts" / "attempt-001.output.md").is_file())
 
     def test_agent_exec_example_runner_is_usable(self) -> None:
         temp, target = self.make_project()

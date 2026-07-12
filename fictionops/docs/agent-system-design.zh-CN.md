@@ -491,6 +491,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 - `agent continue` 消费这些持久机器态：优先选择 grounded open reviser queue，其次 evidence retrieval，最后把 model withdrawals 聚合到作者边界；纯 policy 层保持可测试，`--execute` 不越过 R0。
 - `agent counterevidence prepare-revision` 将 grounded open queue 编译为兼容 `agent-exec` 的最小任务包，只暴露已核实 issue、精确证据、active author guards 与未改原章；它拒绝 stale source 和状态漂移，不重新触发 comprehensive reviewer。
 - 候选由独立 `verify-revision` 按 issue contract 逐项复核，模型结论还要经过候选逐字证据、改动范围和 guard/source 哈希的确定性门禁；只有 `ready_for_approval` 才能进入作者显式 `accept-revision`，采纳时再锁定 candidate 与 ledger 状态。
+- 当模型完成目标修复却引入局部行文回归时，controller 不再默认重写整章，而是路由到 `repair-revision` 的唯一引文 patch；整章重试保留 attempt 轨迹并检测 byte-identical no-progress。第26章真实 dogfood 表明，这一降阶对 token 成本和避免重复答案都很关键。
 - 对照 raw chat、单次 RAG 和 FictionOps closed loop；
 - 报告采纳率、不变量错误、返工、成本与作者时间。
 

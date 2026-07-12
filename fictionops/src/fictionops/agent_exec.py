@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from dataclasses import asdict
 from pathlib import Path
@@ -68,6 +69,45 @@ def build_runner_input(run_dir: Path, request: dict[str, object]) -> str:
     ]
     if draft_brief:
         lines.extend(["", "## Draft Brief", "", draft_brief.rstrip()])
+    verification_file = run_dir / "counterevidence_verification.json"
+    if request.get("task") == "bounded-revision" and verification_file.is_file():
+        try:
+            verification = json.loads(verification_file.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError:
+            verification = None
+        if isinstance(verification, dict) and not verification.get("ready_for_approval"):
+            previous_candidate_file = run_dir / DEFAULT_AGENT_EXEC_OUTPUT
+            previous_candidate = previous_candidate_file.read_text(encoding="utf-8-sig") if previous_candidate_file.is_file() else ""
+            feedback = {
+                "status": verification.get("status"),
+                "decisions": verification.get("decisions") or [],
+                "unrelated_changes": verification.get("unrelated_changes") or [],
+                "bounded_change_scope": verification.get("bounded_change_scope") or {},
+                "local_prose_regressions": verification.get("local_prose_regressions") or [],
+                "summary": verification.get("summary"),
+            }
+            forbidden_sequences = [
+                str(item.get("forbidden_sequence") or (f"{item.get('phrase')}。{item.get('phrase')}" if item.get("phrase") else ""))
+                for item in feedback["local_prose_regressions"]
+                if isinstance(item, dict) and (item.get("forbidden_sequence") or item.get("phrase"))
+            ]
+            lines.extend(
+                [
+                    "",
+                    "## Verification Feedback From Previous Candidate",
+                    "",
+                    "The previous staged candidate failed verification. Repair only the listed regression while preserving already-correct contracted changes.",
+                    "Use the previous candidate below as the revision base. Do not regenerate from the original source or repeat the rejected wording.",
+                    "The next candidate must differ from the previous candidate. Rewrite the smallest containing sentence so each repeated phrase occurs only once.",
+                    ("Forbidden exact sequences: " + json.dumps(forbidden_sequences, ensure_ascii=False)) if forbidden_sequences else "",
+                    "",
+                    "```json",
+                    json.dumps(feedback, ensure_ascii=False, indent=2),
+                    "```",
+                ]
+            )
+            if previous_candidate:
+                lines.extend(["", "### Previous Candidate To Repair", "", previous_candidate.rstrip()])
     lines.extend(
         [
             "",
@@ -199,6 +239,14 @@ def build_agent_exec(
         for path in (output_file, receipt_file):
             if path.exists():
                 raise FileExistsError(path)
+    if not dry_run and force and request.get("task") == "bounded-revision" and output_file.is_file():
+        attempts_dir = target / "revision_attempts"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+        attempt_number = len(list(attempts_dir.glob("attempt-*.output.md"))) + 1
+        attempt_stem = f"attempt-{attempt_number:03d}"
+        shutil.copy2(output_file, attempts_dir / f"{attempt_stem}.output.md")
+        if receipt_file.is_file():
+            shutil.copy2(receipt_file, attempts_dir / f"{attempt_stem}.execution.json")
 
     runner_input = build_runner_input(target, request)
     returncode: int | None = None
@@ -206,6 +254,7 @@ def build_agent_exec(
     stderr = ""
     executed = False
     written = False
+    previous_output_text = output_file.read_text(encoding="utf-8-sig") if force and output_file.is_file() else ""
     telemetry: dict[str, object] | None = None
 
     if not dry_run:
@@ -248,6 +297,8 @@ def build_agent_exec(
         }
         receipt_file.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
         written = True
+        if request.get("task") == "bounded-revision" and previous_output_text and stdout.rstrip() + "\n" == previous_output_text:
+            raise RuntimeError("bounded revision retry produced a byte-identical candidate; no progress was made")
 
     report = AgentExecReport(
         target=str(target),
