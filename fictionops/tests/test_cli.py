@@ -2040,7 +2040,9 @@ class FictionOpsCliTests(unittest.TestCase):
             "integrations/codex-skill/fictionops-writing-agent/references/workflow.md",
             "integrations/codex-skill/fictionops-writing-agent/references/chapter-writing.md",
             "integrations/codex-skill/fictionops-writing-agent/references/audit.md",
+            "integrations/codex-skill/fictionops-writing-agent/references/counterevidence.md",
             "integrations/codex-skill/fictionops-writing-agent/references/dogfood-metrics.md",
+            "integrations/codex-skill/fictionops-writing-agent/references/teacher-mode.md",
             "integrations/api-agent/README.md",
             "integrations/api-agent/openapi.yaml",
             "integrations/api-agent/server.py",
@@ -2057,6 +2059,13 @@ class FictionOpsCliTests(unittest.TestCase):
         }
         missing = sorted(prefix + item for item in required if prefix + item not in names)
         self.assertEqual(missing, [])
+        skill_text = (ROOT / "integrations" / "codex-skill" / "fictionops-writing-agent" / "SKILL.md").read_text(encoding="utf-8")
+        teacher_reference = (ROOT / "integrations" / "codex-skill" / "fictionops-writing-agent" / "references" / "teacher-mode.md").read_text(encoding="utf-8")
+        self.assertIn("Follow The Teacher Loop", skill_text)
+        self.assertIn("Respect Authority", skill_text)
+        self.assertIn("expected labels", skill_text)
+        self.assertIn("Freeze The Comparison", teacher_reference)
+        self.assertIn("earliest responsible layer", teacher_reference)
 
     def test_release_smoke_runs_quickstart_chain(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

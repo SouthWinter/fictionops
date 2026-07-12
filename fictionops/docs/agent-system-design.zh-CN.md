@@ -406,11 +406,12 @@ fictionops agent continue <project>
 
 高级 CLI 继续存在，作为可组合工具、调试面和研究接口。默认体验中，用户不需要理解 `agent-run -> agent-exec -> agent-inbox -> review-workflow` 的全部细节。
 
-Codex skill 与通用 API Agent 共用同一 runtime：
+Codex skill 与通用 API Agent 共用同一 runtime，但承担不同实验角色：
 
-- Codex skill 负责把自然语言目标映射到 `fictionops agent ...`，展示 diff，并请求采纳；
-- 通用 Agent 通过 Python API/CLI 和 provider adapter 运行；
+- Codex skill 作为 reference teacher，把自然语言目标映射到 `fictionops agent ...`，展示 diff，请求采纳，并记录 observation、证据来源/权威、备选动作、counterevidence、状态迁移和停止理由；
+- 通用 API Agent 作为待优化执行策略，通过 Python API/CLI 和 provider adapter 运行，并在相同任务快照、预算和权限协议下与 teacher 对照；
 - 两者读写相同 session schema、issue ledger、policy 和验证结果；
+- teacher 输出不是 ground truth，只有作者确认或独立确定性证据才能把其判断提升为标签；teacher trace、expected verdict 和事后 critique 不得进入 student prompt；
 - 不拆成两个 GitHub 仓库，避免协议和行为分叉。
 
 ## 16. 实现顺序
@@ -482,6 +483,7 @@ Codex skill 与通用 API Agent 共用同一 runtime：
 ### P5：Skill、开放 API 与研究证据
 
 - 发布 Codex skill；
+- 先冻结 Codex Skill v1 的任务路由、最小充分证据、counterevidence、authority stop 和 teacher trace 协议，再用其轨迹诊断 API Agent；比较重点是决策层与状态迁移，而不是最终文句模仿。
 - 稳定 Python API、JSON schema 和 provider adapter；
 - 建立匿名化 benchmark 与真实 dogfood 数据；
 - 对 `needs_counterevidence` 导出匿名人工标注包，把身份与 control 标签隔离到私钥；完成标注后记录人工耗时、误修风险，以及与原 case-level control 的一致或标签挑战。Case 标签不能伪装成动态 finding 的 issue-level 真值，未标注队列也不得表述为已完成人评。

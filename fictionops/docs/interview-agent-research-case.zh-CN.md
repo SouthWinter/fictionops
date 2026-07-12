@@ -127,6 +127,8 @@ fictionops agent failure-lab --format markdown
 
 > 我实现并 dogfood 了一个 artifact-grounded、author-governed 的长程创作 Agent harness。真实模型失败表明，自评式 verifier 会产生假阳性，因此系统把项目状态、证据验证、恢复与权限从模型中外置，并提供可复现的 raw/RAG/workflow 对照和故障注入环境。
 
+Codex Skill 在该架构中是 reference teacher，而不是更换 runtime 的另一套 Agent：它遵守相同 session、issue、证据窗口和作者权限协议，同时多记录上下文选择、备选动作、counterevidence 与停止理由。API Agent 作为 student 在冻结任务上对照这些决策轨迹；teacher 判断只有经作者或独立门禁确认后才能成为标签。
+
 不能说：
 
 - FictionOps 已证明提高文学质量；

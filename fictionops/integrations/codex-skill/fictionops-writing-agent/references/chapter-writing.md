@@ -1,30 +1,43 @@
 # Chapter Writing Reference
 
-## Before Drafting
+## Compile The Brief
 
-- Read the chapter outline, scene plan, character arcs, information release table, and recent retrospectives.
-- Identify the chapter function: setup, turn, pursuit, reveal, fallout, bridge, climax, or release.
-- Let target length vary by chapter function instead of forcing every chapter to the same size.
+Read only material that can change this chapter's decisions:
 
-## Prompt Shape
+- Chapter engine, book/volume outline, and adjacent chapter state.
+- Viewpoint character arc, knowledge boundary, voice, and current relationships.
+- Information-release table, required echoes, unresolved tension, and forbidden reveals.
+- Recent accepted retrospectives and active author guards.
 
-Include:
+Record why each source is included. Do not send a whole project merely because context is available.
 
-- Chapter goal and exit state.
-- Point-of-view and voice constraints.
-- Known information for reader and characters.
-- Things not to reveal yet.
-- Required echoes, callbacks, and unresolved tension.
-- Prose risks to avoid, such as over-explanation, repeated sentence patterns, or uniform dialogue.
+## Simulate Before Drafting
 
-## Acceptance Criteria
+1. State the chapter entry and exit state.
+2. Track quantity, time, object, location, and character-knowledge changes.
+3. Identify pressures and available choices scene by scene.
+4. Separate what the character infers from what narration may certify.
+5. Decide which uncertainty must remain open.
 
-A staged draft is not accepted until it:
+Use chapter function to set a length range. Do not force every chapter toward one uniform target.
 
-- Moves the chapter state forward.
-- Respects information boundaries.
-- Keeps character knowledge and voice distinct.
-- Leaves usable hooks for the next chapter.
-- Avoids explaining every motive through narration.
+## Draft In Stages
 
-Use `ready_for_approval` only as a review eligibility signal. Confirm the source and candidate hashes are current, show the user the material change, and call `fictionops agent accept <run-dir>` only after explicit approval.
+- Draft scene by scene when the chapter is long or state-heavy.
+- Keep unaffected scenes byte-stable during targeted retries.
+- Vary openings, sentence movement, paragraph density, dialogue register, and chapter rhythm according to function rather than a style checklist.
+- Prefer action, object, silence, and consequence over explanatory narration when they can carry the same meaning.
+- Do not use synonyms mechanically to hide repeated thought patterns.
+
+## Verify The Candidate
+
+Require all of the following before `ready_for_approval`:
+
+- The chapter changes state and hands usable pressure to the next chapter.
+- Character knowledge, voice, age, region, and intelligence mode remain distinct.
+- New facts do not escape the information-release boundary.
+- Required callbacks occur without closing intended ambiguity.
+- Deterministic fact and repetition gates pass.
+- Independent review evidence quotes the actual candidate.
+
+Show the author the meaningful diff and residual uncertainty. Accept only after explicit approval.

@@ -196,7 +196,7 @@ fictionops/
 - [Stability window evidence](docs/stability-window-evidence.md)
 - [Stability window evidence, Chinese reference](docs/stability-window-evidence.zh-CN.md)
 - [Integration adapters](integrations/README.md)
-- [Codex Skill adapter draft](integrations/codex-skill/README.md)
+- [Codex Skill writing-teacher adapter](integrations/codex-skill/README.md)
 - [API Agent contract draft](integrations/api-agent/README.md)
 - [Legacy migration example](examples/legacy_novel_source/README.md)
 - [Contribution guide](CONTRIBUTING.md)

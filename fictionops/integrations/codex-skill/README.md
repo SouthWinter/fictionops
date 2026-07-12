@@ -10,6 +10,7 @@ It is not a fork of FictionOps. The skill should call the FictionOps CLI and use
 - Create chapter briefs, call model/API runners, receive staged drafts, and run review gates.
 - Audit continuity, information release, character memory, prose patterns, and release readiness.
 - Record dogfood metrics for real AI-assisted writing work.
+- Act as a reference teacher whose evidence and decision trajectory can be compared with an API agent without treating Codex output as ground truth.
 
 ## Install Shape
 
@@ -18,11 +19,15 @@ The reusable skill lives in:
 ```text
 fictionops-writing-agent/
   SKILL.md
+  agents/
+    openai.yaml
   references/
     workflow.md
     chapter-writing.md
     audit.md
+    counterevidence.md
     dogfood-metrics.md
+    teacher-mode.md
 ```
 
 To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_HOME/skills/`, restart Codex, then invoke `$fictionops-writing-agent` in a FictionOps project checkout. The skill delegates to the installed FictionOps CLI and does not fork the runtime.
@@ -33,3 +38,4 @@ To use it in a local Codex setup, copy `fictionops-writing-agent/` into `$CODEX_
 - The skill should never require an API key to be stored in the repository.
 - The skill should stage outputs first and let the user accept, reject, or revise them.
 - The skill may use echo runners only for CI, smoke tests, or debugging.
+- Teacher mode preserves observations, source authority, alternatives, counterevidence, state transitions, and stop reasons. Hidden controls and expected labels must remain outside student prompts.
