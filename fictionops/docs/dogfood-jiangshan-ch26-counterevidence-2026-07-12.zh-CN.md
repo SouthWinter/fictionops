@@ -43,3 +43,15 @@
 - dry-run、沙箱 source 和真实第26章哈希仍全部不变。
 
 对于含新增句界重复的失败候选，新版本在 API 调用前即返回 `deterministic_preflight/model_call_count=0`。因此原轨迹中多次让 verifier 阅读整章的成本，不会在同类后续运行中重现。
+
+## 补证窗口优化重放
+
+原 escalated re-verifier 同时发送 packet 中的全章和 escalation 中的全章，同一正文发生重复。Evidence-window compiler 上线后，这条 finding 因具有两处精确引文、active author guard 和“只改两处”的保留边界，被编译为 `bounded_claim_windows`：
+
+- 模型可见证据：`13205 -> 387` 字符，下降 `97.07%`；
+- 输入 token：`11313 -> 1757`，下降 `84.47%`；
+- prompt 字符数：`4443`；
+- verdict 仍为 grounded `uphold/high`，模型调用数为1；
+- grounding 只使用模型实际见过的窗口，真实第26章仍未写入。
+
+一般性的章级功能、全章节奏或长线回声判断不会套用该局部策略，而是进入 `full_scope_deduplicated`，保留一份完整章节并去掉重复副本。

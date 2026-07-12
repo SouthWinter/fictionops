@@ -182,6 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent_counterevidence_reverify.add_argument("--packet", required=True, help="Source counterevidence packet JSON.")
     agent_counterevidence_reverify.add_argument("--timeout-seconds", type=int, default=300)
     agent_counterevidence_reverify.add_argument("--max-model-calls", type=int, default=12)
+    agent_counterevidence_reverify.add_argument("--max-evidence-chars", type=int, default=16000)
     agent_counterevidence_reverify.add_argument("--out", help="Optional re-verification report output path.")
     agent_counterevidence_reverify.add_argument("--format", choices=["markdown", "json"], default="markdown")
     agent_counterevidence_reverify.add_argument("--runner", nargs=argparse.REMAINDER, required=True, help="External model runner command; place it last.")
@@ -4178,6 +4179,7 @@ def handle_agent(args: argparse.Namespace) -> int:
                     runner=runner,
                     timeout_seconds=args.timeout_seconds,
                     max_model_calls=args.max_model_calls,
+                    max_evidence_chars=args.max_evidence_chars,
                 )
                 rendered = render_escalated_reverification(report, args.format)
                 if args.out:

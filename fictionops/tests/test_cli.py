@@ -180,6 +180,7 @@ from fictionops.agent_evidence_escalation import (  # noqa: E402
     build_evidence_escalation,
     classify_evidence_scope,
 )
+from fictionops.agent_evidence_window import compile_reverification_evidence_window  # noqa: E402
 from fictionops.agent_write_workflow import expected_title_from_engine, scene_target_chars  # noqa: E402
 from fictionops.agent_story_reasoning import (  # noqa: E402
     build_story_fact_ledger,
@@ -6770,6 +6771,67 @@ class FictionOpsCliTests(unittest.TestCase):
             self.assertEqual(adjacent_escalation["requests"][0]["route"]["scope"], "adjacent_paragraphs")
             self.assertIn("Original text.", adjacent_escalation["requests"][0]["evidence_items"][0]["content"])
 
+            bounded_chapter = "\n\n".join(
+                [
+                    "Opening material that does not bear on the disputed sentence.",
+                    "The disputed sentence appears here.",
+                    "A neighboring action clarifies its immediate function.",
+                    "Unrelated tail material that must stay outside the evidence window.",
+                ]
+            )
+            bounded_sample = {
+                "chapter_excerpt": bounded_chapter,
+                "authoritative_context": "A short authoritative note.",
+                "active_author_guards": {"G-LOCAL": "Only revise the quoted sentence; preserve all other prose."},
+                "reviewer_finding": {
+                    "evidence": ["The disputed sentence appears here."],
+                    "problem": "This is a bounded defect.",
+                    "preserve_constraints": ["Preserve all other prose."],
+                    "suggested_action": "Only this exact quote may change.",
+                },
+                "verifier_assessment": {"reason": "Recheck the bounded claim."},
+            }
+            bounded_request = {
+                "route": {"scope": "full_chapter"},
+                "evidence_items": [{"kind": "full_chapter", "source": "fixture", "content": bounded_chapter}],
+            }
+            evidence_window = compile_reverification_evidence_window(bounded_request, bounded_sample)
+            self.assertEqual(evidence_window["strategy"], "bounded_claim_windows")
+            self.assertFalse(evidence_window["full_chapter_included"])
+            window_text = "\n".join(item["content"] for item in evidence_window["items"])
+            self.assertIn("The disputed sentence appears here.", window_text)
+            self.assertNotIn("Unrelated tail material", window_text)
+            self.assertLess(evidence_window["included_chars"], evidence_window["source_chars_before"])
+            self.assertTrue(evidence_window["scope_complete"])
+            hidden_source_quote = apply_reverification_grounding(
+                {
+                    "schema": "fictionops.escalated_reverification.v1",
+                    "request_id": "bounded",
+                    "verdict": "uphold",
+                    "evidence": ["Unrelated tail material that must stay outside the evidence window."],
+                    "reason": "The quote exists in the packet but was not visible to the model.",
+                    "remaining_gap": "",
+                    "confidence": "high",
+                },
+                bounded_request,
+                bounded_sample,
+                evidence_window,
+            )
+            self.assertEqual(hidden_source_quote["verdict"], "still_insufficient")
+            self.assertTrue(hidden_source_quote["grounding_override"])
+
+            unbounded_sample = json.loads(json.dumps(bounded_sample))
+            unbounded_sample["active_author_guards"] = {}
+            unbounded_sample["reviewer_finding"]["preserve_constraints"] = []
+            unbounded_sample["reviewer_finding"]["suggested_action"] = "Assess chapter-wide pacing."
+            unbounded_request = json.loads(json.dumps(bounded_request))
+            unbounded_request["evidence_items"][0]["content"] = "x" * 800
+            incomplete_window = compile_reverification_evidence_window(
+                unbounded_request, unbounded_sample, max_chars=500
+            )
+            self.assertEqual(incomplete_window["strategy"], "full_scope_deduplicated")
+            self.assertFalse(incomplete_window["scope_complete"])
+
             escalated_path = run_dir / "escalation.json"
             escalated = self.run_cli(
                 "agent",
@@ -6815,6 +6877,8 @@ class FictionOpsCliTests(unittest.TestCase):
             reverification_payload = json.loads(reverification_path.read_text(encoding="utf-8"))
             self.assertEqual(reverification_payload["verdict_counts"]["uphold"], 1)
             self.assertEqual(reverification_payload["usage"]["total_tokens"], 30)
+            self.assertEqual(reverification_payload["results"][0]["evidence_window"]["strategy"], "full_scope_deduplicated")
+            self.assertGreater(reverification_payload["evidence_window_summary"]["character_reduction_percent"], 0)
             self.assertFalse(reverification_payload["safety"]["edits_manuscript"])
             ungrounded = apply_reverification_grounding(
                 {

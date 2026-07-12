@@ -10,6 +10,7 @@ from typing import Any
 from .agent_exec import parse_runner_receipt, runner_environment
 from .agent_project_context import compile_project_context
 from .agent_counterevidence_review import COUNTEREVIDENCE_PACKET_SCHEMA
+from .agent_evidence_window import compile_reverification_evidence_window, render_reverification_evidence_window
 
 
 EVIDENCE_ESCALATION_SCHEMA = "fictionops.counterevidence_escalation.v1"
@@ -275,7 +276,9 @@ def render_evidence_escalation(payload: dict[str, Any], output_format: str) -> s
     return "\n".join(lines).rstrip() + "\n"
 
 
-def escalated_reverification_prompt(request: dict[str, Any], sample: dict[str, Any]) -> str:
+def escalated_reverification_prompt(
+    request: dict[str, Any], sample: dict[str, Any], evidence_window: dict[str, Any] | None = None
+) -> str:
     request_id = str(request.get("request_id") or "")
     payload = {
         "schema": "fictionops.escalated_reverification_request.v1",
@@ -292,6 +295,7 @@ def escalated_reverification_prompt(request: dict[str, Any], sample: dict[str, A
         "remaining_gap": "required when verdict is still_insufficient; otherwise empty",
         "confidence": "low|medium|high",
     }
+    window = evidence_window or compile_reverification_evidence_window(request, sample)
     return "\n\n".join(
         [
             "# FictionOps Escalated Re-verification",
@@ -303,13 +307,10 @@ def escalated_reverification_prompt(request: dict[str, Any], sample: dict[str, A
                 "Use still_insufficient when the requested evidence remains absent, indirect, or too narrow. "
                 "Do not rewrite prose. Do not infer missing facts. Model confidence is not author authority."
             ),
-            "## Original Chapter Material\n" + str(sample.get("chapter_excerpt") or ""),
-            "## Authoritative Context\n" + str(sample.get("authoritative_context") or ""),
-            "## Active Author Guards\n```json\n" + json.dumps(sample.get("active_author_guards") or {}, ensure_ascii=False, indent=2) + "\n```",
             "## Original Reviewer Finding\n```json\n" + json.dumps(sample.get("reviewer_finding") or {}, ensure_ascii=False, indent=2) + "\n```",
             "## Original Verifier Assessment\n```json\n" + json.dumps(sample.get("verifier_assessment") or {}, ensure_ascii=False, indent=2) + "\n```",
             "## Escalation Route\n```json\n" + json.dumps(request.get("route") or {}, ensure_ascii=False, indent=2) + "\n```",
-            "## Newly Retrieved Evidence\n```json\n" + json.dumps(request.get("evidence_items") or [], ensure_ascii=False, indent=2) + "\n```",
+            render_reverification_evidence_window(window),
             "## Output Contract\nReturn exactly one JSON object and no Markdown fence:\n" + json.dumps(contract, ensure_ascii=False, indent=2),
         ]
     ).rstrip() + "\n"
@@ -381,14 +382,17 @@ def _repair_prompt(invalid_output: str, request_id: str, error: str) -> str:
 
 
 def apply_reverification_grounding(
-    decision: dict[str, Any], request: dict[str, Any], sample: dict[str, Any]
+    decision: dict[str, Any], request: dict[str, Any], sample: dict[str, Any], evidence_window: dict[str, Any] | None = None
 ) -> dict[str, Any]:
-    sources = [
-        str(sample.get("chapter_excerpt") or ""),
-        str(sample.get("authoritative_context") or ""),
-        json.dumps(sample.get("active_author_guards") or {}, ensure_ascii=False),
-    ]
-    sources.extend(str(item.get("content") or "") for item in request.get("evidence_items") or [] if isinstance(item, dict))
+    if evidence_window is not None:
+        sources = [str(item.get("content") or "") for item in evidence_window.get("items") or [] if isinstance(item, dict)]
+    else:
+        sources = [
+            str(sample.get("chapter_excerpt") or ""),
+            str(sample.get("authoritative_context") or ""),
+            json.dumps(sample.get("active_author_guards") or {}, ensure_ascii=False),
+        ]
+        sources.extend(str(item.get("content") or "") for item in request.get("evidence_items") or [] if isinstance(item, dict))
     evidence = [str(item).strip() for item in decision.get("evidence") or [] if str(item).strip()]
     grounded = [quote for quote in evidence if any(quote in source for source in sources)]
     ungrounded = [quote for quote in evidence if quote not in grounded]
@@ -414,6 +418,7 @@ def run_escalated_reverification(
     runner: list[str],
     timeout_seconds: int = 300,
     max_model_calls: int = 12,
+    max_evidence_chars: int = 16000,
 ) -> dict[str, Any]:
     if not runner:
         raise ValueError("escalated re-verification requires a runner command")
@@ -421,6 +426,8 @@ def run_escalated_reverification(
         raise ValueError("timeout_seconds must be positive")
     if max_model_calls < 1:
         raise ValueError("max_model_calls must be positive")
+    if max_evidence_chars < 500:
+        raise ValueError("max_evidence_chars must be at least 500")
     escalation = _read_json(escalation_file)
     packet = _read_json(packet_file)
     if escalation.get("schema") != EVIDENCE_ESCALATION_SCHEMA:
@@ -431,14 +438,25 @@ def run_escalated_reverification(
     ready = [item for item in escalation.get("requests") or [] if isinstance(item, dict) and item.get("status") == "ready_for_reverification"]
     if len(ready) > max_model_calls:
         raise ValueError("ready request count exceeds max_model_calls before execution")
-    results: list[dict[str, Any]] = []
-    call_count = 0
+    prepared_windows: dict[str, dict[str, Any]] = {}
     for request in ready:
         request_id = str(request.get("request_id") or "")
         sample_ids = [str(item) for item in request.get("sample_ids") or []]
         if not sample_ids or sample_ids[0] not in samples:
             raise ValueError(f"cannot resolve representative sample for {request_id}")
-        prompt = escalated_reverification_prompt(request, samples[sample_ids[0]])
+        window = compile_reverification_evidence_window(request, samples[sample_ids[0]], max_chars=max_evidence_chars)
+        if not window["scope_complete"]:
+            raise ValueError(
+                f"full-chapter evidence for {request_id} exceeds max_evidence_chars; increase the budget before model calls"
+            )
+        prepared_windows[request_id] = window
+    results: list[dict[str, Any]] = []
+    call_count = 0
+    for request in ready:
+        request_id = str(request.get("request_id") or "")
+        sample_ids = [str(item) for item in request.get("sample_ids") or []]
+        evidence_window = prepared_windows[request_id]
+        prompt = escalated_reverification_prompt(request, samples[sample_ids[0]], evidence_window)
         output, telemetry = _run_reverification_call(prompt, runner, timeout_seconds)
         call_count += 1
         repair_used = False
@@ -452,13 +470,21 @@ def run_escalated_reverification(
             call_count += 1
             repair_used = True
             decision = _parse_reverification(repaired, request_id)
-        decision = apply_reverification_grounding(decision, request, samples[sample_ids[0]])
+        decision = apply_reverification_grounding(decision, request, samples[sample_ids[0]], evidence_window)
         results.append(
             {
                 **decision,
                 "sample_ids": sample_ids,
                 "scope": str((request.get("route") or {}).get("scope") or ""),
                 "repair_used": repair_used,
+                "prompt_chars": len(prompt),
+                "evidence_window": {
+                    **evidence_window,
+                    "items": [
+                        {key: value for key, value in item.items() if key != "content"}
+                        for item in evidence_window["items"]
+                    ],
+                },
                 "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
                 "telemetry": telemetry,
                 "repair_telemetry": repair_telemetry,
@@ -471,6 +497,8 @@ def run_escalated_reverification(
             receipt_usage = (receipt or {}).get("usage") or {}
             for key in usage:
                 usage[key] += int(receipt_usage.get(key) or 0)
+    window_source_chars = sum(int(item["evidence_window"]["source_chars_before"]) for item in results)
+    window_included_chars = sum(int(item["evidence_window"]["included_chars"]) for item in results)
     return {
         "schema": ESCALATED_REVERIFICATION_SCHEMA,
         "escalation": str(escalation_file.resolve()),
@@ -484,6 +512,17 @@ def run_escalated_reverification(
         "still_insufficient_count": verdict_counts["still_insufficient"],
         "resolution_rate": (verdict_counts["uphold"] + verdict_counts["withdraw"]) / len(ready) if ready else 0.0,
         "usage": usage,
+        "evidence_window_summary": {
+            "source_chars_before": window_source_chars,
+            "included_chars": window_included_chars,
+            "character_reduction_percent": round((1 - window_included_chars / window_source_chars) * 100, 2)
+            if window_source_chars
+            else 0.0,
+            "strategies": {
+                strategy: sum(item["evidence_window"]["strategy"] == strategy for item in results)
+                for strategy in sorted({str(item["evidence_window"]["strategy"]) for item in results})
+            },
+        },
         "results": results,
         "safety": {"edits_manuscript": False, "author_approval_required": True},
     }
@@ -495,6 +534,7 @@ def render_escalated_reverification(payload: dict[str, Any], output_format: str)
     if output_format != "markdown":
         raise ValueError(f"unsupported re-verification output format: {output_format}")
     counts = payload["verdict_counts"]
+    window = payload.get("evidence_window_summary") or {}
     return "\n".join(
         [
             "# FictionOps Escalated Re-verification",
@@ -504,6 +544,7 @@ def render_escalated_reverification(payload: dict[str, Any], output_format: str)
             f"- Verdicts: uphold {counts['uphold']}, withdraw {counts['withdraw']}, still insufficient {counts['still_insufficient']}",
             f"- Resolution rate: {payload['resolution_rate']:.3f}",
             f"- Token usage: {payload['usage']['total_tokens']}",
+            f"- Evidence chars: {window.get('source_chars_before', 0)} -> {window.get('included_chars', 0)} ({window.get('character_reduction_percent', 0):.2f}% reduction)",
             "- Manuscript edited: no",
         ]
     ) + "\n"

@@ -78,6 +78,24 @@
     "dry_run_repassed": true,
     "real_chapter_unchanged": true
   },
+  "optimized_reverification_replay": {
+    "evidence_window_strategy": "bounded_claim_windows",
+    "source_chars_before": 13205,
+    "included_chars": 387,
+    "character_reduction_percent": 97.07,
+    "prompt_chars": 4443,
+    "input_tokens_before": 11313,
+    "input_tokens_after": 1757,
+    "input_token_reduction_percent": 84.47,
+    "output_tokens_before": 217,
+    "output_tokens_after": 789,
+    "verdict_preserved": true,
+    "effective_verdict": "uphold",
+    "confidence": "high",
+    "evidence_grounded": true,
+    "model_call_count": 1,
+    "real_chapter_unchanged": true
+  },
   "safety": {
     "api_key_recorded": false,
     "real_manuscript_edited": false
